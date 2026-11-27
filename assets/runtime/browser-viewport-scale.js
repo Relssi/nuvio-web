@@ -113,4 +113,55 @@
     },
     true
   );
+
+  // Phone layout: swiping the hero sideways shows the next / previous title
+  // of the same row, like CineRotten's featured carousel (B29). The hero
+  // follows the focused card, so the swipe moves the focus along the row.
+  var swipeStart = null;
+
+  // The Home screen moves its own focus (it keeps track of the focused card);
+  // it listens for this event in homeScreenMethods-19.
+  function moveHeroBy(step, hero) {
+    var target = hero || document.querySelector(".home-screen-shell .home-hero-modern");
+    if (!target || typeof CustomEvent !== "function") {
+      return;
+    }
+    target.dispatchEvent(new CustomEvent("nuvio:phone-hero-swipe", { bubbles: true, detail: { step: step } }));
+  }
+
+  document.addEventListener(
+    "touchstart",
+    function heroSwipeStart(event) {
+      swipeStart = null;
+      if (html.getAttribute("data-layout") !== "mobile" || !event.touches || event.touches.length !== 1) {
+        return;
+      }
+      var target = event.target;
+      if (!target || !target.closest || !target.closest(".home-screen-shell .home-hero-modern")) {
+        return;
+      }
+      swipeStart = { x: event.touches[0].clientX, y: event.touches[0].clientY };
+    },
+    { capture: true, passive: true }
+  );
+
+  document.addEventListener(
+    "touchend",
+    function heroSwipeEnd(event) {
+      var start = swipeStart;
+      swipeStart = null;
+      if (!start || !event.changedTouches || !event.changedTouches.length) {
+        return;
+      }
+      var dx = event.changedTouches[0].clientX - start.x;
+      var dy = event.changedTouches[0].clientY - start.y;
+      if (Math.abs(dx) < 40 || Math.abs(dx) < Math.abs(dy) * 1.5) {
+        return;
+      }
+      moveHeroBy(dx < 0 ? 1 : -1);
+    },
+    { capture: true, passive: true }
+  );
+
+  root.__NUVIO_MOVE_PHONE_HERO__ = moveHeroBy;
 })();

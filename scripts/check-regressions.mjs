@@ -517,6 +517,32 @@ async function main() {
     }
   );
 
+  await check(
+    "B29",
+    "phone hero swipe moves the Home focus (and the hero) along the row",
+    async () => {
+      const runtime = await source("assets/runtime/browser-viewport-scale.js");
+      if (!runtime.includes("nuvio:phone-hero-swipe")) return "hero swipe event missing";
+      const home = await source("js/ui/screens/home/homeScreenMethods-19-handle-home-dpad.js");
+      if (!home.includes("moveFocusFromHeroSwipe")) return "Home no longer handles the hero swipe";
+      return true;
+    }
+  );
+
+  await check("B30", "Brazilian Portuguese is the default audio language", async () => {
+    const store = await source("js/data/local/playerSettingsStore.js");
+    if (!store.includes('preferredAudioLanguage: "pt-br"')) return "default audio language changed";
+    return true;
+  });
+
+  await check("B31", "series seasons, episodes and cast are phone-sized", async () => {
+    const css = await source("css/mobile.css");
+    if (!css.includes(".series-episode-track")) return "episode track not sized for phones";
+    if (!css.includes(".movie-cast-card.series-cast-card"))
+      return "series cast not sized for phones";
+    return true;
+  });
+
   // ---- Unit tests --------------------------------------------------------
   const tests = await run(process.execPath, [
     "--test",

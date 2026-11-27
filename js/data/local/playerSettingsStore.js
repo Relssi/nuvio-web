@@ -47,7 +47,9 @@ const DEFAULTS = {
   subtitlesEnabled: true,
   subtitleLanguage: "en",
   secondarySubtitleLanguage: "off",
-  preferredAudioLanguage: "system",
+  // This build is used by Brazilian viewers: Brazilian Portuguese audio is
+  // the default when a file has it, then the stream's own default (B30).
+  preferredAudioLanguage: "pt-br",
   secondaryPreferredAudioLanguage: "none",
   trailerAutoplay: true,
   trailerDelaySeconds: 7,

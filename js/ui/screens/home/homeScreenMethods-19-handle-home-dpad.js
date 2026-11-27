@@ -329,7 +329,13 @@ export function createHomeScreenMethods19() {
         this.boundHomeEventContainer.removeEventListener("pointermove", this.boundHomeMouseMoveHandler);
         this.boundHomeEventContainer.removeEventListener("mouseover", this.boundHomeMouseOverHandler);
         this.boundHomeEventContainer.removeEventListener("wheel", this.boundHomeWheelHandler);
+        this.boundHomeEventContainer.removeEventListener("nuvio:phone-hero-swipe", this.boundHomeHeroSwipeHandler);
       }
+      // Phone hero swipe (assets/runtime/browser-viewport-scale.js, B29).
+      if (!this.boundHomeHeroSwipeHandler) {
+        this.boundHomeHeroSwipeHandler = (event) => this.moveFocusFromHeroSwipe(Number(event?.detail?.step || 0));
+      }
+      this.container.addEventListener("nuvio:phone-hero-swipe", this.boundHomeHeroSwipeHandler);
       this.container.addEventListener("focusin", this.boundHomeFocusInHandler);
       this.container.addEventListener("click", this.boundHomeClickHandler);
       this.container.addEventListener("mousedown", this.boundHomeMouseDownHandler);
@@ -340,6 +346,34 @@ export function createHomeScreenMethods19() {
       this.container.addEventListener("mouseover", this.boundHomeMouseOverHandler);
       this.container.addEventListener("wheel", this.boundHomeWheelHandler, { passive: false });
       this.boundHomeEventContainer = this.container;
+    },
+    // Swiping the hero on a phone shows the next / previous title of the
+    // focused row: the hero always follows the focused card (B29).
+    moveFocusFromHeroSwipe(step) {
+      if (!step || !isPhoneLayout()) {
+        return false;
+      }
+      const current =
+        this.getCurrentFocusedNode?.() ||
+        this.container?.querySelector(".home-main .home-content-card.focused") ||
+        this.container?.querySelector(".home-main .home-content-card");
+      const track = current?.closest?.(".home-track");
+      if (!track) {
+        return false;
+      }
+      const cards = Array.from(track.children).filter((node) => node.classList?.contains("home-content-card"));
+      const next = cards[cards.indexOf(current) + (step > 0 ? 1 : -1)];
+      if (!next) {
+        return false;
+      }
+      this.focusNode(current, next, step > 0 ? "right" : "left");
+      const left = Math.max(0, next.offsetLeft - 16);
+      if (typeof track.scrollTo === "function") {
+        track.scrollTo({ left, behavior: "smooth" });
+      } else {
+        track.scrollLeft = left;
+      }
+      return true;
     },
     revealPointerHoveredRow(target) {
       const viewport = this.getHomeViewport();

@@ -194,6 +194,29 @@ O script cobre automaticamente os itens marcados com **[auto]**. Os itens **[man
 - **Correção:** `onPointerSurfaceActivate` aceita toques em qualquer parte do player que não seja botão/painel e alterna os controles (mostra/esconde). A barra de progresso recebe toques no celular, com área de ~26px. `FocusEngine.handlePointerMove` ignora `pointerType` "touch"/"pen". A Início não rola sozinha na vertical no celular (só com setas do teclado).
 - **Verificar:** checagem B28; no simulador, tocar na imagem mostra/esconde os controles e o botão de pausar responde ao toque.
 
+## B29 — Celular: não dava para trocar o filme do destaque [auto + manual]
+
+- **Sintoma:** na Início do celular, o destaque ficava parado num filme; não havia como "passar para o lado" como no CineRotten.
+- **Correção:** deslizar o destaque para a esquerda/direita (`assets/runtime/browser-viewport-scale.js`) dispara `nuvio:phone-hero-swipe`; a Início (`moveFocusFromHeroSwipe` em `homeScreenMethods-19`) move o foco para o próximo/anterior filme da fileira com `focusNode` (o destaque sempre segue o foco) e rola a fileira até ele. `touch-action: pan-y` no destaque mantém a rolagem vertical da página.
+- **Teste:** no simulador o painel do navegador estava escondido, o que pausa `requestAnimationFrame`; para testar foi preciso trocá-lo por um timer. Em celular de verdade isso não acontece.
+- **Verificar:** checagem B29; deslizar o destaque troca o filme e a fileira acompanha.
+
+## B30 — Áudio em português do Brasil por padrão [auto]
+
+- **Pedido:** o player deve tocar em PT-BR sempre que houver.
+- **Correção:** o idioma de áudio padrão (`playerSettingsStore.js`) passou de "sistema" para `pt-br`. Quem já escolheu outro idioma continua com a escolha. No navegador, a troca de faixa vale para filmes convertidos pelo TorBox (B26); nas TVs o app já escolhe a faixa.
+- **Verificar:** checagem B30.
+
+## B31 — Celular: tela de série gigante [auto + manual]
+
+- **Sintoma:** em séries, os botões de temporada, os cartões de episódio (560px) e o elenco (300px) apareciam em tamanho de TV.
+- **Correção (`css/mobile.css`):** temporadas e episódios em meia escala (como as outras telas de TV); o elenco de séries (`.series-cast-track`) usa os mesmos tamanhos do elenco de filmes.
+- **Verificar:** checagem B31; no simulador 375px, temporada 110×45, episódio 280×179, elenco 96px.
+
+## Teste que já falhava
+
+- `js/ui/screens/home/homeHeroBackdropBitmap.test.mjs` (2 testes de troca suave da imagem do destaque) falha também na versão do GitHub antes destas mudanças. Não investigado.
+
 ## Não são bugs do código (para não perder tempo de novo)
 
 - **"No streams found" com Torrentio sem debrid:** o navegador não toca torrent; é preciso um debrid conectado.

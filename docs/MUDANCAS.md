@@ -8,6 +8,13 @@ Detalhes de bugs (causa e correção) ficam em [`BUGS.md`](BUGS.md).
 
 ---
 
+## 28/11/2026 — Destaque que desliza, séries no celular e PT-BR padrão
+
+- **O que mudou:** na Início do celular, deslize o destaque para o lado para ver o próximo filme (ou o anterior). A tela de série no celular ficou no tamanho certo (temporadas, episódios e elenco). O áudio padrão agora é **português do Brasil** quando o filme tiver essa faixa.
+- **Como:** o deslize move a seleção da fileira, e o destaque acompanha. A tela de série usa meia escala nas partes de TV. O idioma padrão mudou de "sistema" para "pt-br". Detalhes em BUGS.md (B29, B30, B31).
+- **Precisa fazer:** nada. Recarregue a página. Quem já tinha escolhido outro idioma de áudio continua com a escolha.
+- **Não testado:** em celular de verdade (testado no simulador do navegador).
+
 ## 28/11/2026 — Celular arrumado, toque no player e áudio em português
 
 - **O que mudou no celular:** Busca, Biblioteca, Configurações, Addons, Descobrir e as outras telas agora cabem na tela com texto e botões no tamanho certo (antes estavam em tamanho de TV). Configurações mostram as seções numa fileira em cima. No player: tocar na imagem mostra/esconde os controles, os botões ficaram do tamanho do dedo, dá para tocar na barra para pular e há um botão de **tela cheia** (⛶) que deixa o filme deitado (no iPhone abre o player do próprio iPhone, que gira junto). Rolar com o dedo não dá mais "pulos". Com o celular deitado, a Início e a tela do filme se ajustam.
