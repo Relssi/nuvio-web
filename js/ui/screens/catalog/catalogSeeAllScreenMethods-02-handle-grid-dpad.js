@@ -276,6 +276,7 @@ export function createCatalogSeeAllScreenMethods02() {
       this.container.innerHTML = `
           <div class="seeall-shell">
             <header class="seeall-header">
+              <button type="button" class="nuvio-web-back-btn nuvio-web-back-btn-inline" data-action="navigateBack" aria-label="Voltar">&#8592; Voltar</button>
               <h2 class="seeall-title">${escapeHtml(title)}</h2>
               ${
                 this.layoutPrefs?.catalogAddonNameEnabled !== false && descriptor.addonName
@@ -331,6 +332,12 @@ export function createCatalogSeeAllScreenMethods02() {
         return;
       }
       shell.__catalogSeeAllShellBound = true;
+      shell.addEventListener("click", (event) => {
+        if (event?.target?.closest?.('[data-action="navigateBack"]')) {
+          event.preventDefault();
+          Router.back();
+        }
+      });
       shell.addEventListener(
         "scroll",
         () => {

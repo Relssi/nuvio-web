@@ -437,6 +437,7 @@ export function createCastDetailScreenMethods01() {
     render() {
       this.container.innerHTML = `
           <div class="cast-detail-shell${this.biographyExpanded ? " is-biography-expanded" : ""}">
+            <button type="button" class="nuvio-web-back-btn" data-action="navigateBack" aria-label="Voltar">&#8592; Voltar</button>
             ${this.renderHero()}
             ${this.renderFilmography()}
           </div>

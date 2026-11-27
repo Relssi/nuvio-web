@@ -155,6 +155,7 @@ export function createStreamScreenMethods09() {
 
       const nextMarkup = `
           <div class="stream-route-shell${shellStableClass}${hasPendingForAllSources ? " is-loading" : ""}">
+            <button type="button" class="nuvio-web-back-btn" data-action="navigateBack" aria-label="Voltar">&#8592; Voltar</button>
             <div class="stream-route-backdrop"${backdrop ? ` style="background-image:url('${String(backdrop).replace(/'/g, "%27")}')"` : ""}></div>
             <div class="stream-route-backdrop-dim"></div>
             <div class="stream-route-left-gradient"></div>

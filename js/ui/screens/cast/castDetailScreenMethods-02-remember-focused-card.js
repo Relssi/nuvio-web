@@ -341,6 +341,12 @@ export function createCastDetailScreenMethods02() {
       return true;
     },
     onPointerActivate(target) {
+      if (target?.closest?.('[data-action="navigateBack"]')) {
+        if (!this.consumeBackRequest()) {
+          internals.Router.back();
+        }
+        return true;
+      }
       const node = target?.closest?.(".focusable");
       if (!node || !this.container?.contains(node)) {
         return false;

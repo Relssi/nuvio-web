@@ -137,3 +137,51 @@ html:not(.material-icons-ready) .settings-nav-icon-material,
 html:not(.material-icons-ready) .settings-row-leading-icon {
   visibility: hidden;
 }
+
+.nuvio-web-back-btn {
+  position: fixed;
+  top: 24px;
+  left: 28px;
+  z-index: 40;
+  appearance: none;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 999px;
+  background: rgba(15, 18, 24, 0.72);
+  color: #ffffff;
+  font-family: var(--app-font-family);
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1;
+  padding: 12px 20px;
+  cursor: pointer;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease,
+    transform 120ms ease;
+}
+
+.nuvio-web-back-btn:hover,
+.nuvio-web-back-btn:focus-visible {
+  background: rgba(255, 255, 255, 0.18);
+  border-color: rgba(255, 255, 255, 0.65);
+  outline: none;
+}
+
+.nuvio-web-back-btn:active {
+  transform: scale(0.96);
+}
+
+.nuvio-web-back-btn-inline {
+  position: static;
+  margin-bottom: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tizen-tv .nuvio-web-back-btn,
+.webos-tv .nuvio-web-back-btn {
+  display: none;
+}

@@ -69,6 +69,12 @@ export function createMetaDetailsScreenMethods27() {
       }
       const actionTarget = target?.closest?.("[data-action]");
       const action = String(actionTarget?.dataset?.action || "");
+      if (action === "navigateBack") {
+        if (!this.consumeBackRequest()) {
+          internals.Router.back();
+        }
+        return true;
+      }
       if (action === "toggleTrailer") {
         this.playTrailer({ muted: false, restart: true, initiatedByUser: true });
         return true;

@@ -162,6 +162,7 @@ export function createMetaDetailsScreenMethods08() {
       const safeBackdrop = backdrop ? escapeAttribute(backdrop.replace(/'/g, "%27")) : "";
       this.container.innerHTML = `
           <div class="series-detail-shell movie-detail-shell${detailDirectionClass}${this.getTrailerShellStateClasses()}">
+            <button type="button" class="nuvio-web-back-btn" data-action="navigateBack" aria-label="Voltar">&#8592; Voltar</button>
             <div class="series-detail-backdrop" data-backdrop-url="${escapeAttribute(backdrop || "")}"${safeBackdrop ? ` style="background-image:url('${safeBackdrop}')"` : ""}></div>
             <div class="detail-trailer-layer"></div>
             <div class="detail-trailer-loading-spinner" aria-hidden="true">${renderLoadingIndicator({ className: "player-loading-spinner-ring" })}</div>

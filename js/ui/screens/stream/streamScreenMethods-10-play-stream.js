@@ -155,6 +155,12 @@ export function createStreamScreenMethods10() {
       const actionTarget = target.closest?.("[data-action]") || target;
       this.onPointerFocus(actionTarget);
       const action = String(actionTarget.dataset.action || "");
+      if (action === "navigateBack") {
+        if (!this.navigateBackFromStream()) {
+          Router.back();
+        }
+        return true;
+      }
       if (action === "refreshStreams") {
         this.refreshStreams();
         return true;

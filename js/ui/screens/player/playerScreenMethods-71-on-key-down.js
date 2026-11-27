@@ -184,6 +184,42 @@ export function createPlayerScreenMethods71() {
         }
       }
 
+      if (
+        internals.Platform?.isBrowser?.() &&
+        !this.isDialogOpen?.() &&
+        !event?.repeat &&
+        !event?.target?.matches?.("input, textarea, select")
+      ) {
+        if (keyCode === 32) {
+          event?.preventDefault?.();
+          event?.stopPropagation?.();
+          this.togglePause();
+          this.renderControlButtons?.();
+          this.resetControlsAutoHide?.();
+          return;
+        }
+        if (keyCode === 70) {
+          event?.preventDefault?.();
+          event?.stopPropagation?.();
+          if (document.fullscreenElement) {
+            document.exitFullscreen?.().catch?.(() => {});
+          } else {
+            (this.container || document.documentElement)?.requestFullscreen?.().catch?.(() => {});
+          }
+          return;
+        }
+        if (keyCode === 77) {
+          event?.preventDefault?.();
+          event?.stopPropagation?.();
+          const video = this.container?.querySelector?.("#videoPlayer");
+          if (video) {
+            video.muted = !video.muted;
+          }
+          this.resetControlsAutoHide?.();
+          return;
+        }
+      }
+
       if (keyCode === 83) {
         if (this.subtitleDialogVisible) {
           this.closeSubtitleDialog();
