@@ -264,6 +264,13 @@
   --player-overlay-step-font: min(2.5vw, 48px); /* ATV 24dp icon/text */
 }
 
+.desktop-web #playerUiRoot {
+  --player-controls-x: 44px;
+  --player-controls-y: 32px;
+  --player-control-size: 58px;
+  --player-control-icon: 26px;
+}
+
 .player-controls-top {
   padding: min(0.21vw, 4px); /* ATV 2dp -> 4px */
 }

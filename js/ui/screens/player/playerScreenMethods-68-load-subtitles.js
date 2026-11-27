@@ -222,6 +222,15 @@ export function createPlayerScreenMethods68() {
         return;
       }
 
+      if (action === "fullscreen") {
+        if (document.fullscreenElement) {
+          document.exitFullscreen?.().catch?.(() => {});
+        } else {
+          (this.container || document.documentElement)?.requestFullscreen?.().catch?.(() => {});
+        }
+        return;
+      }
+
       if (action === "streamInfo") {
         this.showStreamInfo();
         return;

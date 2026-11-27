@@ -140,19 +140,19 @@ html:not(.material-icons-ready) .settings-row-leading-icon {
 
 .nuvio-web-back-btn {
   position: fixed;
-  top: 24px;
-  left: 28px;
+  top: 28px;
+  left: 32px;
   z-index: 40;
   appearance: none;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.24);
   border-radius: 999px;
-  background: rgba(15, 18, 24, 0.72);
+  background: rgba(15, 18, 24, 0.76);
   color: #ffffff;
   font-family: var(--app-font-family);
-  font-size: 16px;
+  font-size: 20px;
   font-weight: 600;
   line-height: 1;
-  padding: 12px 20px;
+  padding: 14px 24px;
   cursor: pointer;
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);

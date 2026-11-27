@@ -32,6 +32,18 @@ export function createPlayerScreenMethods70() {
         return false;
       }
 
+      if (target.closest?.("[data-player-pointer-action='back']")) {
+        if (!this.navigateBackToStreamScreen()) {
+          Router.back();
+        }
+        return true;
+      }
+
+      if (target.closest?.("[data-player-pointer-action='home']")) {
+        Router.navigate("home");
+        return true;
+      }
+
       if (target.closest?.("[data-player-pointer-action='skipIntro']")) {
         return this.skipActiveInterval();
       }

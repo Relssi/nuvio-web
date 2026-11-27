@@ -176,9 +176,15 @@ export function createPlayerScreenMethods15() {
               <div class="player-controls-gradient player-controls-gradient-top"></div>
               <div class="player-controls-gradient player-controls-gradient-bottom"></div>
 
-              <div class="player-controls-top${osdClockEnabled ? "" : " hidden"}">
-                <div id="playerClock" class="player-clock">--:--</div>
-                <div id="playerEndsAt" class="player-ends-at${isLivePlayback ? " hidden" : ""}">${escapeHtml(t("player_ends_at", ["--:--"], "Ends at %1$s"))}</div>
+              <div class="player-controls-top">
+                <div class="player-top-actions">
+                  <button type="button" class="player-top-btn" data-player-pointer-action="back" aria-label="Voltar">&#8592; Voltar</button>
+                  <button type="button" class="player-top-btn" data-player-pointer-action="home" aria-label="Início">&#8962; Início</button>
+                </div>
+                <div class="player-top-clock${osdClockEnabled ? "" : " hidden"}">
+                  <div id="playerClock" class="player-clock">--:--</div>
+                  <div id="playerEndsAt" class="player-ends-at${isLivePlayback ? " hidden" : ""}">${escapeHtml(t("player_ends_at", ["--:--"], "Ends at %1$s"))}</div>
+                </div>
               </div>
 
               <div class="player-controls-bottom">
