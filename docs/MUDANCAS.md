@@ -8,6 +8,14 @@ Detalhes de bugs (causa e correção) ficam em [`BUGS.md`](BUGS.md).
 
 ---
 
+## 28/11/2026 — Vídeo centralizado no computador
+
+- **O que mudou:** no computador, o vídeo do player ocupa a tela toda e fica centralizado (antes ficava menor e encostado à esquerda).
+- **Como:** o vídeo passou a usar o tamanho da tela "virtual" do site e o próprio navegador centraliza a imagem. Detalhes em BUGS.md (B24).
+- **Também chegou do Kiid:** ele desfez as mudanças recentes do player (troca automática de fonte sem som, filtro de fontes AAC, controle de volume, ajustes da barra do player). O filtro AAC fica fora, como combinado.
+- **Precisa fazer:** nada. Recarregue a página.
+- **Não testado:** com filme real do TorBox (testado com vídeo de teste em janelas de notebook e larga).
+
 ## 28/11/2026 — Início do celular no estilo do CineRotten
 
 - **O que mudou:** no celular, a Início ficou parecida com a do CineRotten: barra de baixo com o nome de cada aba e a aba ativa em vermelho; destaque em um cartão arredondado com "Em destaque", descrição e botão vermelho "Ver detalhes" (tocar no cartão abre o filme); pôsteres maiores (118 px) com o título escrito no pôster; cores do CineRotten.

@@ -256,15 +256,22 @@ export function createPlayerScreenMethods64() {
         // tracks render inside it. Tizen positions those cues against the
         // viewport, so a letterboxed element clips their bottom line; webOS
         // also needs the full viewport for its screensaver.
-        const useFullViewport = Environment.isWebOS() || usingTizenHtmlVideo;
+        // Browser: the page is zoomed to fit the window (browser-viewport-scale.js),
+        // so a rect measured in window pixels lands too small and to the left.
+        // Filling the virtual canvas and letting object-fit center the picture
+        // keeps it centered at any window size (B24).
+        const usingBrowserVideo = Environment.isBrowser();
+        const useFullViewport = Environment.isWebOS() || usingTizenHtmlVideo || usingBrowserVideo;
         const canTransformVideo = !Environment.isWebOS() && !usingTizenAvPlay;
         const videoRect = usingTizenAvPlay ? rect.displayRect : rect;
         video.style.position = "fixed";
         if (useFullViewport) {
           video.style.left = "0px";
           video.style.top = "0px";
-          video.style.width = "100vw";
-          video.style.height = "100vh";
+          // Inline styles skip the build's vw/vh rewrite, so use the canvas
+          // variables directly; without them (TV apps) they are plain vw/vh.
+          video.style.width = usingBrowserVideo ? "calc(100 * var(--nuvio-vw, 1vw))" : "100vw";
+          video.style.height = usingBrowserVideo ? "calc(100 * var(--nuvio-vh, 1vh))" : "100vh";
           video.style.objectFit = mode.objectFit;
         } else {
           video.style.left = `${Math.round(videoRect.x)}px`;
@@ -279,7 +286,7 @@ export function createPlayerScreenMethods64() {
         video.style.transformOrigin = "center center";
         const stretchByObjectFit = usingTizenHtmlVideo && mode.id === "STRETCH";
         video.style.transform =
-          !canTransformVideo || stretchByObjectFit || (rect.scaleX === 1 && rect.scaleY === 1)
+          !canTransformVideo || stretchByObjectFit || usingBrowserVideo || (rect.scaleX === 1 && rect.scaleY === 1)
             ? "none"
             : `scale(${rect.scaleX}, ${rect.scaleY})`;
         if (typeof PlayerController.setAvPlayDisplayRect === "function") {

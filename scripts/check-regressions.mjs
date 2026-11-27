@@ -444,6 +444,21 @@ async function main() {
     }
   );
 
+  await check(
+    "B24",
+    "browser player video fills the zoomed canvas so it stays centered",
+    async () => {
+      const code = await source(
+        "js/ui/screens/player/playerScreenMethods-64-move-sources-focus.js"
+      );
+      if (!/useFullViewport = [^;]*usingBrowserVideo/.test(code))
+        return "browser video no longer uses the full viewport";
+      if (!code.includes("var(--nuvio-vw, 1vw)"))
+        return "browser video size ignores the zoomed canvas";
+      return true;
+    }
+  );
+
   // ---- Unit tests --------------------------------------------------------
   const tests = await run(process.execPath, [
     "--test",

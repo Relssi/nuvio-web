@@ -156,6 +156,13 @@ O script cobre automaticamente os itens marcados com **[auto]**. Os itens **[man
 - **Verificar:** checagem B21; no simulador, tocar no destaque abre o filme certo; nada passa da largura na Início.
 - **Ainda não feito:** Busca, Biblioteca e Configurações passam da largura no celular (próxima parte).
 
+## B24 — Vídeo do player pequeno e encostado à esquerda no computador [auto + manual]
+
+- **Sintoma:** no computador o vídeo aparecia menor que a tela e deslocado para a esquerda (faixa preta grande à direita).
+- **Causa:** o site é ampliado/reduzido para caber na janela (`html.style.zoom`, B13/B14), mas o player calculava a posição do vídeo em pixels da janela. Com zoom 0,71 o vídeo ficava 71% do tamanho e puxado para a esquerda.
+- **Correção (`playerScreenMethods-64`, `applyAspectMode`):** no navegador o vídeo ocupa a tela virtual inteira (`calc(100 * var(--nuvio-vw, 1vw))`, idem altura) e o `object-fit` do modo de tela centraliza a imagem. TVs não mudam.
+- **Verificar:** checagem B24; em janelas 1366×768 e 1600×700 o vídeo cobre a janela inteira, com faixas pretas iguais dos dois lados.
+
 ## Não são bugs do código (para não perder tempo de novo)
 
 - **"No streams found" com Torrentio sem debrid:** o navegador não toca torrent; é preciso um debrid conectado.
