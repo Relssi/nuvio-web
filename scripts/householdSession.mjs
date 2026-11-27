@@ -192,22 +192,59 @@ export function buildHouseholdSessionScript() {
   }
   return `
 (function nuvioHouseholdAutoSession() {
+  var LOG_KEY = "__nuvioAuthDebugLog";
+  var originalSetItem = Storage.prototype.setItem;
+  var originalRemoveItem = Storage.prototype.removeItem;
+  // Small history of what happened to the login in this browser, shown on
+  // /__status so problems can be diagnosed from a screenshot.
+  function log(event, detail) {
+    try {
+      var entries = JSON.parse(localStorage.getItem(LOG_KEY) || "[]");
+      if (!Array.isArray(entries)) entries = [];
+      entries.push({ at: new Date().toISOString(), event: event, detail: String(detail || "").slice(0, 300) });
+      originalSetItem.call(localStorage, LOG_KEY, JSON.stringify(entries.slice(-15)));
+    } catch (error) {}
+  }
+  function caller() {
+    try {
+      return String(new Error().stack || "").split("\\n").slice(3, 6).join(" | ");
+    } catch (error) {
+      return "";
+    }
+  }
   try {
-    if (localStorage.getItem("refresh_token")) return;
+    Storage.prototype.removeItem = function (key) {
+      if (this === localStorage && (key === "refresh_token" || key === "access_token") && this.getItem(key)) {
+        log("app removed " + key, caller());
+      }
+      return originalRemoveItem.apply(this, arguments);
+    };
+  } catch (error) {}
+  try {
+    if (localStorage.getItem("refresh_token")) {
+      log("page load: already signed in", "");
+      return;
+    }
     var request = new XMLHttpRequest();
     request.open("GET", ${JSON.stringify(SESSION_PATH)}, false);
     request.send(null);
     if (request.status !== 200) {
+      log("auto sign-in failed", request.status + " " + request.responseText);
       console.warn("[household] automatic sign-in failed", request.status, request.responseText);
       return;
     }
     var session = JSON.parse(request.responseText);
-    if (!session.access_token || !session.refresh_token) return;
+    if (!session.access_token || !session.refresh_token) {
+      log("auto sign-in returned no tokens", "");
+      return;
+    }
     localStorage.setItem("access_token", session.access_token);
     localStorage.setItem("refresh_token", session.refresh_token);
     localStorage.removeItem("is_anonymous_session");
     localStorage.setItem("hasSeenAuthQrOnFirstLaunch", "true");
+    log("auto sign-in ok", "");
   } catch (error) {
+    log("auto sign-in error", error && error.message);
     console.warn("[household] automatic sign-in failed", error);
   }
 }());

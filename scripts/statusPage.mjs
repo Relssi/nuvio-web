@@ -88,6 +88,7 @@ async function renderStatusPage() {
   th { width: 34%; font-weight: 600; color: #d4d4d8; }
   td:first-child { width: 28px; }
   .hint { color: #a1a1aa; font-size: 14px; }
+  button { padding: 10px 16px; font-size: 15px; font-weight: 600; border: 0; border-radius: 10px; background: #8b5cf6; color: #fff; cursor: pointer; }
 </style>
 </head>
 <body>
@@ -98,7 +99,10 @@ async function renderStatusPage() {
 <table>${serverRows}</table>
 <h2>Este navegador</h2>
 <table id="browser"></table>
-<p class="hint">Se "Conta deste navegador" for diferente da conta da casa, saia em Settings → Account → Sign out e recarregue o site.</p>
+<p class="hint">Se "Conta deste navegador" for diferente da conta da casa, ou se não estiver logado, use o botão abaixo.</p>
+<p><button id="connect" type="button">Conectar este navegador à conta da casa</button> <span id="connect-result" class="hint"></span></p>
+<h2>Histórico do login neste navegador</h2>
+<table id="auth-log"></table>
 </main>
 <script>
 (function () {
@@ -125,6 +129,38 @@ async function renderStatusPage() {
   try { active = JSON.parse(localStorage.getItem("activeProfileId") || '""'); } catch (e) { active = ""; }
   rows.push(line("Perfil ativo", active || "-", null));
   document.getElementById("browser").innerHTML = rows.join("");
+
+  var log = [];
+  try { log = JSON.parse(localStorage.getItem("__nuvioAuthDebugLog") || "[]"); } catch (e) { log = []; }
+  document.getElementById("auth-log").innerHTML = log.length
+    ? log.slice().reverse().map(function (entry) {
+        var bad = /failed|error|removed|no tokens/.test(entry.event);
+        return line(new Date(entry.at).toLocaleString() + " — " + entry.event, entry.detail || "", bad ? false : true);
+      }).join("")
+    : line("Nada registrado ainda", "abra o app (página inicial) e volte aqui", null);
+
+  document.getElementById("connect").addEventListener("click", function () {
+    var result = document.getElementById("connect-result");
+    result.textContent = "Conectando...";
+    fetch("/__auto_session", { credentials: "same-origin", cache: "no-store" })
+      .then(function (response) {
+        return response.text().then(function (text) { return { status: response.status, text: text }; });
+      })
+      .then(function (reply) {
+        if (reply.status !== 200) {
+          result.textContent = "Falhou (" + reply.status + "): " + reply.text.slice(0, 200);
+          return;
+        }
+        var session = JSON.parse(reply.text);
+        localStorage.setItem("access_token", session.access_token);
+        localStorage.setItem("refresh_token", session.refresh_token);
+        localStorage.removeItem("is_anonymous_session");
+        localStorage.setItem("hasSeenAuthQrOnFirstLaunch", "true");
+        result.textContent = "Conectado. Abra o site de novo (página inicial).";
+        setTimeout(function () { location.reload(); }, 800);
+      })
+      .catch(function (error) { result.textContent = "Erro: " + error.message; });
+  });
 }());
 </script>
 </body>

@@ -395,6 +395,8 @@ async function main() {
         return "auto sign-in snippet missing from nuvio.env.js";
       }
       if (text.includes(FAKE_SERVICE_KEY)) return "service role key leaked into nuvio.env.js";
+      if (!text.includes("__nuvioAuthDebugLog"))
+        return "login history (B13) missing from nuvio.env.js";
     });
     await check("B12", "status page needs the site password", async () => {
       const response = await fetch(`${app.base}/__status`);
