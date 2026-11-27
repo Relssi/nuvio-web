@@ -32,6 +32,22 @@ export function createPlayerScreenMethods70() {
         return false;
       }
 
+      if (target.closest?.("[data-player-volume-slider]")) {
+        return false;
+      }
+
+      if (target.closest?.("[data-player-pointer-action='toggleMute']")) {
+        const video = this.container?.querySelector?.("#videoPlayer");
+        if (video) {
+          if (video.muted && video.volume === 0) {
+            video.volume = 1;
+          }
+          video.muted = !video.muted;
+        }
+        this.resetControlsAutoHide?.();
+        return true;
+      }
+
       if (target.closest?.("[data-player-pointer-action='back']")) {
         if (!this.navigateBackToStreamScreen()) {
           Router.back();

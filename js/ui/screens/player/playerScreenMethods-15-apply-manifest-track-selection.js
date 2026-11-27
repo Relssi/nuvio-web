@@ -207,6 +207,10 @@ export function createPlayerScreenMethods15() {
 
                   <div class="player-controls-row">
                     <div id="playerControlButtons" class="player-control-buttons"></div>
+                    <div class="player-volume-control" data-player-volume-control>
+                      <button type="button" class="player-volume-mute-btn" data-player-pointer-action="toggleMute" aria-label="Silenciar ou ativar som" title="Volume / Mudo">🔊</button>
+                      <input type="range" class="player-volume-slider" data-player-volume-slider min="0" max="100" value="100" aria-label="Volume" />
+                    </div>
                     <div id="playerTimeLabel" class="player-time-label">${isLivePlayback ? escapeHtml(t("player_live_watched", ["0:00"], "LIVE  %1$s")) : "0:00 / 0:00"}</div>
                   </div>
                 </div>
@@ -217,6 +221,30 @@ export function createPlayerScreenMethods15() {
 
       this.container.appendChild(root);
       this.cachePlayerUiRefs(root);
+      const videoEl = root.querySelector("#videoPlayer");
+      const muteBtn = root.querySelector("[data-player-pointer-action='toggleMute']");
+      const volumeSlider = root.querySelector("[data-player-volume-slider]");
+      if (videoEl && volumeSlider) {
+        const syncVolumeUi = () => {
+          const muted = Boolean(videoEl.muted || videoEl.volume === 0);
+          const pct = videoEl.muted ? 0 : Math.round(Number(videoEl.volume ?? 1) * 100);
+          volumeSlider.value = String(pct);
+          if (muteBtn) {
+            muteBtn.textContent = muted ? "🔇" : pct < 50 ? "🔉" : "🔊";
+          }
+        };
+        volumeSlider.addEventListener("input", (event) => {
+          event.stopPropagation();
+          const nextVol = Math.max(0, Math.min(1, Number(volumeSlider.value) / 100));
+          videoEl.volume = nextVol;
+          videoEl.muted = nextVol === 0;
+          syncVolumeUi();
+          this.resetControlsAutoHide?.();
+        });
+        volumeSlider.addEventListener("click", (event) => event.stopPropagation());
+        videoEl.addEventListener("volumechange", syncVolumeUi);
+        syncVolumeUi();
+      }
       this.syncPlayerOverlayLayoutState();
       this.bindLoadingLogoFallback();
       if (!this.isExternalFrameMode()) {

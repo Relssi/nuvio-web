@@ -215,6 +215,47 @@
   background: rgba(255, 255, 255, 0.18);
 }
 
+.player-volume-control {
+  display: none;
+  align-items: center;
+  gap: 8px;
+  margin-left: 8px;
+}
+
+.desktop-web .player-volume-control {
+  display: inline-flex;
+}
+
+.player-volume-mute-btn {
+  appearance: none;
+  border: none;
+  background: transparent;
+  color: #ffffff;
+  font-size: 20px;
+  line-height: 1;
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  pointer-events: auto;
+  transition: background-color 140ms ease;
+}
+
+.player-volume-mute-btn:hover {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.player-volume-slider {
+  width: 96px;
+  height: 4px;
+  accent-color: #ffffff;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
 .player-control-icon {
   width: var(--player-control-icon);
   height: var(--player-control-icon);

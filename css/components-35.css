@@ -265,10 +265,48 @@
 }
 
 .desktop-web #playerUiRoot {
-  --player-controls-x: 44px;
-  --player-controls-y: 32px;
-  --player-control-size: 58px;
-  --player-control-icon: 26px;
+  --player-controls-x: 40px;
+  --player-controls-y: 28px;
+  --player-control-size: 50px;
+  --player-control-icon: 24px;
+  --player-panel-width: min(44vw, 660px);
+  --player-panel-padding: 24px;
+  --player-overlay-left: 44px;
+  --player-overlay-bottom: 96px;
+  --player-overlay-title-font: 26px;
+  --player-overlay-body-font: 17px;
+  --player-overlay-label-font: 15px;
+  --player-overlay-small-font: 13px;
+  --player-overlay-step-width: 56px;
+  --player-overlay-step-height: 40px;
+  --player-overlay-step-font: 22px;
+}
+
+.desktop-web .player-subtitle-modal {
+  left: 44px;
+  top: 40px;
+  bottom: 96px;
+  width: min(76vw, 1180px);
+}
+
+.desktop-web .player-audio-modal {
+  left: 44px;
+  bottom: 96px;
+  width: min(62vw, 960px);
+  height: min(68vh, calc(100vh - 140px));
+}
+
+.desktop-web .player-speed-modal {
+  left: 44px;
+  bottom: 96px;
+  width: 360px;
+  padding: 24px;
+  border-radius: 18px;
+}
+
+.desktop-web .player-subtitle-overlay-grid {
+  grid-template-columns: minmax(180px, 260px) minmax(240px, 1fr) minmax(220px, 340px);
+  row-gap: 12px;
 }
 
 .player-controls-top {
