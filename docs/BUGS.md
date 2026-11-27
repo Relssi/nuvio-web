@@ -77,6 +77,13 @@ O script cobre automaticamente os itens marcados com **[auto]**. Os itens **[man
 - **Causa:** política de execução de scripts do Windows.
 - **Como evitar:** use `npm.cmd` no lugar de `npm` (ex.: `npm.cmd run serve`).
 
+## B11 — Login sem e-mail (entrada automática na conta da casa) [auto]
+
+- **Pedido:** entrar só com a senha do site e escolher o perfil, sem digitar e-mail.
+- **Como funciona:** `scripts/householdSession.mjs`. Depois da senha do site, o `nuvio.env.js` pede `/__auto_session` uma única vez por navegador; o servidor entra numa conta única do Supabase (`nuvio-household@example.com`) usando a chave `SUPABASE_SERVICE_ROLE_KEY`, que fica só no servidor, e devolve uma sessão normal.
+- **Cuidados:** a `service_role` nunca pode aparecer no `nuvio.env.js` (o script verifica). `/__auto_session` exige o cookie da senha do site.
+- **Verificar:** sem cookie, `/__auto_session` responde 401; com cookie, devolve tokens; o `nuvio.env.js` tem o trecho de login automático e não contém a chave secreta.
+
 ## Não são bugs do código (para não perder tempo de novo)
 
 - **"No streams found" com Torrentio sem debrid:** o navegador não toca torrent; é preciso um debrid conectado.

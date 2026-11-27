@@ -6,6 +6,11 @@ import { spawn } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { buildRuntimeEnvScript, readEnvProperties } from "./envProperties.mjs";
 import { handleAuth, isAuthEnabled } from "./serveAuth.mjs";
+import {
+  buildHouseholdSessionScript,
+  handleHouseholdSessionRequest,
+  isHouseholdSessionEnabled
+} from "./householdSession.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, "..");
@@ -463,13 +468,18 @@ const server = http.createServer(async (request, response) => {
     if (await handleAuth(request, response, requestUrl)) {
       return;
     }
+    if (await handleHouseholdSessionRequest(request, response, requestUrl)) {
+      return;
+    }
     if (requestUrl.pathname === "/nuvio.env.js") {
       const { env } = await readEnvProperties({ rootDir });
       response.writeHead(200, {
         "Cache-Control": "no-store",
         "Content-Type": "application/javascript; charset=utf-8"
       });
-      response.end(buildRuntimeEnvScript(env) + buildWebDevFlagsScript());
+      response.end(
+        buildRuntimeEnvScript(env) + buildWebDevFlagsScript() + buildHouseholdSessionScript()
+      );
       return;
     }
 
@@ -532,6 +542,11 @@ server.listen(port, host, async () => {
     mediaPort
       ? `Local media tracks endpoint: http://${localHost}:${port}/tracks/<media-url> -> 127.0.0.1:${mediaPort}`
       : "Local media tracks endpoint unavailable. Install/enable the media runtime to inspect internal tracks."
+  );
+  console.log(
+    isHouseholdSessionEnabled()
+      ? "Automatic household sign-in: ON"
+      : "Automatic household sign-in: OFF (needs NUVIO_SUPABASE_URL, NUVIO_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY, NUVIO_PASSWORD)"
   );
   console.log(
     isAuthEnabled()

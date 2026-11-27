@@ -22,3 +22,7 @@ services:
         sync: false
       - key: NUVIO_SUPABASE_ANON_KEY
         sync: false
+      # SECRET: lets this server sign every browser in to the shared household
+      # account (scripts/householdSession.mjs). Only the server reads it.
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false

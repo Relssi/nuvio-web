@@ -85,7 +85,62 @@ async function startEchoServer() {
   return { server, port };
 }
 
-async function startAppServer(port) {
+const FAKE_ANON_KEY = "fake-anon-key";
+const FAKE_SERVICE_KEY = "fake-service-role-key";
+
+// Minimal stand-in for Supabase Auth (GoTrue), enough for householdSession.mjs.
+// It starts with the household account already present but with a stale
+// password, so the "reset password" path is exercised too.
+async function startFakeSupabase() {
+  const users = new Map([
+    ["nuvio-household@example.com", { id: "user-household", password: "stale-password" }]
+  ]);
+  let tokenCounter = 0;
+  const server = http.createServer(async (request, response) => {
+    const chunks = [];
+    for await (const chunk of request) chunks.push(chunk);
+    const body = chunks.length ? JSON.parse(Buffer.concat(chunks).toString("utf8")) : {};
+    const url = new URL(request.url, "http://fake");
+    const bearer = String(request.headers.authorization || "").replace(/^Bearer /, "");
+    const send = (status, payload) => {
+      response.writeHead(status, { "Content-Type": "application/json" });
+      response.end(JSON.stringify(payload));
+    };
+    if (url.pathname === "/auth/v1/token" && url.searchParams.get("grant_type") === "password") {
+      if (bearer !== FAKE_ANON_KEY) return send(401, { message: "bad apikey" });
+      const user = users.get(String(body.email || "").toLowerCase());
+      if (!user || user.password !== body.password) return send(400, { error: "invalid_grant" });
+      tokenCounter += 1;
+      return send(200, {
+        access_token: `access-${tokenCounter}`,
+        refresh_token: `refresh-${tokenCounter}`
+      });
+    }
+    if (url.pathname.startsWith("/auth/v1/admin/users")) {
+      if (bearer !== FAKE_SERVICE_KEY) return send(401, { message: "not admin" });
+      const id = url.pathname.split("/")[5];
+      if (request.method === "POST") {
+        if (users.has(body.email)) return send(422, { msg: "already registered" });
+        users.set(body.email, { id: `user-${users.size + 1}`, password: body.password });
+        return send(200, { id: `user-${users.size}` });
+      }
+      if (request.method === "GET") {
+        return send(200, { users: [...users].map(([email, user]) => ({ id: user.id, email })) });
+      }
+      if (request.method === "PUT" && id) {
+        const entry = [...users.values()].find((user) => user.id === id);
+        if (!entry) return send(404, {});
+        entry.password = body.password;
+        return send(200, { id });
+      }
+    }
+    send(404, { message: "not found" });
+  });
+  const port = await listen(server);
+  return { server, url: `http://127.0.0.1:${port}` };
+}
+
+async function startAppServer(port, extraEnv = {}) {
   const child = spawn(process.execPath, [path.join(rootDir, "scripts", "serve.mjs")], {
     cwd: rootDir,
     env: {
@@ -94,7 +149,8 @@ async function startAppServer(port) {
       HOST: "127.0.0.1",
       NUVIO_PASSWORD: PASSWORD,
       NUVIO_DISABLE_MEDIA_RUNTIME: "1",
-      NUVIO_PROXY_ALLOW_LOOPBACK: "1"
+      NUVIO_PROXY_ALLOW_LOOPBACK: "1",
+      ...extraEnv
     },
     stdio: ["ignore", "pipe", "pipe"]
   });
@@ -199,10 +255,15 @@ async function main() {
 
   // ---- Live server checks -----------------------------------------------
   const echo = await startEchoServer();
+  const fakeSupabase = await startFakeSupabase();
   const appPort = await freePort();
   let app;
   try {
-    app = await startAppServer(appPort);
+    app = await startAppServer(appPort, {
+      NUVIO_SUPABASE_URL: fakeSupabase.url,
+      NUVIO_SUPABASE_ANON_KEY: FAKE_ANON_KEY,
+      SUPABASE_SERVICE_ROLE_KEY: FAKE_SERVICE_KEY
+    });
     const echoUrl = `http://127.0.0.1:${echo.port}/echo`;
     const proxyUrl = (target) => `${app.base}/__nuvio_proxy?url=${encodeURIComponent(target)}`;
 
@@ -307,9 +368,30 @@ async function main() {
       const response = await fetch(`${app.base}/app.bundle.js`, withCookie());
       if (response.status !== 200) return `expected 200, got ${response.status}`;
     });
+
+    await check("B11", "automatic sign-in requires the site password", async () => {
+      const response = await fetch(`${app.base}/__auto_session`);
+      if (response.status !== 401) return `expected 401 without a session, got ${response.status}`;
+    });
+    await check("B11", "automatic sign-in returns a household session", async () => {
+      const response = await fetch(`${app.base}/__auto_session`, withCookie());
+      if (response.status !== 200) {
+        return `expected 200, got ${response.status}: ${await response.text()}\n${app.getLog().slice(-600)}`;
+      }
+      const session = await response.json();
+      if (!session.access_token || !session.refresh_token) return "tokens missing";
+    });
+    await check("B11", "nuvio.env.js signs a new browser in before the app starts", async () => {
+      const text = await (await fetch(`${app.base}/nuvio.env.js`, withCookie())).text();
+      if (!text.includes("nuvioHouseholdAutoSession") || !text.includes('"/__auto_session"')) {
+        return "auto sign-in snippet missing from nuvio.env.js";
+      }
+      if (text.includes(FAKE_SERVICE_KEY)) return "service role key leaked into nuvio.env.js";
+    });
   } finally {
     app?.child.kill();
     echo.server.close();
+    fakeSupabase.server.close();
   }
 }
 
