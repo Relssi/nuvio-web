@@ -8,6 +8,13 @@ Detalhes de bugs (causa e correção) ficam em [`BUGS.md`](BUGS.md).
 
 ---
 
+## 28/11/2026 — Perfil principal controla o geral; cada perfil tem o pessoal (etapa 3)
+
+- **O que mudou:** o perfil principal (o da estrela) é o único que muda addons, plugins, TorBox, conexões, catálogos e selos; isso vale para todo mundo. Nos outros perfis essas telas somem ou ficam só para ver, com um aviso. Cada perfil mantém as **suas** configurações pessoais: tema, layout, modo ambiente, Essencial/Avançado, player (legendas e áudio), trailers e Trakt.
+- **Como:** o app separa configurações gerais e pessoais (`sharedProfileData.js`); na nuvem, cada perfil tem seu documento de configurações, mas a parte geral sempre vem do perfil principal, e só ele pode alterar o TorBox.
+- **Precisa fazer:** rodar `docs/supabase/03-general-vs-personal.sql` no SQL Editor do Supabase (depois do 02).
+- **Não testado:** o SQL no Supabase de verdade; a tela foi testada localmente (perfil secundário vê só as seções pessoais e o aviso nos addons).
+
 ## 28/11/2026 — Este arquivo
 
 - **O que mudou:** criado este registro de mudanças em português.

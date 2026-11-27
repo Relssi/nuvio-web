@@ -3,6 +3,7 @@ import { SupabaseApi } from "../../data/remote/supabase/supabaseApi.js";
 import { PluginManager } from "../player/pluginManager.js";
 import { PluginStore, getEffectivePluginProfileId } from "../../data/local/pluginStore.js";
 import { ProfileManager } from "./profileManager.js";
+import { isPrimaryProfileActive } from "./sharedProfileData.js";
 import { isSyncBackoffActive } from "../sync/syncBackoffPolicy.js";
 import { getSyncClientId } from "../sync/syncClientIdentity.js";
 import { Platform } from "../../platform/index.js";
@@ -718,6 +719,10 @@ export const PluginSyncService = {
   },
 
   async push(profileId = null) {
+    // Plugin repositories are general: only the primary profile publishes.
+    if (!isPrimaryProfileActive()) {
+      return false;
+    }
     const requestedId = requestedProfileId(profileId);
     const targetProfileId = String(getEffectivePluginProfileId(requestedId) || "1");
     return runProfileExclusive(targetProfileId, () =>

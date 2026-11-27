@@ -1,5 +1,5 @@
 import { MediaServerRepository } from "../mediaserver/mediaServerRepository.js";
-import { sharedProfileId } from "../../core/profile/sharedProfileData.js";
+import { isPrimaryProfileActive, sharedProfileId } from "../../core/profile/sharedProfileData.js";
 import { safeApiCall } from "../../core/network/safeApiCall.js";
 import { LocalStore } from "../../core/storage/localStore.js";
 import { ProfileManager } from "../../core/profile/profileManager.js";
@@ -224,8 +224,8 @@ class AddonRepository {
   }
 
   canEdit(_profileId = null) {
-    // Shared addons can be edited from any profile.
-    return true;
+    // Addons are general: only the primary profile changes them.
+    return isPrimaryProfileActive();
   }
 
   canEditPerProfile(profileId = null) {

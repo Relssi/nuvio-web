@@ -283,6 +283,8 @@ export async function fetchAccountSyncOverview() {
   };
 }
 
+const GENERAL_SETTINGS_SECTION_IDS = new Set(["contentDiscovery", "plugins", "integration", "streams"]);
+
 export function getVisibleSections(model) {
   const isPrimaryProfileActive = String(model?.activeProfileId || "1") === "1";
   const isEssential = model?.experience?.mode === "ESSENTIAL";
@@ -299,6 +301,11 @@ export function getVisibleSections(model) {
       return false;
     }
     if (section.id === "account" || section.id === "profiles") {
+      return isPrimaryProfileActive;
+    }
+    // General settings (streaming, connections, catalogs) are managed by the
+    // primary profile only; see js/core/profile/sharedProfileData.js.
+    if (GENERAL_SETTINGS_SECTION_IDS.has(section.id)) {
       return isPrimaryProfileActive;
     }
     if (section.id === "watchParty") {

@@ -584,6 +584,13 @@ export const PluginScreen = {
 
                 <section class="addons-install-card">
                   <h2 class="addons-install-heading">${escapeHtml(t("addon_install_heading", "Add custom addon"))}</h2>
+                  ${
+                    canEdit
+                      ? ""
+                      : `<p class="addons-install-error" role="note">${escapeHtml(
+                          "Só o perfil principal pode instalar, remover ou ligar/desligar addons. Eles valem para todos os perfis."
+                        )}</p>`
+                  }
                   <div class="addons-install-row">
                     <div class="addons-install-surface">
                       <input type="url"

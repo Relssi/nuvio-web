@@ -1,5 +1,5 @@
 import { LocalStore } from "../../core/storage/localStore.js";
-import { sharedProfileId } from "../../core/profile/sharedProfileData.js";
+import { isGeneralSettingsKey, sharedProfileId } from "../../core/profile/sharedProfileData.js";
 import { ProfileManager } from "../../core/profile/profileManager.js";
 import { getSyncBackoffRemainingMs } from "../../core/sync/syncBackoffPolicy.js";
 import { registerSessionTeardownHandler } from "../../core/auth/sessionLifecycle.js";
@@ -292,12 +292,17 @@ export function createProfileScopedStore({
       ? merge
       : (current, partial) => ({ ...(current || {}), ...(partial || {}) });
 
+  // General settings (sharedProfileData.js) are one copy on the primary
+  // profile for everybody; personal settings stay per profile. clearProfile
+  // keeps the real id so deleting a secondary profile never wipes the
+  // general settings.
+  const isGeneral = isGeneralSettingsKey(key);
+  const storageProfileId = (profileId) =>
+    isGeneral ? sharedProfileId() : normalizeProfileId(profileId);
+
   return {
-    // Settings are shared by all profiles: every read and write resolves to
-    // the primary profile. clearProfile keeps the real id so deleting a
-    // secondary profile never wipes the shared settings.
-    getForProfile(_profileId) {
-      const profileId = sharedProfileId();
+    getForProfile(requestedProfileId) {
+      const profileId = storageProfileId(requestedProfileId);
       const envelope = readEnvelope(key, normalize, legacyProfileIds);
       return cloneValue(ensureProfileValue(key, envelope, normalize, profileId, seedFromPrimary));
     },
@@ -306,9 +311,9 @@ export function createProfileScopedStore({
       return this.getForProfile(normalizeProfileId());
     },
 
-    replaceForProfile(_profileId, nextValue, { silentSync = false } = {}) {
+    replaceForProfile(requestedProfileId, nextValue, { silentSync = false } = {}) {
       const envelope = readEnvelope(key, normalize, legacyProfileIds);
-      const normalizedProfileId = sharedProfileId();
+      const normalizedProfileId = storageProfileId(requestedProfileId);
       envelope.profiles[normalizedProfileId] = normalize(cloneValue(nextValue) || {});
       persistEnvelope(key, envelope);
       if (!silentSync) {

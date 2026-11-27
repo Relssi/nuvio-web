@@ -105,6 +105,12 @@ O script cobre automaticamente os itens marcados com **[auto]**. Os itens **[man
 - **Correção:** `librarySyncService.js` sempre usa o perfil compartilhado ("1") e envia a lista a partir de qualquer perfil. No banco (`docs/supabase/02-shared-addons-settings.sql`), as funções de configurações, credenciais (TorBox) e plugins ignoram o perfil e guardam uma cópia única; addons e plugins gravados direto na tabela são forçados para o perfil 1 por um trigger.
 - **Verificar:** checagens B14 no `check-regressions.mjs`.
 
+## B15 — Configurações gerais só no perfil principal; pessoais por perfil [auto]
+
+- **Pedido:** o perfil principal cuida de streaming, conexões e configurações gerais (valem para todos); os outros perfis só usam e mantêm apenas configurações pessoais.
+- **Como:** `js/core/profile/sharedProfileData.js` define o que é geral (addons, plugins, TorBox/debrid, torrent, TMDB, MDBList, AnimeSkip, selos de stream, catálogos, coleções, servidores de mídia) e o que é pessoal (tema, layout, modo ambiente, modo Essencial/Avançado, player/legendas/áudio, trailers, Trakt). `profileScopedStore` só compartilha as gerais. Outros perfis: addons somente leitura (com aviso), seções Content & Discovery/Integrations/Plugins/selos escondidas, e não enviam addons/plugins à nuvem. No banco (`03-general-vs-personal.sql`): configurações por perfil, com a parte geral sempre vinda do perfil 1; credenciais só aceitas do perfil 1.
+- **Verificar:** checagens B15 e `scripts/test-general-settings-store.mjs`; o teste original `test-profile-scoped-store-cache.mjs` voltou a valer para as configurações pessoais.
+
 ## Não são bugs do código (para não perder tempo de novo)
 
 - **"No streams found" com Torrentio sem debrid:** o navegador não toca torrent; é preciso um debrid conectado.

@@ -242,8 +242,51 @@ async function main() {
       /getEffectivePluginProfileId\(_profileId = null\) \{\s*\/\/[^\n]*\n\s*return sharedProfileId\(\);/.test(
         plugins
       ) &&
-      settings.includes("const profileId = sharedProfileId();");
-    if (!ok) return "a store no longer resolves to sharedProfileId()";
+      settings.includes("isGeneral ? sharedProfileId() : normalizeProfileId(profileId)");
+    if (!ok) return "a store no longer resolves general settings to sharedProfileId()";
+  });
+
+  await check("B15", "only the primary profile changes general settings", async () => {
+    const addons = await source("js/data/repository/addonRepository.js");
+    const library = await source("js/core/profile/librarySyncService.js");
+    const plugins = await source("js/core/profile/pluginSyncService.js");
+    const sections = await source(
+      "js/ui/screens/settings/settingsScreenHelpers-08-update-settings-scroll-indicators.js"
+    );
+    const problems = [];
+    if (!/canEdit\(_profileId = null\) \{[^}]*return isPrimaryProfileActive\(\);/.test(addons)) {
+      problems.push("addonRepository.canEdit must require the primary profile");
+    }
+    if (!/if \(!isPrimaryProfileActive\(\)\) \{\s*return true;\s*\}\s*const urls/.test(library)) {
+      problems.push("addon cloud push must be primary-only");
+    }
+    if (
+      !/async push\(profileId = null\) \{[\s\S]{0,200}if \(!isPrimaryProfileActive\(\)\)/.test(
+        plugins
+      )
+    ) {
+      problems.push("plugin cloud push must be primary-only");
+    }
+    for (const id of ["contentDiscovery", "plugins", "integration", "streams"]) {
+      if (
+        !sections.includes(`"${id}"`) ||
+        !sections.includes("GENERAL_SETTINGS_SECTION_IDS.has(section.id)")
+      ) {
+        problems.push(`settings section ${id} must be hidden for other profiles`);
+      }
+    }
+    return problems.length ? problems.join("; ") : true;
+  });
+  await check("B15", "stage 3 SQL keeps general settings on the primary profile", async () => {
+    const sql = await source("docs/supabase/03-general-vs-personal.sql");
+    const needed = [
+      "nuvio_general_features",
+      "nuvio_settings_blobs",
+      "if v_profile <> 1 then",
+      "if coalesce(p_profile_id, 1) <> 1 then return; end if;"
+    ];
+    const missing = needed.filter((text) => !sql.includes(text));
+    if (missing.length) return `missing in SQL: ${missing.join(", ")}`;
   });
 
   await check("B14", "cloud addon sync always uses the shared list", async () => {
@@ -276,6 +319,7 @@ async function main() {
   const tests = await run(process.execPath, [
     "--test",
     "scripts/test-profile-scoped-store-cache.mjs",
+    "scripts/test-general-settings-store.mjs",
     "js/core/network/httpClientCooldown.test.mjs",
     "js/data/remote/api/debridApiTimeout.test.mjs",
     "scripts/test-plugin-service-lifecycle.mjs"

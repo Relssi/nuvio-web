@@ -3,7 +3,7 @@ import { isMissingResourceError, isSyncBackoffActive } from "../sync/syncBackoff
 import { addonRepository } from "../../data/repository/addonRepository.js";
 import { SupabaseApi } from "../../data/remote/supabase/supabaseApi.js";
 import { ProfileManager } from "./profileManager.js";
-import { sharedProfileId } from "./sharedProfileData.js";
+import { isPrimaryProfileActive, sharedProfileId } from "./sharedProfileData.js";
 import { getSyncClientId } from "../sync/syncClientIdentity.js";
 
 const ADDONS_TABLE = "addons";
@@ -334,9 +334,11 @@ export const LibrarySyncService = {
       }
       const requestedProfileId = await resolveProfileId();
       const profileId = await resolveAddonProfileId();
-      // Upstream skipped the push for secondary profiles. Here the addon list
-      // is shared and editable from every profile, so any profile publishes
-      // it (always under the shared profile id).
+      // The addon list is general: only the primary profile publishes it.
+      // Other profiles only receive it (pull), never overwrite it.
+      if (!isPrimaryProfileActive()) {
+        return true;
+      }
       const urls = addonRepository.getInstalledAddonUrls();
       if ((await resolveProfileId()) !== requestedProfileId) {
         return false;
