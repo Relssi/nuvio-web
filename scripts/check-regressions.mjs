@@ -323,11 +323,45 @@ async function main() {
     if (missing.length) return `missing in SQL: ${missing.join(", ")}`;
   });
 
+  await check("B16", "build rewrites every vw/vh to follow the browser scale", async () => {
+    const css = await source("dist/css/bundle.css");
+    const rewritten = (css.match(/var\(--nuvio-v[wh],\s*1v[wh]\)/g) || []).length;
+    const raw = (css.match(/[^0-9a-z.(-]-?\d*\.?\d+v[wh]/gi) || []).filter(
+      (match) => !/^.1v[wh]$/.test(match)
+    );
+    if (rewritten < 100) return `only ${rewritten} rewritten units in dist/css/bundle.css`;
+    if (raw.length)
+      return `${raw.length} vw/vh left unrewritten, e.g. ${raw.slice(0, 3).join(" ")}`;
+    const build = await source("scripts/build.mjs");
+    if (!build.includes(String.raw`/var\(--nuvio-v[wh]\b/i.test(text)`)) {
+      return "rewriteViewportUnits lost its idempotency guard (infinite build loop)";
+    }
+  });
+  await check("B17", "browser scaling is loaded and skips TV apps and phones", async () => {
+    const html = await source("dist/index.html");
+    const script = await source("assets/runtime/browser-viewport-scale.js");
+    const problems = [];
+    if (!html.includes("assets/runtime/browser-viewport-scale.js"))
+      problems.push("script not in dist/index.html");
+    for (const needle of [
+      "root.tizen",
+      "root.PalmSystem",
+      "MIN_WIDTH = 1000",
+      "html.style.zoom",
+      "--nuvio-vw"
+    ]) {
+      if (!script.includes(needle)) problems.push(`missing ${needle}`);
+    }
+    return problems.length ? problems.join("; ") : true;
+  });
+
   // ---- Unit tests --------------------------------------------------------
   const tests = await run(process.execPath, [
     "--test",
     "scripts/test-profile-scoped-store-cache.mjs",
     "scripts/test-general-settings-store.mjs",
+    "scripts/test-supports-root-dedupe.mjs",
+    "scripts/test-flex-gap-fallback-selectors.mjs",
     "js/core/network/httpClientCooldown.test.mjs",
     "js/data/remote/api/debridApiTimeout.test.mjs",
     "scripts/test-plugin-service-lifecycle.mjs"

@@ -12,5 +12,10 @@ test("dist/css/bundle.css emits the shared @supports :root fallback once", async
   const bundleCss = await readFile(path.join(rootDir, "dist", "css", "bundle.css"), "utf8");
   const rootGuards = bundleCss.match(/@supports[^{]*\{:root\{--tv-safe-gutter/g) || [];
   assert.equal(rootGuards.length, 1, "duplicate @supports :root fallbacks increase bundle size");
-  assert.match(bundleCss, /--tv-safe-gutter:\s*clamp\(\s*28px,\s*3vw,\s*56px\s*\)/);
+  // The browser build rewrites 3vw to follow the virtual canvas
+  // (scripts/build.mjs, browserViewportUnitsPlugin); without --nuvio-vw it is 3vw.
+  assert.match(
+    bundleCss,
+    /--tv-safe-gutter:\s*clamp\(\s*28px,\s*(?:3vw|(?:calc\()?3\s*\*\s*var\(--nuvio-vw,\s*1vw\)\)?),\s*56px\s*\)/
+  );
 });

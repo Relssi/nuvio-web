@@ -457,6 +457,45 @@ function flexGapFallbackPlugin() {
 
 flexGapFallbackPlugin.postcss = true;
 
+// Browser build, phase 1 of docs/ANALISE-RESPONSIVO.md: viewport units follow
+// the virtual 1920x1080 canvas set by assets/runtime/browser-viewport-scale.js.
+// `12vw` becomes `calc(12 * var(--nuvio-vw, 1vw))`, which is exactly 12vw
+// whenever the variable is not set (packaged TV apps, phones).
+// Runs after the legacy fallbacks, so the px fallbacks for old TVs are kept.
+const VIEWPORT_UNIT_PATTERN = /(^|[^\w.#-])(-?(?:\d+\.?\d*|\.\d+))(vw|vh)\b/gi;
+
+export function rewriteViewportUnits(value) {
+  const text = String(value || "");
+  // Idempotent: PostCSS visits a declaration again after its value changes,
+  // and the rewritten value itself contains "1vw"/"1vh" as the fallback.
+  // Rewriting it again would loop forever (docs/BUGS.md B16).
+  if (!/\d(?:vw|vh)\b/i.test(text) || /url\(/i.test(text) || /var\(--nuvio-v[wh]\b/i.test(text)) {
+    return text;
+  }
+  return text.replace(VIEWPORT_UNIT_PATTERN, (match, before, amount, unit) => {
+    const variable = unit.toLowerCase() === "vw" ? "--nuvio-vw" : "--nuvio-vh";
+    return `${before}calc(${amount} * var(${variable}, 1${unit.toLowerCase()}))`;
+  });
+}
+
+function browserViewportUnitsPlugin() {
+  return {
+    postcssPlugin: "nuvio-browser-viewport-units",
+    // One pass at the end, so declarations added by earlier plugins (e.g. the
+    // @supports-guarded :root copies from the legacy fallbacks) are covered.
+    OnceExit(root) {
+      root.walkDecls((decl) => {
+        const rewritten = rewriteViewportUnits(decl.value);
+        if (rewritten !== decl.value) {
+          decl.value = rewritten;
+        }
+      });
+    }
+  };
+}
+
+browserViewportUnitsPlugin.postcss = true;
+
 const BUNDLED_CSS_FILE = "bundle.css";
 
 async function buildCSS() {
@@ -522,6 +561,7 @@ async function buildCSS() {
         legacyDeclarationFallbackPlugin(seenSupportsRootBlocks),
         unsupportedSelectorFallbackPlugin(),
         flexGapFallbackPlugin(),
+        browserViewportUnitsPlugin(),
         cssnano()
       ]).process(`/* ${file} */\n${body}`, {
         from: path.join(cssDir, file),

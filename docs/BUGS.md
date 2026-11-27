@@ -112,6 +112,19 @@ O script cobre automaticamente os itens marcados com **[auto]**. Os itens **[man
 - **Como:** `js/core/profile/sharedProfileData.js` define o que é geral (addons, plugins, TorBox/debrid, torrent, TMDB, MDBList, AnimeSkip, selos de stream, catálogos, coleções, servidores de mídia) e o que é pessoal (tema, layout, modo ambiente, modo Essencial/Avançado, player/legendas/áudio, trailers, Trakt). `profileScopedStore` só compartilha as gerais. Outros perfis: addons somente leitura (com aviso), seções Content & Discovery/Integrations/Plugins/selos escondidas, e não enviam addons/plugins à nuvem. No banco (`03-general-vs-personal.sql`): configurações por perfil, com a parte geral sempre vinda do perfil 1; credenciais só aceitas do perfil 1.
 - **Verificar:** checagens B15 e `scripts/test-general-settings-store.mjs`; o teste original `test-profile-scoped-store-cache.mjs` voltou a valer para as configurações pessoais.
 
+## B16 — Build travado para sempre ao reescrever vw/vh [auto]
+
+- **Sintoma:** `npm run build` nunca terminava depois de adicionar a escala do navegador.
+- **Causa:** a regra do build troca `12vw` por `calc(12 * var(--nuvio-vw, 1vw))`. O PostCSS visita a declaração de novo quando o valor muda, e o `1vw` do próprio resultado era reescrito outra vez, sem fim.
+- **Correção:** `rewriteViewportUnits` ignora valores que já têm `var(--nuvio-vw/vh)`, e a troca roda numa única passada no fim (`OnceExit`), o que também cobre os blocos `:root` que outras etapas do build criam.
+- **Verificar:** o bundle não tem nenhum `vw`/`vh` sem reescrever e o build mantém a proteção.
+
+## B17 — Escala proporcional no navegador (fase 1 do responsivo) [auto + manual]
+
+- **O que faz:** `assets/runtime/browser-viewport-scale.js` trata a página como uma tela virtual de 1920×1080 e aplica `zoom` para caber na janela (notebook 1366×768 = 0,71×; 4K = 2×). Não age em TV (Tizen/webOS) nem em telas menores que 1000×560 (celular e tablet em pé ficam para a fase 2).
+- **Cuidados testados:** clique com mouse e foco por setas continuam alinhados; imagens carregam; sem rolagem lateral.
+- **Verificar (manual):** abrir em 1366×768 e em 4K, clicar no menu e andar pelas fileiras com as setas.
+
 ## Não são bugs do código (para não perder tempo de novo)
 
 - **"No streams found" com Torrentio sem debrid:** o navegador não toca torrent; é preciso um debrid conectado.

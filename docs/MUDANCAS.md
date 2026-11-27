@@ -8,6 +8,13 @@ Detalhes de bugs (causa e correção) ficam em [`BUGS.md`](BUGS.md).
 
 ---
 
+## 28/11/2026 — Tela se ajusta ao tamanho da janela (fase 1: desktop, notebook e TV grande)
+
+- **O que mudou:** no computador, o site agora aumenta ou diminui inteiro para caber na janela, mantendo o mesmo desenho da TV. Notebook pequeno não fica mais apertado e TV/monitor 4K não fica mais minúsculo. Celular e tablet em pé continuam como estavam (fase 2).
+- **Como:** um script trata a página como uma tela de 1920×1080 e aplica zoom proporcional; no build, as medidas proporcionais (vw/vh) passaram a seguir essa tela virtual. Os apps de TV (Samsung/LG) não são afetados.
+- **Precisa fazer:** nada. Recarregue com Ctrl + F5.
+- **Não testado:** apps empacotados de TV (Tizen/webOS) depois da mudança no CSS; em teoria o resultado é idêntico ao anterior.
+
 ## 28/11/2026 — Análise para celular, tablet, desktop e TV
 
 - **O que mudou:** nada no site ainda. Adicionada a análise `docs/ANALISE-RESPONSIVO.md` com o que quebra em cada tamanho de tela e o plano em fases.

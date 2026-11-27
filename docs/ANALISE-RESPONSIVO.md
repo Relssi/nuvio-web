@@ -51,7 +51,7 @@ Marcar a página com o tipo de tela, e atualizar ao girar ou redimensionar:
 
 O CSS e o código passam a saber em que tipo de tela estão.
 
-### Fase 1 — Desktop, notebook e TV: escala proporcional (pequeno)
+### Fase 1 — Desktop, notebook e TV: escala proporcional (pequeno) — FEITA em 28/11/2026
 
 Manter o desenho de 1920×1080 e **aumentar ou diminuir tudo junto** conforme a
 janela (ex.: numa tela 4K tudo fica 2× maior; num notebook de 1366, ~0,7×). Resolve
