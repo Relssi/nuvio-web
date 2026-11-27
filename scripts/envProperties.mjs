@@ -124,12 +124,27 @@ export async function resolveLocalPropertiesSource({ rootDir, sourcePath = "" } 
   return "";
 }
 
+// Hosting dashboards (Render) set configuration as process environment
+// variables. A non-empty variable with one of the ENV_PROPERTY_KEYS names
+// overrides the value from local.properties. Only these public keys are
+// read, so server secrets (e.g. NUVIO_PASSWORD) never reach the page.
+function processEnvOverrides() {
+  const overrides = {};
+  ENV_PROPERTY_KEYS.forEach((key) => {
+    const value = process.env[key];
+    if (typeof value === "string" && value.trim()) {
+      overrides[key] = value.trim();
+    }
+  });
+  return overrides;
+}
+
 export async function readEnvProperties({ rootDir, sourcePath = "" } = {}) {
   const resolvedSourcePath = await resolveLocalPropertiesSource({ rootDir, sourcePath });
   if (!resolvedSourcePath) {
     return {
       sourcePath: "",
-      env: normalizeEnvProperties({})
+      env: normalizeEnvProperties(processEnvOverrides())
     };
   }
   if (/\.js$/i.test(resolvedSourcePath)) {
@@ -140,7 +155,7 @@ export async function readEnvProperties({ rootDir, sourcePath = "" } = {}) {
   const properties = parseProperties(await readFile(resolvedSourcePath, "utf8"));
   return {
     sourcePath: resolvedSourcePath,
-    env: normalizeEnvProperties(properties)
+    env: normalizeEnvProperties({ ...properties, ...processEnvOverrides() })
   };
 }
 
