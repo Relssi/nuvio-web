@@ -183,6 +183,21 @@ export const DebridApi = {
     });
   },
 
+  // TorBox web streaming (Pro plan): converts the file to an HLS playlist that
+  // every browser and iPhone can play (Dolby/DTS audio included). Subtitle and
+  // resolution stay at their defaults (none / original).
+  async torboxCreateStream(apiKey, { id, fileId, type = "torrent", audioIndex = 0 } = {}) {
+    const query = new URLSearchParams({
+      id: String(id),
+      file_id: String(fileId),
+      type: String(type),
+      chosen_audio_index: String(audioIndex)
+    });
+    return requestJson(TORBOX_BASE_URL, `v1/api/stream/createstream?${query.toString()}`, {
+      headers: authHeaders(apiKey)
+    });
+  },
+
   async torboxListCloudItems(apiKey, path) {
     return requestJson(TORBOX_BASE_URL, path, { headers: authHeaders(apiKey) });
   },

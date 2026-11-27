@@ -8,6 +8,13 @@ Detalhes de bugs (causa e correção) ficam em [`BUGS.md`](BUGS.md).
 
 ---
 
+## 28/11/2026 — Som em qualquer aparelho com o TorBox Pro
+
+- **O que mudou:** no navegador (Chrome, Brave, celular, iPhone), os filmes do TorBox passam a usar a versão convertida que o próprio TorBox gera, que toca com som em qualquer aparelho. Nas TVs nada muda.
+- **Como:** o site pede ao TorBox o "stream" do arquivo (função de streaming do TorBox) e toca o link HLS que ele devolve. Detalhes em BUGS.md (B25).
+- **Precisa fazer:** ter o TorBox no plano **Pro** (essa função só existe nele). Enquanto não for Pro, o site continua tocando o link direto, como antes.
+- **Não testado:** com uma conta Pro de verdade (testado com um TorBox de mentira e com um vídeo HLS de teste no player).
+
 ## 28/11/2026 — Conversor de áudio (preparação, ainda desligado)
 
 - **O que mudou:** nada para quem usa, por enquanto. Foi criado o conversor que vai dar som aos filmes com áudio Dolby/DTS em qualquer aparelho (Chrome, Brave, celular, iPhone).

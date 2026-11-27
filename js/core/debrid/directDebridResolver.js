@@ -7,6 +7,50 @@ import {
   selectDebridFile
 } from "./debridFileSelection.js";
 import { resolveAlternativeHashMatches, torboxCachedEntries } from "./torboxCacheAliases.js";
+import { Environment } from "../../platform/environment.js";
+
+const HLS_MIME_TYPE = "application/vnd.apple.mpegurl";
+// Set once TorBox says this account cannot use web streaming (not Pro), so
+// later titles skip the extra request until the page is reloaded.
+let torboxWebStreamUnavailable = false;
+
+// Browser only (TV apps decode Dolby/DTS themselves): ask TorBox for its
+// converted HLS stream, which plays everywhere, iPhone included (B25).
+// Returns null when it is not available, so the caller uses the direct link.
+export async function requestTorboxWebStream(
+  apiKey,
+  torrentId,
+  fileId,
+  { enabled = Environment.isBrowser() } = {}
+) {
+  if (!enabled || torboxWebStreamUnavailable || torrentId == null || fileId == null) {
+    return null;
+  }
+  const response = await DebridApi.torboxCreateStream(apiKey, { id: torrentId, fileId });
+  const data = response?.data?.data || null;
+  if (!response?.ok || !data) {
+    const error = String(response?.data?.error || "");
+    if (response?.status === 403 || error === "PLAN_RESTRICTED_FEATURE") {
+      torboxWebStreamUnavailable = true;
+    }
+    return null;
+  }
+  const hlsUrl = typeof data.hls_url === "string" ? data.hls_url.trim() : "";
+  // TorBox says the original file already plays in browsers: keep it direct.
+  if (!hlsUrl || data.needs_transcoding === false) {
+    return null;
+  }
+  return hlsUrl;
+}
+
+export function resetTorboxWebStreamAvailability() {
+  torboxWebStreamUnavailable = false;
+}
+
+function hlsFilename(filename) {
+  const name = String(filename || "").trim();
+  return name ? `${name.replace(/\.[a-z0-9]{2,4}$/i, "")}.m3u8` : null;
+}
 
 const RESOLVE_CACHE_TTL_MS = 15 * 60 * 1000;
 const RESOLVE_CACHE_MAX_ENTRIES = 100;
@@ -189,8 +233,8 @@ function failure(status, detail = "") {
   return { status, detail };
 }
 
-function success(url, filename = null, videoSize = null) {
-  return { status: "success", url, filename, videoSize };
+function success(url, filename = null, videoSize = null, mimeType = null) {
+  return { status: "success", url, filename, videoSize, ...(mimeType ? { mimeType } : {}) };
 }
 
 function isServiceDegradedResponse(response = {}) {
@@ -234,6 +278,15 @@ async function resolveTorbox(resolve, apiKey, season, episode) {
   const file = selectDebridFile(files, resolve, { season, episode, kind: "torbox" });
   if (!file) {
     return failure("stale");
+  }
+  const webStreamUrl = await requestTorboxWebStream(apiKey, torrentId, file.id).catch(() => null);
+  if (webStreamUrl) {
+    return success(
+      webStreamUrl,
+      hlsFilename(getDebridFileDisplayName(file)),
+      getDebridFileSize(file),
+      HLS_MIME_TYPE
+    );
   }
   const link = await DebridApi.torboxRequestDownloadLink(apiKey, torrentId, file.id);
   const url = typeof link.data?.data === "string" ? link.data.data : "";
@@ -365,8 +418,14 @@ async function getLocalTorrentCacheStatus(provider, apiKey, hash) {
 }
 
 function withResolvedUrl(stream = {}, result) {
+  // A converted TorBox stream is HLS: say so, or the player treats it as the
+  // original file (MKV) and plays it as a direct file.
+  const typeHints = result.mimeType
+    ? { mimeType: result.mimeType, sourceType: result.mimeType }
+    : {};
   return {
     ...stream,
+    ...typeHints,
     url: result.url,
     externalUrl: null,
     behaviorHints: {
@@ -376,6 +435,7 @@ function withResolvedUrl(stream = {}, result) {
     },
     raw: {
       ...(stream.raw || stream),
+      ...typeHints,
       url: result.url,
       externalUrl: null,
       behaviorHints: {

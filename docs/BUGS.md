@@ -163,6 +163,15 @@ O script cobre automaticamente os itens marcados com **[auto]**. Os itens **[man
 - **Correção (`playerScreenMethods-64`, `applyAspectMode`):** no navegador o vídeo ocupa a tela virtual inteira (`calc(100 * var(--nuvio-vw, 1vw))`, idem altura) e o `object-fit` do modo de tela centraliza a imagem. TVs não mudam.
 - **Verificar:** checagem B24; em janelas 1366×768 e 1600×700 o vídeo cobre a janela inteira, com faixas pretas iguais dos dois lados.
 
+## B25 — Som (Dolby/DTS) e iPhone: usar o stream convertido do TorBox [auto + manual]
+
+- **Problema:** Chrome, Brave e celulares tocam a imagem mas não o áudio Dolby/DTS dos filmes do TorBox; o iPhone nem abre MKV. Edge e apps de TV tocam.
+- **Correção:** no navegador, ao resolver um filme do TorBox, o site pede `GET /v1/api/stream/createstream` (`DebridApi.torboxCreateStream`, `requestTorboxWebStream` em `directDebridResolver.js`). Se o TorBox devolver `hls_url` e `needs_transcoding` não for `false`, o player toca esse HLS (marcado com `mimeType` HLS para não ser tratado como MKV). Senão, usa o link direto como antes.
+- **Plano:** essa função do TorBox é só do plano **Pro**. Sem Pro, o TorBox responde 403/`PLAN_RESTRICTED_FEATURE`; o site para de pedir até recarregar a página e segue com o link direto.
+- **TVs:** não muda nada (só vale no navegador).
+- **Verificar:** checagem B25 e `torboxWebStream.test.mjs`; manualmente, com TorBox Pro, um filme DDP/DTS toca com som no Chrome e no iPhone.
+- **Não testado:** com conta Pro de verdade (formato real do `hls_url`, CORS dos pedaços).
+
 ## Não são bugs do código (para não perder tempo de novo)
 
 - **"No streams found" com Torrentio sem debrid:** o navegador não toca torrent; é preciso um debrid conectado.

@@ -459,9 +459,23 @@ async function main() {
     }
   );
 
+  await check(
+    "B25",
+    "browser asks TorBox for its converted stream and plays it as HLS",
+    async () => {
+      const code = await source("js/core/debrid/directDebridResolver.js");
+      if (!code.includes("requestTorboxWebStream(apiKey, torrentId, file.id)"))
+        return "TorBox resolve no longer asks for the converted stream";
+      if (!code.includes("mimeType: result.mimeType"))
+        return "converted stream is no longer marked as HLS";
+      return true;
+    }
+  );
+
   // ---- Unit tests --------------------------------------------------------
   const tests = await run(process.execPath, [
     "--test",
+    "js/core/debrid/torboxWebStream.test.mjs",
     "scripts/test-profile-scoped-store-cache.mjs",
     "scripts/test-general-settings-store.mjs",
     "scripts/test-supports-root-dedupe.mjs",
