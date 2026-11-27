@@ -650,8 +650,13 @@ export function createMetaDetailsScreenMethods16() {
       if (this.detailClickHandler) {
         this.container.removeEventListener("click", this.detailClickHandler, true);
       }
-      this.detailClickHandler = () => {
+      this.detailClickHandler = (event) => {
         if (this.isTrailerPlaying && this.trailerPlaybackMode === "autoplay") {
+          const target = event?.target;
+          const interactive = target?.closest?.("button, [role='button'], a[href], .focusable, [data-action]");
+          if (!interactive) {
+            return;
+          }
           this.stopTrailerPlayback({ restartAutoplay: false });
           return;
         }

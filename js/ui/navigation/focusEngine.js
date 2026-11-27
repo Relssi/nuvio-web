@@ -50,6 +50,10 @@ function hasActiveModal() {
   return Boolean(globalThis?.document?.body?.classList?.contains("nuvio-modal-open"));
 }
 
+function isPointerNavigationEnabled() {
+  return Platform.isWebOS() || Platform.isBrowser();
+}
+
 const BACK_DEBOUNCE_MS = 250;
 
 export const FocusEngine = {
@@ -79,10 +83,12 @@ export const FocusEngine = {
     window.addEventListener("blur", this.boundResetActiveKeys);
     document.addEventListener("visibilitychange", this.boundResetActiveKeysWhenHidden);
     document.addEventListener("webkitvisibilitychange", this.boundResetActiveKeysWhenHidden);
-    if (Platform.isWebOS()) {
+    if (isPointerNavigationEnabled()) {
       document.addEventListener("mousemove", this.boundHandlePointerMove, true);
       document.addEventListener("pointermove", this.boundHandlePointerMove, true);
       document.addEventListener("click", this.boundHandlePointerClick, true);
+    }
+    if (Platform.isWebOS()) {
       document.documentElement?.classList?.add("webos-pointer-remote");
       document.body?.classList?.add("webos-pointer-remote");
     }
@@ -302,7 +308,7 @@ export const FocusEngine = {
   },
 
   handlePointerMove(event) {
-    if (!Platform.isWebOS()) {
+    if (!isPointerNavigationEnabled()) {
       return;
     }
     this.pendingPointerMoveEvent = event;
@@ -323,7 +329,7 @@ export const FocusEngine = {
   },
 
   processPointerMove(event) {
-    if (!Platform.isWebOS()) {
+    if (!isPointerNavigationEnabled()) {
       return;
     }
     const currentScreen = Router.getCurrentScreen();
@@ -353,7 +359,7 @@ export const FocusEngine = {
   },
 
   handlePointerClick(event) {
-    if (!Platform.isWebOS()) {
+    if (!isPointerNavigationEnabled()) {
       return;
     }
     const target = this.getPointerFocusable(event);

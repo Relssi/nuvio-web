@@ -133,7 +133,10 @@ export function createMetaDetailsScreenMethods18() {
             frame: layer.querySelector(".detail-trailer-frame"),
             video: layer.querySelector(".detail-trailer-video"),
             status: layer.querySelector("[data-trailer-status]"),
+            progressTrack: layer.querySelector("[data-trailer-seek-track]"),
             progressFill: layer.querySelector("[data-trailer-progress-fill]"),
+            playBtn: layer.querySelector("[data-trailer-play-btn]"),
+            muteBtn: layer.querySelector("[data-trailer-mute-btn]"),
             timeLabel: layer.querySelector("[data-trailer-time-label]")
           }
         : null;
@@ -204,6 +207,12 @@ export function createMetaDetailsScreenMethods18() {
       }
       if (refs.timeLabel) {
         refs.timeLabel.textContent = `${formatPlaybackTime(playback.currentTime)} / ${formatPlaybackTime(playback.duration)}`;
+      }
+      if (refs.playBtn) {
+        refs.playBtn.textContent = playback.paused ? "▶ Play" : "❚❚ Pause";
+      }
+      if (refs.muteBtn) {
+        refs.muteBtn.textContent = playback.muted ? "🔇" : "🔊";
       }
       if (refs.status) {
         refs.status.textContent = playback.loading

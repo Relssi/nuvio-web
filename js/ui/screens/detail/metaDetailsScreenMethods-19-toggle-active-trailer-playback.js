@@ -31,10 +31,15 @@ export function createMetaDetailsScreenMethods19() {
       if (!this.trailerProxyState || this.trailerYoutubeFallbackActive) {
         return;
       }
-      if (this.trailerProxyState.paused) {
-        this.postTrailerProxyCommand("play");
-      } else {
+      const nextPaused = !this.trailerProxyState.paused;
+      this.trailerProxyState = {
+        ...this.trailerProxyState,
+        paused: nextPaused
+      };
+      if (nextPaused) {
         this.postTrailerProxyCommand("pause");
+      } else {
+        this.postTrailerProxyCommand("play");
       }
       this.updateTrailerOverlay();
     },
@@ -81,7 +86,75 @@ export function createMetaDetailsScreenMethods19() {
       }
       const currentTime = Number(this.trailerProxyState.currentTime || 0);
       const target = Math.max(0, Math.min(duration, currentTime + delta));
+      this.trailerProxyState = {
+        ...this.trailerProxyState,
+        currentTime: target
+      };
       this.postTrailerProxyCommand("seekTo", { seconds: target });
+      this.updateTrailerOverlay();
+    },
+    seekTrailerToSeconds(seconds) {
+      if (!this.isTrailerPlaying || !this.trailerSource || this.trailerPlaybackMode !== "manual") {
+        return;
+      }
+      const rawTarget = Number(seconds);
+      if (!Number.isFinite(rawTarget)) {
+        return;
+      }
+      this.restartTrailerControlsTimer();
+      if (this.trailerSource.kind === "video") {
+        const video = this.trailerUiRefs?.video;
+        if (!video) {
+          return;
+        }
+        const duration = Number.isFinite(video.duration) ? Number(video.duration) : 0;
+        if (duration <= 0) {
+          return;
+        }
+        video.currentTime = Math.max(0, Math.min(duration, rawTarget));
+        this.updateTrailerOverlay();
+        return;
+      }
+      if (!this.trailerProxyState || this.trailerYoutubeFallbackActive) {
+        return;
+      }
+      const duration = Number(this.trailerProxyState.duration || 0);
+      if (duration <= 0) {
+        return;
+      }
+      const target = Math.max(0, Math.min(duration, rawTarget));
+      this.trailerProxyState = {
+        ...this.trailerProxyState,
+        currentTime: target
+      };
+      this.postTrailerProxyCommand("seekTo", { seconds: target });
+      this.updateTrailerOverlay();
+    },
+    toggleTrailerMute() {
+      if (!this.isTrailerPlaying || !this.trailerSource || this.trailerPlaybackMode !== "manual") {
+        return;
+      }
+      this.restartTrailerControlsTimer();
+      if (this.trailerSource.kind === "video") {
+        const video = this.trailerUiRefs?.video;
+        if (!video) {
+          return;
+        }
+        video.muted = !video.muted;
+        this.trailerMuted = Boolean(video.muted);
+        this.updateTrailerOverlay();
+        return;
+      }
+      if (!this.trailerProxyState || this.trailerYoutubeFallbackActive) {
+        return;
+      }
+      const nextMuted = !this.trailerProxyState.muted;
+      this.trailerMuted = nextMuted;
+      this.trailerProxyState = {
+        ...this.trailerProxyState,
+        muted: nextMuted
+      };
+      this.postTrailerProxyCommand("setMuted", { muted: nextMuted });
       this.updateTrailerOverlay();
     },
     setActiveTrailerPausedState(paused) {
@@ -190,15 +263,22 @@ export function createMetaDetailsScreenMethods19() {
                 <div class="detail-trailer-title">${title}</div>
                 <div class="detail-trailer-subtitle">${trailerHint}</div>
               </div>
-              <div class="detail-trailer-status" data-trailer-status aria-live="polite"></div>
+              <div class="detail-trailer-top-actions">
+                <div class="detail-trailer-status" data-trailer-status aria-live="polite"></div>
+                <button type="button" class="detail-trailer-btn detail-trailer-close-btn" data-trailer-action="close" aria-label="Close trailer">✕</button>
+              </div>
             </div>
             <div class="detail-trailer-controls-bottom">
-              <div class="detail-trailer-progress">
+              <div class="detail-trailer-progress" data-trailer-seek-track>
                 <div class="detail-trailer-progress-track">
                   <div class="detail-trailer-progress-fill" data-trailer-progress-fill></div>
                 </div>
               </div>
               <div class="detail-trailer-controls-row">
+                <button type="button" class="detail-trailer-btn" data-trailer-action="seekBack" aria-label="Rewind 10 seconds">-10s</button>
+                <button type="button" class="detail-trailer-btn detail-trailer-btn-primary" data-trailer-action="toggle" data-trailer-play-btn aria-label="Play or pause">❚❚ Pause</button>
+                <button type="button" class="detail-trailer-btn" data-trailer-action="seekForward" aria-label="Forward 10 seconds">+10s</button>
+                <button type="button" class="detail-trailer-btn" data-trailer-action="toggleMute" data-trailer-mute-btn aria-label="Mute or unmute">🔊</button>
                 <div class="detail-trailer-time" data-trailer-time-label>0:00 / 0:00</div>
               </div>
             </div>

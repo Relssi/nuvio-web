@@ -11,9 +11,61 @@ export function createMetaDetailsScreenMethods27() {
       }
     },
     onPointerFocus() {},
+    onPointerSurfaceActivate(target, event) {
+      if (!target || !this.container?.contains?.(target)) {
+        return false;
+      }
+      if (!this.isTrailerPlaying || this.trailerPlaybackMode !== "manual") {
+        return false;
+      }
+      if (!target.closest?.(".detail-trailer-layer")) {
+        return false;
+      }
+      const seekTrack = target.closest?.("[data-trailer-seek-track]");
+      if (seekTrack) {
+        const trackNode = seekTrack.querySelector(".detail-trailer-progress-track") || seekTrack;
+        const rect = trackNode.getBoundingClientRect?.();
+        const playback = this.getTrailerPlaybackSnapshot();
+        const duration = Number(playback?.duration || 0);
+        if (rect && rect.width > 0 && duration > 0 && typeof event?.clientX === "number") {
+          const ratio = Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width));
+          this.seekTrailerToSeconds(duration * ratio);
+          return true;
+        }
+        this.restartTrailerControlsTimer();
+        return true;
+      }
+      this.toggleActiveTrailerPlayback();
+      return true;
+    },
     onPointerActivate(target) {
       if (!target || !this.container?.contains?.(target)) {
         return false;
+      }
+      const trailerAction = String(target?.closest?.("[data-trailer-action]")?.dataset?.trailerAction || "");
+      if (trailerAction && this.isTrailerPlaying && this.trailerPlaybackMode === "manual") {
+        if (trailerAction === "toggle") {
+          this.toggleActiveTrailerPlayback();
+          return true;
+        }
+        if (trailerAction === "seekBack") {
+          this.restartTrailerControlsTimer();
+          this.seekTrailerBy(-10);
+          return true;
+        }
+        if (trailerAction === "seekForward") {
+          this.restartTrailerControlsTimer();
+          this.seekTrailerBy(10);
+          return true;
+        }
+        if (trailerAction === "toggleMute") {
+          this.toggleTrailerMute();
+          return true;
+        }
+        if (trailerAction === "close") {
+          this.consumeBackRequest();
+          return true;
+        }
       }
       const actionTarget = target?.closest?.("[data-action]");
       const action = String(actionTarget?.dataset?.action || "");

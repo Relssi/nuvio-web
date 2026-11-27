@@ -441,6 +441,12 @@
   pointer-events: none;
 }
 
+.detail-trailer-manual .detail-trailer-controls-overlay,
+.detail-trailer-manual .detail-trailer-controls-overlay.hidden {
+  pointer-events: auto;
+  cursor: pointer;
+}
+
 .detail-trailer-controls-overlay.hidden .detail-trailer-controls-gradient-top,
 .detail-trailer-controls-overlay.hidden .detail-trailer-controls-gradient-bottom,
 .detail-trailer-controls-overlay.hidden .detail-trailer-controls-top,
