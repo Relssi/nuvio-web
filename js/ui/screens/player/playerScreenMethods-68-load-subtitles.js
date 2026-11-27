@@ -5,6 +5,7 @@ import { toggleBrowserFullscreen } from "./browserFullscreen.js";
 export function createPlayerScreenMethods68() {
   const {
     PlayerController,
+    DirectDebridResolver,
     subtitleRepository,
     PlayerSettingsStore,
     subtitleLabel,
@@ -228,6 +229,11 @@ export function createPlayerScreenMethods68() {
         return;
       }
 
+      if (action === "download") {
+        void this.downloadCurrentStream();
+        return;
+      }
+
       if (action === "streamInfo") {
         this.showStreamInfo();
         return;
@@ -261,6 +267,42 @@ export function createPlayerScreenMethods68() {
       if (action === "aspect") {
         this.cycleAspectMode();
         return;
+      }
+    },
+    async downloadCurrentStream() {
+      const candidate = this.getCurrentStreamCandidate?.() || (this.activePlaybackUrl ? { url: this.activePlaybackUrl } : null);
+      if (!candidate) {
+        this.showAspectToast?.("Nenhuma fonte ativa para download", 2200);
+        return;
+      }
+
+      this.showAspectToast?.("Preparando download...", 1800);
+      try {
+        const result = await DirectDebridResolver.resolveDownloadUrl(candidate, {
+          season: this.params?.season == null ? null : Number(this.params.season),
+          episode: this.params?.episode == null ? null : Number(this.params.episode)
+        });
+        if (result?.status === "success" && result.url) {
+          const anchor = document.createElement("a");
+          anchor.href = result.url;
+          anchor.target = "_blank";
+          anchor.rel = "noopener noreferrer";
+          if (result.filename) {
+            anchor.download = result.filename;
+          }
+          document.body.appendChild(anchor);
+          anchor.click();
+          anchor.remove();
+          this.showAspectToast?.("Download iniciado", 2000);
+          return;
+        }
+        if (result?.status === "unsupported_hls") {
+          this.showAspectToast?.("Fonte em streaming HLS não possui download direto", 2600);
+          return;
+        }
+        this.showAspectToast?.("Não foi possível gerar o link de download", 2400);
+      } catch (_) {
+        this.showAspectToast?.("Erro ao preparar download", 2400);
       }
     }
   };

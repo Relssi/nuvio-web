@@ -69,6 +69,17 @@ export function resetTorboxWebStreamAvailability() {
   torboxWebStreamUnavailable = false;
 }
 
+function isHlsStreamUrl(url = "", mimeType = "") {
+  if (
+    String(mimeType || "")
+      .trim()
+      .toLowerCase() === HLS_MIME_TYPE
+  ) {
+    return true;
+  }
+  return /\.m3u8(\?|$)/i.test(String(url || "").trim());
+}
+
 function hlsFilename(filename) {
   const name = String(filename || "").trim();
   return name ? `${name.replace(/\.[a-z0-9]{2,4}$/i, "")}.m3u8` : null;
@@ -272,7 +283,13 @@ function serviceDegradedFailure(response = {}, providerName = "Debrid") {
   return failure("service_degraded", `${providerName} service returned HTTP ${status}.`);
 }
 
-async function resolveTorbox(resolve, apiKey, season, episode) {
+async function resolveTorbox(
+  resolve,
+  apiKey,
+  season,
+  episode,
+  { preferDirectDownload = false } = {}
+) {
   const magnet = buildMagnetUri(resolve);
   if (!magnet) {
     return failure("stale");
@@ -301,14 +318,16 @@ async function resolveTorbox(resolve, apiKey, season, episode) {
   if (!file) {
     return failure("stale");
   }
-  const webStreamUrl = await requestTorboxWebStream(apiKey, torrentId, file.id).catch(() => null);
-  if (webStreamUrl) {
-    return success(
-      webStreamUrl,
-      hlsFilename(getDebridFileDisplayName(file)),
-      getDebridFileSize(file),
-      HLS_MIME_TYPE
-    );
+  if (!preferDirectDownload) {
+    const webStreamUrl = await requestTorboxWebStream(apiKey, torrentId, file.id).catch(() => null);
+    if (webStreamUrl) {
+      return success(
+        webStreamUrl,
+        hlsFilename(getDebridFileDisplayName(file)),
+        getDebridFileSize(file),
+        HLS_MIME_TYPE
+      );
+    }
   }
   const link = await DebridApi.torboxRequestDownloadLink(apiKey, torrentId, file.id);
   const url = typeof link.data?.data === "string" ? link.data.data : "";
@@ -510,7 +529,10 @@ export const DirectDebridResolver = {
   },
 
   // forceRefresh drops the remembered link first, so the provider is asked for a new one.
-  async resolve(stream = {}, { season = null, episode = null, forceRefresh = false } = {}) {
+  async resolve(
+    stream = {},
+    { season = null, episode = null, forceRefresh = false, preferDirectDownload = false } = {}
+  ) {
     if (getStreamUrl(stream)) {
       return { status: "success", stream };
     }
@@ -551,7 +573,8 @@ export const DirectDebridResolver = {
       }
     }
 
-    const key = cacheKeyFor(stream, season, episode, settings);
+    const baseKey = cacheKeyFor(stream, season, episode, settings);
+    const key = baseKey && preferDirectDownload ? `${baseKey}|direct-download` : baseKey;
     if (key && forceRefresh) {
       resolvedCache.delete(key);
     }
@@ -572,7 +595,7 @@ export const DirectDebridResolver = {
     const task = (async () => {
       switch (provider.id) {
         case DEBRID_PROVIDER_IDS.TORBOX:
-          return resolveTorbox(resolve, apiKey, season, episode);
+          return resolveTorbox(resolve, apiKey, season, episode, { preferDirectDownload });
         case DEBRID_PROVIDER_IDS.PREMIUMIZE:
           return resolvePremiumize(resolve, apiKey, season, episode, stream);
         case DEBRID_PROVIDER_IDS.REAL_DEBRID:
@@ -600,5 +623,56 @@ export const DirectDebridResolver = {
         inFlightResolves.delete(key);
       }
     }
+  },
+
+  async resolveDownloadUrl(stream = {}, { season = null, episode = null } = {}) {
+    const directUrl = getStreamUrl(stream);
+    if (directUrl && !isHlsStreamUrl(directUrl, stream.mimeType || stream.sourceType)) {
+      return {
+        status: "success",
+        url: directUrl,
+        filename: String(stream.filename || stream.behaviorHints?.filename || "").trim()
+      };
+    }
+
+    const hasDebridSource = Boolean(
+      stream.clientResolve ||
+      stream.raw?.clientResolve ||
+      stream.infoHash ||
+      torrentMagnetUri(stream)
+    );
+    if (hasDebridSource) {
+      const downloadCandidate = {
+        ...stream,
+        url: null,
+        externalUrl: null
+      };
+      const resolved = await this.resolve(downloadCandidate, {
+        season,
+        episode,
+        preferDirectDownload: true
+      });
+      if (resolved?.status === "success" && resolved.stream?.url) {
+        if (
+          isHlsStreamUrl(
+            resolved.stream.url,
+            resolved.stream.mimeType || resolved.stream.sourceType
+          )
+        ) {
+          return { status: "unsupported_hls" };
+        }
+        return {
+          status: "success",
+          url: resolved.stream.url,
+          filename: String(resolved.stream.behaviorHints?.filename || stream.filename || "").trim()
+        };
+      }
+      return resolved;
+    }
+
+    if (directUrl && isHlsStreamUrl(directUrl, stream.mimeType || stream.sourceType)) {
+      return { status: "unsupported_hls" };
+    }
+    return failure("unavailable");
   }
 };

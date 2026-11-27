@@ -102,6 +102,11 @@ export function createPlayerScreenMethods28() {
           label: "⛶",
           title: t("player_fullscreen", {}, "Tela cheia")
         });
+        base.push({
+          action: "download",
+          label: "⬇",
+          title: t("player_download", {}, "Download")
+        });
       }
 
       base.push({
