@@ -276,6 +276,10 @@ export function createHomeScreenMethods19() {
                 this.setCurrentFocusedNode?.(null);
               }
               this.syncFocusedCollectionCardState?.();
+              if (!related?.closest?.(".home-main .home-content-card.focusable")) {
+                this.clearHoverHeroTimer?.();
+                this.setHoverHeroActive?.(false);
+              }
             }
           }
           if (!this.pointerHoldStartedAt || !card || card.contains(event.relatedTarget)) {
@@ -301,7 +305,13 @@ export function createHomeScreenMethods19() {
             return;
           }
           const target = event?.target?.closest?.(".home-main .home-content-card.focusable");
-          if (!target || !this.container?.contains(target) || target.classList.contains("focused")) {
+          if (!target || !this.container?.contains(target)) {
+            return;
+          }
+          if (isDesktopWebLayout() && !this.sidebarExpanded && !this.isSidebarFocusActive()) {
+            this.scheduleHoverHeroVisible?.(target);
+          }
+          if (target.classList.contains("focused")) {
             return;
           }
           // Row scrolling and card expansion shift content under a resting Magic
@@ -378,6 +388,37 @@ export function createHomeScreenMethods19() {
       this.container.addEventListener("mouseover", this.boundHomeMouseOverHandler);
       this.container.addEventListener("wheel", this.boundHomeWheelHandler, { passive: false });
       this.boundHomeEventContainer = this.container;
+    },
+    clearHoverHeroTimer() {
+      if (this.hoverHeroTimer) {
+        clearTimeout(this.hoverHeroTimer);
+        this.hoverHeroTimer = null;
+      }
+    },
+    setHoverHeroActive(active) {
+      if (!isDesktopWebLayout()) {
+        return;
+      }
+      const shell = this.container?.querySelector?.(".home-screen-shell.home-layout-modern");
+      if (shell) {
+        shell.classList.toggle("is-hover-hero-visible", Boolean(active));
+      }
+    },
+    scheduleHoverHeroVisible(target) {
+      if (!isDesktopWebLayout() || !target) {
+        return;
+      }
+      const shell = this.container?.querySelector?.(".home-screen-shell.home-layout-modern");
+      if (shell?.classList?.contains("is-hover-hero-visible")) {
+        return;
+      }
+      this.clearHoverHeroTimer();
+      this.hoverHeroTimer = setTimeout(() => {
+        this.hoverHeroTimer = null;
+        if (target.isConnected && target.matches?.(":hover, .focused") && !this.sidebarExpanded && !this.isSidebarFocusActive?.()) {
+          this.setHoverHeroActive(true);
+        }
+      }, 1500);
     },
     // Swiping the hero on a phone shows the next / previous title of the
     // focused row: the hero always follows the focused card (B29).
