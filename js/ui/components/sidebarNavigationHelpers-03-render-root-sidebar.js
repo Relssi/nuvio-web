@@ -61,10 +61,20 @@ export function bindRootSidebarEvents(container, { currentRoute = "", onExpandSi
       event?.preventDefault?.();
       event?.stopPropagation?.();
       event?.stopImmediatePropagation?.();
-      const action = String(node.dataset.action || "");
-      activateLegacySidebarAction(action, currentRoute);
-      if (isSelectedSidebarAction(action, currentRoute) && typeof onSelectedAction === "function") {
-        await onSelectedAction(node);
+      if (node.dataset.navigating === "1") {
+        return;
+      }
+      node.dataset.navigating = "1";
+      try {
+        const action = String(node.dataset.action || "");
+        activateLegacySidebarAction(action, currentRoute);
+        if (isSelectedSidebarAction(action, currentRoute) && typeof onSelectedAction === "function") {
+          await onSelectedAction(node);
+        }
+      } finally {
+        if (node.isConnected) {
+          delete node.dataset.navigating;
+        }
       }
     };
 

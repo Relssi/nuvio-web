@@ -49,6 +49,7 @@ export function createHomeScreenMethods30() {
       this.posterListPicker = null;
       this.persistCurrentFocusState();
       this.homeLoadToken = (this.homeLoadToken || 0) + 1;
+      this.isInitialHomeLoading = false;
       this.cancelInitialHomeLoadTimeout();
       if (this.homeRouteReturnRefreshTimer) {
         clearTimeout(this.homeRouteReturnRefreshTimer);

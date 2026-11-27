@@ -232,7 +232,7 @@ export function createHomeScreenMethods21() {
           if (!this.heroItem) {
             this.heroItem = this.pickInitialHero();
           }
-          this.releaseInitialHomeLoading();
+          this.releaseInitialHomeLoading({ force: true });
           this.hasLoadedOnce = true;
           this.requestBackgroundRender();
           this.maybeStartPendingHomeBackgroundRefresh();
@@ -252,7 +252,7 @@ export function createHomeScreenMethods21() {
           this.rows = this.sortAndFilterRows(cachedRows, this.collections);
           this.heroCandidates = uniqueById(this.collectHeroCandidates(this.rows));
           this.heroItem = this.pickInitialHero();
-          this.releaseInitialHomeLoading();
+          this.releaseInitialHomeLoading({ force: true });
           this.hasLoadedOnce = true;
           this.render();
         }
@@ -346,7 +346,7 @@ export function createHomeScreenMethods21() {
       }
       this.loadedProfileId = String(ProfileManager.getActiveProfileId() || "");
       this.loadedWatchProgressSourceKey = watchProgressRepository.getContinueWatchingSourceKey();
-      this.releaseInitialHomeLoading();
+      this.releaseInitialHomeLoading({ force: true });
       this.hasLoadedOnce = true;
       if (!deferredDescriptors.length) {
         this.loadedHomeRouteInputSignature = routeInputSignature;

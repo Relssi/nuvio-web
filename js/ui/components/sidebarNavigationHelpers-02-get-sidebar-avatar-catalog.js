@@ -97,7 +97,8 @@ export function activateLegacySidebarAction(action, currentRoute = "") {
   if (!target) {
     return;
   }
-  if (target.route === currentRoute) {
+  const activeRoute = String(Router.getCurrent?.() || currentRoute || "");
+  if (target.route === activeRoute) {
     // Re-selecting the tab you are already on. Let the screen react, e.g. Home
     // scrolls back to the top, matching the Android TV app.
     Router.getCurrentScreen()?.onSidebarReselect?.();
