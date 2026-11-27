@@ -221,6 +221,19 @@ export async function probeHousehold() {
   } catch (error) {
     info.providersError = String(error?.message || error);
   }
+
+  // The app reads the addons table directly (not through a function). Some
+  // Supabase projects deny that until 04-table-access.sql runs (B18).
+  try {
+    const response = await fetch(`${supabaseUrl}/rest/v1/addons?select=url&limit=1`, {
+      headers: { apikey: anonKey, Authorization: `Bearer ${session.access_token}` }
+    });
+    info.addonsTableRead = response.ok
+      ? "ok"
+      : `${response.status}: ${(await response.text()).slice(0, 160)}`;
+  } catch (error) {
+    info.addonsTableRead = String(error?.message || error);
+  }
   return info;
 }
 

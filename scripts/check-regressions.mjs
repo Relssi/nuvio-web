@@ -124,6 +124,10 @@ async function startFakeSupabase() {
         { profile_index: 1, name: "Relssi", avatar_url: "data:image/jpeg;base64,AAAA" }
       ]);
     }
+    if (url.pathname === "/rest/v1/addons") {
+      // Simulates a project that does not expose tables to the API (B18).
+      return send(403, { code: "42501", message: "permission denied for table addons" });
+    }
     if (url.pathname === "/rest/v1/rpc/sync_pull_addons") {
       return send(200, [{ url: "https://torrentio.strem.fun", name: "Torrentio", enabled: true }]);
     }
@@ -355,6 +359,19 @@ async function main() {
     return problems.length ? problems.join("; ") : true;
   });
 
+  await check("B18", "addon pull falls back to the RPC when the table read is denied", async () => {
+    const text = await source("js/core/profile/librarySyncService.js");
+    if (!/isTableAccessDeniedError\(addonsTableError\)[\s\S]{0,400}"sync_pull_addons"/.test(text)) {
+      return "librarySyncService no longer retries sync_pull_addons after a permission error";
+    }
+    const sql = await source("docs/supabase/04-table-access.sql");
+    if (
+      !sql.includes("grant select, insert, update, delete on table public.addons to authenticated")
+    ) {
+      return "04-table-access.sql must grant the addons table to authenticated";
+    }
+  });
+
   // ---- Unit tests --------------------------------------------------------
   const tests = await run(process.execPath, [
     "--test",
@@ -525,6 +542,7 @@ async function main() {
       if (!html.includes("user-household")) return "household account id missing";
       if (!html.includes("1: Torrentio")) return "saved addons not listed";
       if (!html.includes("conectado: torbox")) return "TorBox connection not shown";
+      if (!html.includes("04-table-access.sql")) return "denied table read (B18) not reported";
       if (html.includes("SECRET-TORBOX-KEY")) return "TorBox credential leaked into /__status";
     });
   } finally {

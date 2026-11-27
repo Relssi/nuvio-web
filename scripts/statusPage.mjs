@@ -82,6 +82,13 @@ async function renderStatusPage() {
       !household.addonsError && addons.length > 0
     ),
     row(
+      "App consegue ler a tabela de addons",
+      household.addonsTableRead === "ok"
+        ? "sim"
+        : `não (${household.addonsTableRead || "não testado"}) — rode docs/supabase/04-table-access.sql`,
+      household.addonsTableRead === "ok"
+    ),
+    row(
       "TorBox / debrid no Supabase",
       household.providersError
         ? `erro ${household.providersError}`

@@ -125,6 +125,13 @@ O script cobre automaticamente os itens marcados com **[auto]**. Os itens **[man
 - **Cuidados testados:** clique com mouse e foco por setas continuam alinhados; imagens carregam; sem rolagem lateral.
 - **Verificar (manual):** abrir em 1366×768 e em 4K, clicar no menu e andar pelas fileiras com as setas.
 
+## B18 — Addons no Supabase, mas não carregavam no navegador dos amigos [auto]
+
+- **Sintoma:** os addons apareciam no Supabase e no `/__status`, mas os navegadores dos amigos (conta da casa certa) continuavam sem addons.
+- **Causa provável:** o app lê os addons **direto da tabela** `addons`; projetos novos do Supabase podem não liberar tabelas para a API, e a leitura volta "permission denied" (403/42501). O app tratava isso como erro e mantinha a lista local vazia. O `/__status` funcionava porque usa a função `sync_pull_addons`, que não depende dessa liberação.
+- **Correção:** `librarySyncService.js` tenta `sync_pull_addons` quando a leitura da tabela é negada; `docs/supabase/04-table-access.sql` libera as tabelas `addons`, `plugins` e `profiles` para usuários logados (a segurança por linha continua valendo). O `/__status` ganhou a linha "App consegue ler a tabela de addons".
+- **Verificar:** checagem B18; teste local com o Supabase simulado negando a tabela: o perfil secundário recebeu os addons pela função.
+
 ## Não são bugs do código (para não perder tempo de novo)
 
 - **"No streams found" com Torrentio sem debrid:** o navegador não toca torrent; é preciso um debrid conectado.

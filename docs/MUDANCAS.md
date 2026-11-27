@@ -8,6 +8,13 @@ Detalhes de bugs (causa e correção) ficam em [`BUGS.md`](BUGS.md).
 
 ---
 
+## 28/11/2026 — Addons carregam para os amigos mesmo se o Supabase bloquear a tabela
+
+- **O que mudou:** os navegadores dos amigos passam a receber os addons do perfil principal mesmo quando o Supabase não libera a leitura direta da tabela. O `/__status` mostra se a tabela está liberada.
+- **Como:** se a leitura da tabela for negada, o app busca a lista pela função `sync_pull_addons`. O SQL 04 libera as tabelas para usuários logados.
+- **Precisa fazer:** rodar `docs/supabase/04-table-access.sql` no SQL Editor do Supabase; depois os amigos recarregam com Ctrl + F5.
+- **Lembrete:** o celular ainda não tem layout próprio (isso é a fase 2 do responsivo); a fase 1 vale para computador, notebook e TV grande.
+
 ## 28/11/2026 — Tela se ajusta ao tamanho da janela (fase 1: desktop, notebook e TV grande)
 
 - **O que mudou:** no computador, o site agora aumenta ou diminui inteiro para caber na janela, mantendo o mesmo desenho da TV. Notebook pequeno não fica mais apertado e TV/monitor 4K não fica mais minúsculo. Celular e tablet em pé continuam como estavam (fase 2).

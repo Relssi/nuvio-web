@@ -50,6 +50,19 @@ async function resolveProfileId() {
   return Number.isFinite(candidate) && candidate > 0 ? Math.trunc(candidate) : 1;
 }
 
+function isTableAccessDeniedError(error) {
+  const status = Number(error?.status ?? error?.statusCode ?? 0);
+  const code = String(error?.code || "");
+  const text = `${String(error?.message || "")} ${String(error?.detail || "")}`.toLowerCase();
+  return (
+    status === 401 ||
+    status === 403 ||
+    code === "42501" ||
+    text.includes("42501") ||
+    text.includes("permission denied")
+  );
+}
+
 async function resolveAddonProfileId() {
   // Addons are shared by every profile in this build (see
   // js/core/profile/sharedProfileData.js), so the cloud copy is always the
@@ -262,6 +275,27 @@ export const LibrarySyncService = {
         return addonUrls;
       } catch (addonsTableError) {
         addonTableMissing = isMissingResourceError(addonsTableError);
+        // Supabase projects that do not expose tables to the API answer the
+        // direct table read with "permission denied" (docs/BUGS.md B18).
+        // The sync_pull_addons function still works, so use it.
+        if (!addonTableMissing && isTableAccessDeniedError(addonsTableError)) {
+          try {
+            const rpcRows = await SupabaseApi.rpc(
+              "sync_pull_addons",
+              { p_profile_id: profileId },
+              true
+            );
+            const urls = await reconcileFetchedAddonSnapshot(
+              rpcRows,
+              profileId,
+              requestedProfileId
+            );
+            recordPullStatus("ok", { count: urls.length });
+            return urls;
+          } catch (rpcError) {
+            console.warn("Addon sync pull RPC fallback failed", rpcError);
+          }
+        }
         if (!addonTableMissing) {
           readError = addonsTableError;
           recordPullStatus("error", { count: localUrls.length, error: readError });
