@@ -3,15 +3,16 @@ import * as internals from "./playerScreenContext.js";
 import { focusWithoutScroll } from "../../navigation/focusWithoutScroll.js";
 
 export function createPlayerScreenMethods66() {
-  const { streamRepository, isSelectKeyCode, t, clamp, normalizeItemType, streamMergeKey } = internals;
+  const { streamRepository, sortStreamsBySizeAscending, isSelectKeyCode, t, clamp, normalizeItemType, streamMergeKey } = internals;
 
   return {
     getFilteredEpisodePanelStreams() {
       const streams = Array.isArray(this.episodePanelStreams) ? this.episodePanelStreams : [];
-      if (this.episodePanelStreamFilter === "all") {
-        return streams;
-      }
-      return streams.filter((stream) => String(stream?.addonName || "") === this.episodePanelStreamFilter);
+      const filtered =
+        this.episodePanelStreamFilter === "all"
+          ? streams
+          : streams.filter((stream) => String(stream?.addonName || "") === this.episodePanelStreamFilter);
+      return sortStreamsBySizeAscending(filtered);
     },
     closeEpisodeStreamsView() {
       streamRepository.setLocalPluginSearchPaused(true);

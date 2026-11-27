@@ -20,7 +20,12 @@ import { PLUGIN_REPOSITORY_TYPES, isExecutableScraper, pluginSupportsType } from
 
 import { selectAutoPlayStream, isAutoPlayEffectivelyEnabled } from "../../../core/streams/streamAutoPlaySelector.js";
 
-import { orderSourceNames, orderStreamsByAddonOrder, groupStreamsByProvider } from "../../../core/streams/streamOrdering.js";
+import {
+  orderSourceNames,
+  orderStreamsByAddonOrder,
+  groupStreamsByProvider,
+  sortStreamsBySizeAscending
+} from "../../../core/streams/streamOrdering.js";
 
 import { buildStreamResumeIdentity } from "../../../core/streams/streamResumeIdentity.js";
 
@@ -193,9 +198,11 @@ export function getOrderedFilterNames(sourceChips = [], streams = []) {
 }
 
 export function sortStreamsByAddonOrder(streams = [], sourceChips = []) {
-  return groupStreamsByProvider(
-    orderStreamsByAddonOrder(streams, sourceChips, {
-      isDirectDebrid: (stream) => DebridStreamPresentation.isDirectDebrid(stream)
-    })
+  return sortStreamsBySizeAscending(
+    groupStreamsByProvider(
+      orderStreamsByAddonOrder(streams, sourceChips, {
+        isDirectDebrid: (stream) => DebridStreamPresentation.isDirectDebrid(stream)
+      })
+    )
   );
 }

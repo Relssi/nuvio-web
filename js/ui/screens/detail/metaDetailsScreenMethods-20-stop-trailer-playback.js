@@ -1,5 +1,6 @@
 /* eslint-disable no-unused-vars */
 import * as internals from "./metaDetailsScreenContext.js";
+import { sortStreamsBySizeAscending } from "../../../core/streams/streamOrdering.js";
 
 export function createMetaDetailsScreenMethods20() {
   const { ScreenUtils, localizedGenreLabel, contentTextDirection, renderLoadingIndicator, detectQuality, renderStreamAddonIcon } =
@@ -152,10 +153,9 @@ export function createMetaDetailsScreenMethods20() {
       if (!pending || !pending.streams.length) {
         return [];
       }
-      if (pending.addonFilter === "all") {
-        return pending.streams;
-      }
-      return pending.streams.filter((stream) => stream.addonName === pending.addonFilter);
+      const filtered =
+        pending.addonFilter === "all" ? pending.streams : pending.streams.filter((stream) => stream.addonName === pending.addonFilter);
+      return sortStreamsBySizeAscending(filtered);
     },
     renderEpisodeStreamChooser() {
       const mount = this.container.querySelector("#episodeStreamChooserMount");

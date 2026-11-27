@@ -82,7 +82,7 @@ import { hasReleaseToken } from "../../../core/streams/releaseToken.js";
 
 import { isAutoPlayEffectivelyEnabled, selectAutoPlayStream } from "../../../core/streams/streamAutoPlaySelector.js";
 
-import { orderStreamsByAddonOrder } from "../../../core/streams/streamOrdering.js";
+import { orderStreamsByAddonOrder, sortStreamsBySizeAscending } from "../../../core/streams/streamOrdering.js";
 
 import { metaRepository } from "../../../data/repository/metaRepository.js";
 
@@ -396,6 +396,7 @@ export {
   isAutoPlayEffectivelyEnabled,
   selectAutoPlayStream,
   orderStreamsByAddonOrder,
+  sortStreamsBySizeAscending,
   metaRepository,
   I18n,
   Environment,

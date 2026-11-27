@@ -1,3 +1,5 @@
+import { sizeBytesFromStreamText, sizeBytesFromText } from "../debrid/streamTextSizeParser.js";
+
 const UNKNOWN_SOURCE_RANK = Number.MAX_SAFE_INTEGER;
 
 function finiteSourceRank(value) {
@@ -229,4 +231,43 @@ export function orderSourceNames(
     });
 
   return ordered;
+}
+
+function positiveSizeBytes(value) {
+  const numeric = Number(value);
+  return Number.isFinite(numeric) && numeric > 0 ? numeric : null;
+}
+
+export function getStreamSizeBytes(stream = {}) {
+  const raw = stream?.raw || {};
+  return (
+    positiveSizeBytes(raw.size) ??
+    positiveSizeBytes(stream?.size) ??
+    positiveSizeBytes(stream?.videoSize) ??
+    positiveSizeBytes(stream?.behaviorHints?.videoSize) ??
+    positiveSizeBytes(stream?.debridCacheStatus?.cachedSize) ??
+    sizeBytesFromStreamText(stream) ??
+    sizeBytesFromText(stream?.label) ??
+    null
+  );
+}
+
+export function sortStreamsBySizeAscending(streams = []) {
+  const list = (Array.isArray(streams) ? streams : []).filter(Boolean);
+  if (list.length <= 1) {
+    return list.slice();
+  }
+  return list
+    .map((stream, index) => ({
+      stream,
+      index,
+      sizeBytes: getStreamSizeBytes(stream) ?? Number.MAX_SAFE_INTEGER
+    }))
+    .sort((left, right) => {
+      if (left.sizeBytes !== right.sizeBytes) {
+        return left.sizeBytes - right.sizeBytes;
+      }
+      return left.index - right.index;
+    })
+    .map((entry) => entry.stream);
 }

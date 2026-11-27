@@ -2,8 +2,17 @@
 import * as internals from "./playerScreenContext.js";
 
 export function createPlayerScreenMethods62() {
-  const { PlayerController, streamRepository, orderStreamsByAddonOrder, DebridStreamPresentation, isSelectKeyCode, t, clamp, escapeHtml } =
-    internals;
+  const {
+    PlayerController,
+    streamRepository,
+    orderStreamsByAddonOrder,
+    sortStreamsBySizeAscending,
+    DebridStreamPresentation,
+    isSelectKeyCode,
+    t,
+    clamp,
+    escapeHtml
+  } = internals;
 
   return {
     renderAudioControlItem(control, index) {
@@ -215,9 +224,11 @@ export function createPlayerScreenMethods62() {
       return ["all", ...addons];
     },
     getOrderedStreamCandidates() {
-      return orderStreamsByAddonOrder(this.streamCandidates || [], [], {
-        isDirectDebrid: (stream) => DebridStreamPresentation.isDirectDebrid(stream)
-      });
+      return sortStreamsBySizeAscending(
+        orderStreamsByAddonOrder(this.streamCandidates || [], [], {
+          isDirectDebrid: (stream) => DebridStreamPresentation.isDirectDebrid(stream)
+        })
+      );
     },
     getFilteredSources(orderedStreams = this.getOrderedStreamCandidates()) {
       if (this.sourceFilter === "all") {
