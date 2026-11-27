@@ -1,5 +1,6 @@
 /* eslint-disable no-unused-vars */
 import * as internals from "./profileSelectionScreen.js";
+import { isUploadedAvatarUrl } from "./profileAvatarUpload.js";
 
 export function createProfileSelectionScreenMethods06() {
   const {
@@ -280,8 +281,12 @@ export function createProfileSelectionScreenMethods06() {
           ...existing,
           name: trimmedName,
           avatarColorHex: editorState.selectedColorHex || getDefaultProfileColor(),
-          avatarId: editorState.selectedAvatarId || null,
-          avatarUrl: editorState.selectedAvatarId !== editorState.baseAvatarId ? null : String(existing.avatarUrl || "").trim() || null,
+          avatarId: editorState.uploadedAvatarUrl ? null : editorState.selectedAvatarId || null,
+          avatarUrl: editorState.uploadedAvatarUrl
+            ? editorState.uploadedAvatarUrl
+            : editorState.selectedAvatarId !== editorState.baseAvatarId || isUploadedAvatarUrl(existing.avatarUrl)
+              ? null
+              : String(existing.avatarUrl || "").trim() || null,
           profileBackgroundId: editorState.selectedBackgroundId || null,
           profileBackgroundUrl: String(editorState.selectedBackgroundUrl || "").trim() || null
         });
@@ -289,8 +294,8 @@ export function createProfileSelectionScreenMethods06() {
         success = await ProfileManager.createProfile({
           name: trimmedName,
           avatarColorHex: editorState.selectedColorHex || getDefaultProfileColor(),
-          avatarId: editorState.selectedAvatarId || null,
-          avatarUrl: null,
+          avatarId: editorState.uploadedAvatarUrl ? null : editorState.selectedAvatarId || null,
+          avatarUrl: editorState.uploadedAvatarUrl || null,
           profileBackgroundId: editorState.selectedBackgroundId || null,
           profileBackgroundUrl: String(editorState.selectedBackgroundUrl || "").trim() || null
         });

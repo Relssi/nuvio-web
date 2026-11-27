@@ -1,4 +1,5 @@
 import { LocalStore } from "../../core/storage/localStore.js";
+import { sharedProfileId } from "../../core/profile/sharedProfileData.js";
 import { ProfileManager } from "../../core/profile/profileManager.js";
 import { getSyncBackoffRemainingMs } from "../../core/sync/syncBackoffPolicy.js";
 import { registerSessionTeardownHandler } from "../../core/auth/sessionLifecycle.js";
@@ -292,7 +293,11 @@ export function createProfileScopedStore({
       : (current, partial) => ({ ...(current || {}), ...(partial || {}) });
 
   return {
-    getForProfile(profileId) {
+    // Settings are shared by all profiles: every read and write resolves to
+    // the primary profile. clearProfile keeps the real id so deleting a
+    // secondary profile never wipes the shared settings.
+    getForProfile(_profileId) {
+      const profileId = sharedProfileId();
       const envelope = readEnvelope(key, normalize, legacyProfileIds);
       return cloneValue(ensureProfileValue(key, envelope, normalize, profileId, seedFromPrimary));
     },
@@ -301,9 +306,9 @@ export function createProfileScopedStore({
       return this.getForProfile(normalizeProfileId());
     },
 
-    replaceForProfile(profileId, nextValue, { silentSync = false } = {}) {
+    replaceForProfile(_profileId, nextValue, { silentSync = false } = {}) {
       const envelope = readEnvelope(key, normalize, legacyProfileIds);
-      const normalizedProfileId = normalizeProfileId(profileId);
+      const normalizedProfileId = sharedProfileId();
       envelope.profiles[normalizedProfileId] = normalize(cloneValue(nextValue) || {});
       persistEnvelope(key, envelope);
       if (!silentSync) {

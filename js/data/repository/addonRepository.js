@@ -1,4 +1,5 @@
 import { MediaServerRepository } from "../mediaserver/mediaServerRepository.js";
+import { sharedProfileId } from "../../core/profile/sharedProfileData.js";
 import { safeApiCall } from "../../core/network/safeApiCall.js";
 import { LocalStore } from "../../core/storage/localStore.js";
 import { ProfileManager } from "../../core/profile/profileManager.js";
@@ -198,7 +199,12 @@ class AddonRepository {
     }
   }
 
-  getActiveStorageProfileId(profileId = null) {
+  getActiveStorageProfileId(_profileId = null) {
+    // Addons are shared by every profile (see sharedProfileData.js).
+    return sharedProfileId();
+  }
+
+  getActiveStorageProfileIdPerProfile(profileId = null) {
     const raw = String(profileId ?? ProfileManager.getActiveProfileId() ?? "1").trim();
     if (!raw || raw === "1") {
       return "1";
@@ -217,7 +223,12 @@ class AddonRepository {
     return usesPrimaryAddons ? "1" : raw;
   }
 
-  canEdit(profileId = null) {
+  canEdit(_profileId = null) {
+    // Shared addons can be edited from any profile.
+    return true;
+  }
+
+  canEditPerProfile(profileId = null) {
     const raw = String(profileId ?? ProfileManager.getActiveProfileId() ?? "1").trim() || "1";
     if (raw === "1") {
       return true;

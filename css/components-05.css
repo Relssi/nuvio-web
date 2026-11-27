@@ -210,6 +210,22 @@
   row-gap: min(0.833vw, 16px);
 }
 
+.profile-editor-upload-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding-bottom: 12px;
+}
+
+.profile-editor-upload-error {
+  text-align: center;
+  color: #f87171;
+  font-size: 18px;
+  padding-bottom: 12px;
+}
+
 .profile-avatar-category,
 .profile-avatar-tile,
 .profile-overlay-button,

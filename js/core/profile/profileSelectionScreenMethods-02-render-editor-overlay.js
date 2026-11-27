@@ -16,7 +16,9 @@ export function createProfileSelectionScreenMethods02() {
       const previewName = String(this.editorState.name || "").trim() || t("profile_name_placeholder", {}, "Profile name");
       const selectedAvatar = this.getEditorSelectedAvatar();
       const hasChangedAvatarSelection = this.editorState.selectedAvatarId !== this.editorState.baseAvatarId;
+      const uploadedAvatarUrl = String(this.editorState.uploadedAvatarUrl || "").trim() || null;
       const previewAvatarUrl =
+        uploadedAvatarUrl ||
         selectedAvatar?.imageUrl ||
         (!hasChangedAvatarSelection
           ? String(this.editorState.originalAvatarUrl || "").trim() || this.getAvatarImageUrl(this.editorState.baseAvatarId) || null
@@ -159,6 +161,30 @@ export function createProfileSelectionScreenMethods02() {
                       ? `
                     <div class="profile-editor-avatar-pane">
                       <div class="profile-editor-avatar-title">${escapeHtml(t("profile_choose_avatar", {}, "Choose Avatar"))}</div>
+
+                      <div class="profile-editor-upload-row">
+                        <button class="profile-avatar-category profile-overlay-focusable${uploadedAvatarUrl ? " is-selected" : ""}"
+                                type="button"
+                                data-action="upload-avatar"
+                                data-focus-key="editor:upload-avatar"
+                                tabindex="0">
+                          ${escapeHtml(uploadedAvatarUrl ? "Trocar foto" : "Enviar foto")}
+                        </button>
+                        ${
+                          uploadedAvatarUrl
+                            ? `<button class="profile-avatar-category profile-overlay-focusable"
+                                type="button"
+                                data-action="remove-uploaded-avatar"
+                                data-focus-key="editor:remove-uploaded-avatar"
+                                tabindex="0">${escapeHtml("Remover foto")}</button>`
+                            : ""
+                        }
+                      </div>
+                      ${
+                        this.editorState.avatarUploadError
+                          ? `<div class="profile-editor-upload-error" role="alert">${escapeHtml(this.editorState.avatarUploadError)}</div>`
+                          : ""
+                      }
 
                       <div class="profile-editor-category-row">
                         ${categories

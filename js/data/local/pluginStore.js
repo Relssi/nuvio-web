@@ -1,4 +1,5 @@
 import { LocalStore } from "../../core/storage/localStore.js";
+import { sharedProfileId } from "../../core/profile/sharedProfileData.js";
 import { ProfileManager } from "../../core/profile/profileManager.js";
 import { createProfileScopedStore } from "./profileScopedStore.js";
 import { getSyncBackoffRemainingMs } from "../../core/sync/syncBackoffPolicy.js";
@@ -36,7 +37,14 @@ function readBooleanFlag(value) {
   return false;
 }
 
-export function getEffectivePluginProfileId(profileId = ProfileManager.getActiveProfileId()) {
+export function getEffectivePluginProfileId(_profileId = null) {
+  // Plugins are shared by every profile (see sharedProfileData.js).
+  return sharedProfileId();
+}
+
+export function getEffectivePluginProfileIdPerProfile(
+  profileId = ProfileManager.getActiveProfileId()
+) {
   const normalized = String(
     profileId == null ? ProfileManager.getActiveProfileId() : profileId || "1"
   );

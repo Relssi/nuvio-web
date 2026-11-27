@@ -1,4 +1,5 @@
 import * as internals from "./profileSelectionScreen.js";
+import { pickAvatarImage } from "./profileAvatarUpload.js";
 import { ProfileSettingsSyncService } from "./profileSettingsSyncService.js";
 
 export function createProfileSelectionScreenMethods07() {
@@ -22,6 +23,37 @@ export function createProfileSelectionScreenMethods07() {
     async activateFocusedNode(node) {
       const action = String(node?.dataset?.action || "");
       const profileId = node?.dataset?.profileId;
+
+      if (action === "upload-avatar" && this.editorState) {
+        // pickAvatarImage() opens the file chooser synchronously, inside the
+        // user's click/key gesture.
+        const editorState = this.editorState;
+        let dataUrl = null;
+        try {
+          dataUrl = await pickAvatarImage();
+          editorState.avatarUploadError = "";
+        } catch (error) {
+          editorState.avatarUploadError = String(error?.message || "Não foi possível usar essa imagem.");
+        }
+        if (this.editorState !== editorState) {
+          return;
+        }
+        if (dataUrl) {
+          editorState.uploadedAvatarUrl = dataUrl;
+          editorState.selectedAvatarId = null;
+        }
+        this.pendingFocusKey = "editor:upload-avatar";
+        this.render();
+        return;
+      }
+      if (action === "remove-uploaded-avatar" && this.editorState) {
+        this.editorState.uploadedAvatarUrl = null;
+        this.editorState.originalAvatarUrl = null;
+        this.editorState.avatarUploadError = "";
+        this.pendingFocusKey = "editor:upload-avatar";
+        this.render();
+        return;
+      }
 
       if (action === "cancel-editor") {
         this.closeEditor();
@@ -98,6 +130,7 @@ export function createProfileSelectionScreenMethods07() {
           this.editorState.selectedAvatarId = avatar.id;
           this.editorState.selectedColorHex = avatar.bgColor || getDefaultProfileColor();
         }
+        this.editorState.uploadedAvatarUrl = null;
         this.editorState.focusedAvatarName = avatar.displayName;
         this.pendingFocusKey = `editor:avatar:${avatar.id}`;
         this.render();

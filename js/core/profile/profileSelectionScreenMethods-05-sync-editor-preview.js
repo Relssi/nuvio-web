@@ -1,5 +1,6 @@
 /* eslint-disable no-unused-vars */
 import * as internals from "./profileSelectionScreen.js";
+import { isUploadedAvatarUrl } from "./profileAvatarUpload.js";
 
 export function createProfileSelectionScreenMethods05() {
   const {
@@ -78,6 +79,7 @@ export function createProfileSelectionScreenMethods05() {
         selectedColorHex: String(profile.avatarColorHex || getDefaultProfileColor()),
         selectedAvatarId: profile.avatarId || null,
         baseAvatarId: profile.avatarId || null,
+        uploadedAvatarUrl: isUploadedAvatarUrl(profile.avatarUrl) ? String(profile.avatarUrl) : null,
         baseColorHex: String(profile.avatarColorHex || getDefaultProfileColor()),
         originalBackgroundUrl: String(profile.profileBackgroundUrl || "").trim() || null,
         baseBackgroundId: profile.profileBackgroundId || null,

@@ -75,7 +75,8 @@ test("repeated reads of unchanged storage do not reparse or re-normalize", () =>
 
   for (let index = 0; index < 25; index += 1) {
     assert.deepEqual(store.getForProfile("1"), { theme: "light", volume: 10, tags: [] });
-    assert.deepEqual(store.getForProfile("2"), { theme: "dark", volume: 20, tags: [] });
+    // Settings are shared: every profile reads the primary profile's value.
+    assert.deepEqual(store.getForProfile("2"), { theme: "light", volume: 10, tags: [] });
   }
   assert.equal(
     normalizeCalls,
@@ -146,13 +147,17 @@ test("setForProfile invalidates the memo and the next read returns the new value
   );
   assert.deepEqual(
     store.getForProfile("2"),
-    { theme: "red", volume: 50, tags: [] },
-    "writing one profile leaves the other profile untouched"
+    { theme: "light", volume: 99, tags: [] },
+    "settings are shared, so another profile sees the same value"
   );
 
   store.replaceForProfile("2", { theme: "blue", tags: ["x"] }, { silentSync: true });
   assert.deepEqual(store.getForProfile("2"), { theme: "blue", volume: 50, tags: ["x"] });
-  assert.equal(store.getForProfile("1").volume, 99);
+  assert.deepEqual(
+    store.getForProfile("1"),
+    { theme: "blue", volume: 50, tags: ["x"] },
+    "a write from any profile updates the shared settings"
+  );
 
   store.clearProfile("2", { silentSync: true });
   assert.equal(
@@ -160,9 +165,9 @@ test("setForProfile invalidates the memo and the next read returns the new value
     false
   );
   assert.deepEqual(
-    store.getForProfile("2"),
-    { theme: "light", volume: 99, tags: [] },
-    "a cleared profile is re-seeded from the primary profile on the next read"
+    store.getForProfile("1"),
+    { theme: "blue", volume: 50, tags: ["x"] },
+    "removing a secondary profile never clears the shared settings"
   );
 });
 
@@ -193,26 +198,25 @@ test("values returned by getForProfile are independent copies of the memoized en
   );
 });
 
-test("a missing profile is seeded, persisted once and then read from the memo", () => {
+test("another profile reads the shared settings without creating its own copy", () => {
   storage.clear();
   storage.set(KEY, envelope({ 1: normalize({ theme: "light", volume: 4 }) }));
   resetCounters();
 
   assert.deepEqual(store.getForProfile("3"), { theme: "light", volume: 4, tags: [] });
   const persisted = storage.get(KEY);
-  assert.deepEqual(JSON.parse(persisted).profiles["3"], { theme: "light", volume: 4, tags: [] });
+  assert.equal(
+    Object.prototype.hasOwnProperty.call(JSON.parse(persisted).profiles, "3"),
+    false,
+    "no per-profile copy is seeded"
+  );
 
-  const normalizeAfterSeed = normalizeCalls;
-  // The seed write invalidates the memo; one more parse rebuilds it, after
-  // which repeated reads are served without normalizing again.
-  store.getForProfile("3");
-  const normalizeAfterRebuild = normalizeCalls;
+  const normalizeAfterFirstRead = normalizeCalls;
   for (let index = 0; index < 5; index += 1) {
     store.getForProfile("3");
     store.getForProfile("1");
   }
-  assert.ok(normalizeAfterRebuild >= normalizeAfterSeed);
-  assert.equal(normalizeCalls, normalizeAfterRebuild, "reads after the rebuild are memoized");
+  assert.equal(normalizeCalls, normalizeAfterFirstRead, "repeated reads are memoized");
   assert.equal(storage.get(KEY), persisted, "no further writes happen");
 });
 
