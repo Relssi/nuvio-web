@@ -1,0 +1,18 @@
+# Render Blueprint: runs the web build of the app with its dev server
+# (static files + CORS proxy for addons/debrid + optional password login).
+services:
+  - type: web
+    name: nuvio-web
+    runtime: node
+    plan: free
+    buildCommand: npm ci && npm run build
+    startCommand: node scripts/serve.mjs
+    envVars:
+      - key: NODE_VERSION
+        value: "22.22.3"
+      # The local media helper is only useful on a desktop; skip it online.
+      - key: NUVIO_DISABLE_MEDIA_RUNTIME
+        value: "1"
+      # Set this in the Render dashboard to require a password to open the site.
+      - key: NUVIO_PASSWORD
+        sync: false
