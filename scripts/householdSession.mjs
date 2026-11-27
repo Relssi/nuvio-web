@@ -126,6 +126,64 @@ async function createSession() {
   };
 }
 
+// Used by the /__status diagnostic page. Never returns key material.
+export async function probeHousehold() {
+  const info = {
+    enabled: isHouseholdSessionEnabled(),
+    email: householdEmail,
+    supabaseUrl,
+    signIn: "not tried",
+    userId: null,
+    profiles: null,
+    profilesError: null
+  };
+  if (!info.enabled) {
+    return info;
+  }
+  let session;
+  try {
+    session = await createSession();
+    info.signIn = "ok";
+  } catch (error) {
+    info.signIn = String(error?.message || error);
+    return info;
+  }
+  try {
+    const payload = JSON.parse(
+      Buffer.from(session.access_token.split(".")[1] || "", "base64url").toString("utf8") || "{}"
+    );
+    info.userId = payload.sub || null;
+  } catch (_) {
+    info.userId = null;
+  }
+  try {
+    const response = await fetch(`${supabaseUrl}/rest/v1/rpc/sync_pull_profiles`, {
+      method: "POST",
+      headers: {
+        apikey: anonKey,
+        Authorization: `Bearer ${session.access_token}`,
+        "Content-Type": "application/json"
+      },
+      body: "{}"
+    });
+    const text = await response.text();
+    if (!response.ok) {
+      info.profilesError = `${response.status}: ${text.slice(0, 300)}`;
+    } else {
+      const rows = JSON.parse(text || "[]");
+      info.profiles = (Array.isArray(rows) ? rows : []).map((row) => ({
+        index: row.profile_index,
+        name: row.name,
+        hasPhoto: Boolean(row.avatar_url),
+        updatedAt: row.updated_at || null
+      }));
+    }
+  } catch (error) {
+    info.profilesError = String(error?.message || error);
+  }
+  return info;
+}
+
 // Appended to /nuvio.env.js. Runs before the app bundle: a browser that
 // has no session yet asks this server for one, synchronously, once.
 export function buildHouseholdSessionScript() {

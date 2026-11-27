@@ -111,10 +111,18 @@ async function startFakeSupabase() {
       const user = users.get(String(body.email || "").toLowerCase());
       if (!user || user.password !== body.password) return send(400, { error: "invalid_grant" });
       tokenCounter += 1;
+      const claims = Buffer.from(JSON.stringify({ sub: user.id, role: "authenticated" })).toString(
+        "base64url"
+      );
       return send(200, {
-        access_token: `access-${tokenCounter}`,
+        access_token: `eyJhbGciOiJIUzI1NiJ9.${claims}.sig${tokenCounter}`,
         refresh_token: `refresh-${tokenCounter}`
       });
+    }
+    if (url.pathname === "/rest/v1/rpc/sync_pull_profiles") {
+      return send(200, [
+        { profile_index: 1, name: "Relssi", avatar_url: "data:image/jpeg;base64,AAAA" }
+      ]);
     }
     if (url.pathname.startsWith("/auth/v1/admin/users")) {
       if (bearer !== FAKE_SERVICE_KEY) return send(401, { message: "not admin" });
@@ -387,6 +395,20 @@ async function main() {
         return "auto sign-in snippet missing from nuvio.env.js";
       }
       if (text.includes(FAKE_SERVICE_KEY)) return "service role key leaked into nuvio.env.js";
+    });
+    await check("B12", "status page needs the site password", async () => {
+      const response = await fetch(`${app.base}/__status`);
+      if (response.status !== 401) return `expected 401 without a session, got ${response.status}`;
+    });
+    await check("B12", "status page shows Supabase profiles without leaking keys", async () => {
+      const response = await fetch(`${app.base}/__status`, withCookie());
+      const html = await response.text();
+      if (response.status !== 200) return `expected 200, got ${response.status}`;
+      if (html.includes(FAKE_SERVICE_KEY) || html.includes(FAKE_ANON_KEY)) {
+        return "a key leaked into /__status";
+      }
+      if (!html.includes("1. Relssi (foto)")) return "profiles from Supabase not listed";
+      if (!html.includes("user-household")) return "household account id missing";
     });
   } finally {
     app?.child.kill();

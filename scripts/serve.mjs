@@ -11,6 +11,7 @@ import {
   handleHouseholdSessionRequest,
   isHouseholdSessionEnabled
 } from "./householdSession.mjs";
+import { handleStatusRequest } from "./statusPage.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, "..");
@@ -469,6 +470,9 @@ const server = http.createServer(async (request, response) => {
       return;
     }
     if (await handleHouseholdSessionRequest(request, response, requestUrl)) {
+      return;
+    }
+    if (await handleStatusRequest(request, response, requestUrl)) {
       return;
     }
     if (requestUrl.pathname === "/nuvio.env.js") {

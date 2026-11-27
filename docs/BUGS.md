@@ -84,6 +84,12 @@ O script cobre automaticamente os itens marcados com **[auto]**. Os itens **[man
 - **Cuidados:** a `service_role` nunca pode aparecer no `nuvio.env.js` (o script verifica). `/__auto_session` exige o cookie da senha do site.
 - **Verificar:** sem cookie, `/__auto_session` responde 401; com cookie, devolve tokens; o `nuvio.env.js` tem o trecho de login automático e não contém a chave secreta.
 
+## B12 — Diagnóstico sem acesso aos logs: página `/__status` [auto]
+
+- **Motivo:** amigos não viam os perfis uns dos outros, e não havia como saber se o problema era a configuração do Supabase, as chaves ou o navegador logado em outra conta.
+- **O que faz:** `scripts/statusPage.mjs` mostra se a senha e as chaves estão configuradas (só o tipo da chave, nunca o valor), se o servidor consegue entrar na conta da casa, quais perfis existem no Supabase e em qual conta **aquele navegador** está logado.
+- **Verificar:** sem a senha do site, responde 401; com a senha, lista os perfis e não contém nenhuma chave.
+
 ## Não são bugs do código (para não perder tempo de novo)
 
 - **"No streams found" com Torrentio sem debrid:** o navegador não toca torrent; é preciso um debrid conectado.
