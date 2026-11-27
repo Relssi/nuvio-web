@@ -164,6 +164,13 @@ O script cobre automaticamente os itens marcados com **[auto]**. Os itens **[man
 - **Verificar:** checagem B22 e o teste `browserAudioCompatibility.test.mjs`; manualmente, um MKV com AC-3 troca sozinho para a fonte AAC e continua com som.
 - **Limite:** um arquivo que só tem áudio Dolby/DTS não tem como tocar com som no navegador sem converter o áudio num servidor (pesado para o Render grátis).
 
+## B23 — Fontes sem som aparecendo na lista [auto + manual]
+
+- **Pedido:** mostrar só as fontes cujo áudio funciona no navegador.
+- **Correção:** `filterBrowserAudibleStreams` (`js/core/player/browserAudioCompatibility.js`) esconde as fontes cujo nome diz Dolby (DD/DDP/Atmos), DTS ou TrueHD e coloca no topo as que dizem AAC/Opus/MP3. Usado na tela de fontes (`streamScreenMethods-05`, `getFilteredStreams`) e no painel de fontes do player (`playerScreenMethods-62`, `getOrderedStreamCandidates`). Só vale no navegador; nas TVs todas as fontes continuam.
+- **Cuidados:** se todas as fontes forem Dolby/DTS, a lista fica inteira (senão o filme não abriria); fontes sem o áudio no nome continuam (a troca automática do B22 cobre as que vierem mudas). A capacidade do navegador é testada uma vez (Edge/Safari que tocam Dolby não escondem nada).
+- **Verificar:** checagem B23 e o teste do filtro; no painel de fontes do player, uma lista com DDP, DTS, sem rótulo e AAC mostra só AAC e a sem rótulo, nessa ordem.
+
 ## Não são bugs do código (para não perder tempo de novo)
 
 - **"No streams found" com Torrentio sem debrid:** o navegador não toca torrent; é preciso um debrid conectado.

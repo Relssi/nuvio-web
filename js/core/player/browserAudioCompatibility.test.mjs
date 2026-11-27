@@ -13,7 +13,8 @@ const {
   pickPlayableBrowserStream,
   browserAudioScoreAdjustment,
   probeBrowserAudioCapabilities,
-  browserAudioDecodeVerdict
+  browserAudioDecodeVerdict,
+  filterBrowserAudibleStreams
 } = await import("./browserAudioCompatibility.js");
 
 const chrome = probeBrowserAudioCapabilities();
@@ -115,4 +116,26 @@ test("browserAudioDecodeVerdict waits for playback, then reads the decoder", () 
   assert.equal(browserAudioDecodeVerdict({ currentTime: 5, mozHasAudio: false }, 0), "silent");
   assert.equal(browserAudioDecodeVerdict({ currentTime: 5, mozHasAudio: true }, 0), "audible");
   assert.equal(browserAudioDecodeVerdict({ currentTime: 5 }, 0), "unknown");
+});
+
+test("filterBrowserAudibleStreams hides Dolby/DTS sources and lists AAC first", () => {
+  const ddp = { id: "ddp", title: "Movie 2160p WEB-DL DDP5.1 Atmos" };
+  const dts = { id: "dts", title: "Movie 1080p BluRay DTS-HD MA" };
+  const plain = { id: "plain", title: "Movie 1080p WEB-DL" };
+  const aac = { id: "aac", title: "Movie 1080p WEBRip AAC 2.0" };
+  const ids = (list) => list.map((stream) => stream.id);
+  assert.deepEqual(
+    ids(filterBrowserAudibleStreams([ddp, dts, plain, aac], { capabilities: chrome })),
+    ["aac", "plain"]
+  );
+  // Nothing left to play: keep the list so the title still opens.
+  assert.deepEqual(ids(filterBrowserAudibleStreams([ddp, dts], { capabilities: chrome })), [
+    "ddp",
+    "dts"
+  ]);
+  // TV apps (not a browser) keep every source.
+  assert.deepEqual(
+    ids(filterBrowserAudibleStreams([ddp, aac], { enabled: false, capabilities: chrome })),
+    ["ddp", "aac"]
+  );
 });

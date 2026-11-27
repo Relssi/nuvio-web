@@ -229,3 +229,42 @@ export function browserAudioDecodeVerdict(video = null, startSeconds = 0) {
   if (typeof video.mozHasAudio === "boolean") return video.mozHasAudio ? "audible" : "silent";
   return "unknown";
 }
+
+let cachedCapabilities = null;
+
+// Capabilities of this browser, probed once on a throwaway video element.
+export function currentBrowserAudioCapabilities() {
+  if (!cachedCapabilities) {
+    let probe = null;
+    try {
+      probe = typeof document !== "undefined" ? document.createElement("video") : null;
+    } catch (_) {
+      probe = null;
+    }
+    cachedCapabilities = probeBrowserAudioCapabilities(probe);
+  }
+  return cachedCapabilities;
+}
+
+// Source lists in the browser: sources whose label names an audio codec the
+// browser plays as silence (Dolby, DTS, TrueHD) are hidden, and sources
+// labelled with browser audio (AAC, Opus...) move to the top. Unlabelled
+// sources stay, in their order, after those. When every source would be
+// hidden, the list is left as it was so the title can still be played (the
+// player then shows the "no sound" notice).
+export function filterBrowserAudibleStreams(
+  streams = [],
+  { enabled = true, capabilities = currentBrowserAudioCapabilities() } = {}
+) {
+  const list = Array.isArray(streams) ? streams : [];
+  if (!enabled || !list.length) return list;
+  const playable = [];
+  const unknown = [];
+  list.forEach((stream) => {
+    const kind = classifyBrowserStreamAudio(stream, capabilities);
+    if (kind === "playable") playable.push(stream);
+    else if (kind !== "unsupported") unknown.push(stream);
+  });
+  if (!playable.length && !unknown.length) return list;
+  return [...playable, ...unknown];
+}

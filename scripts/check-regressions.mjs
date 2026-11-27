@@ -466,6 +466,25 @@ async function main() {
     }
   );
 
+  await check(
+    "B23",
+    "browser source lists hide sources whose audio the browser cannot play",
+    async () => {
+      const problems = [];
+      const screen = await source(
+        "js/ui/screens/stream/streamScreenMethods-05-maybe-auto-resume-stream.js"
+      );
+      if (!screen.includes("filterBrowserAudibleStreams("))
+        problems.push("stream screen no longer filters silent sources");
+      const panel = await source(
+        "js/ui/screens/player/playerScreenMethods-62-render-audio-control-item.js"
+      );
+      if (!panel.includes("filterBrowserAudibleStreams("))
+        problems.push("player sources panel no longer filters silent sources");
+      return problems.length ? problems.join("; ") : true;
+    }
+  );
+
   // ---- Unit tests --------------------------------------------------------
   const tests = await run(process.execPath, [
     "--test",

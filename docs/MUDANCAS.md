@@ -8,6 +8,14 @@ Detalhes de bugs (causa e correção) ficam em [`BUGS.md`](BUGS.md).
 
 ---
 
+## 28/11/2026 — Lista de fontes só com som
+
+- **O que mudou:** no site, a lista de fontes (e o painel "Fontes" dentro do player) não mostra mais as fontes com áudio Dolby/DTS, que tocariam sem som. As que dizem "AAC" no nome aparecem primeiro. O "tocar automaticamente" também passa a escolher uma fonte com som.
+- **Como:** um filtro lê o nome de cada fonte (`filterBrowserAudibleStreams`). Detalhes em BUGS.md (B23).
+- **Precisa fazer:** nada. Recarregue a página.
+- **Limite:** fontes que não dizem o áudio no nome continuam na lista; se uma delas vier muda, o player troca sozinho (mudança anterior). Se um filme só tiver fontes Dolby/DTS, elas aparecem mesmo assim, para o filme não sumir.
+- **Não testado:** com a lista real do Torrentio/TorBox (testado com fontes de teste no painel do player).
+
 ## 28/11/2026 — Player sem som: troca automática de fonte
 
 - **O que mudou:** quando um filme toca sem som no navegador, o player percebe isso sozinho em cerca de 3 segundos e troca para uma fonte com áudio compatível (AAC), continuando do mesmo ponto. Se não houver fonte assim, aparece um aviso pedindo para escolher outra fonte, de preferência com "AAC" no nome.
