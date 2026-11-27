@@ -1,11 +1,64 @@
 .player-controls-top {
-  align-self: flex-end;
+  align-self: stretch;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
   text-align: right;
   position: relative;
   z-index: 1;
   color: rgba(245, 249, 255, 0.9);
   text-shadow: none;
   transition: opacity 160ms ease;
+}
+
+.player-top-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.player-top-btn {
+  appearance: none;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  border-radius: 999px;
+  background: rgba(15, 18, 24, 0.72);
+  color: #ffffff;
+  font-family: var(--app-font-family);
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1;
+  padding: 12px 20px;
+  cursor: pointer;
+  pointer-events: auto;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition:
+    background-color 140ms ease,
+    border-color 140ms ease,
+    transform 120ms ease;
+}
+
+.player-top-btn:hover,
+.player-top-btn:focus-visible {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.7);
+  outline: none;
+}
+
+.player-top-btn:active {
+  transform: scale(0.96);
+}
+
+.tizen-tv .player-top-actions,
+.webos-tv .player-top-actions {
+  display: none;
+}
+
+.player-top-clock {
+  margin-left: auto;
+  text-align: right;
 }
 
 .player-clock {
@@ -68,9 +121,10 @@
 
 .player-progress-shell {
   width: 100%;
-  padding: 0;
+  padding: 12px 0;
   outline: none;
-  margin-top: 12px;
+  margin-top: 8px;
+  cursor: pointer;
 }
 
 .player-progress-track {
@@ -85,7 +139,8 @@
     background-color 120ms ease;
 }
 
-.player-progress-shell.focused .player-progress-track {
+.player-progress-shell.focused .player-progress-track,
+.player-progress-shell:hover .player-progress-track {
   height: 10px;
   background: rgba(255, 255, 255, 0.45);
 }
@@ -146,9 +201,18 @@
   font-size: var(--tv-secondary-text);
   font-weight: 700;
   pointer-events: auto;
+  cursor: pointer;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  transition:
+    background-color 140ms ease,
+    color 140ms ease,
+    transform 120ms ease;
+}
+
+.desktop-web .player-control-btn:hover {
+  background: rgba(255, 255, 255, 0.18);
 }
 
 .player-control-icon {
