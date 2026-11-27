@@ -43,6 +43,7 @@ export function createPlayerScreenMethods70() {
             video.volume = 1;
           }
           video.muted = !video.muted;
+          this._userMutedVideo = Boolean(video.muted);
         }
         this.resetControlsAutoHide?.();
         return true;

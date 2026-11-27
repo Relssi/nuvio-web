@@ -169,6 +169,23 @@ export function createPlayerScreenMethods69() {
       this.resetControlsAutoHide();
       return true;
     },
+    onPointerMove() {
+      const now = Date.now();
+      if (now - Number(this._lastPointerMoveAt || 0) < 120) {
+        return;
+      }
+      this._lastPointerMoveAt = now;
+      if (this.isExternalFrameMode() || this.isStartupErrorVisible() || this.isPostPlayVisible()) {
+        return;
+      }
+      if (!this.controlsVisible && !this.isDialogOpen()) {
+        this.setControlsVisible(true, { focus: false });
+        return;
+      }
+      if (this.controlsVisible) {
+        this.resetControlsAutoHide();
+      }
+    },
     onPointerSurfaceActivate(target) {
       if (!target || this.isExternalFrameMode()) {
         return false;

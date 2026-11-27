@@ -243,6 +243,21 @@ export function createPlayerScreenMethods15() {
         });
         volumeSlider.addEventListener("click", (event) => event.stopPropagation());
         videoEl.addEventListener("volumechange", syncVolumeUi);
+        videoEl.addEventListener(
+          "playing",
+          () => {
+            if (internals.Platform?.isBrowser?.() && !this.startupAudioGateActive && !this._userMutedVideo && videoEl.muted) {
+              try {
+                videoEl.muted = false;
+                if (videoEl.volume === 0) {
+                  videoEl.volume = 1;
+                }
+              } catch (_) {}
+            }
+            syncVolumeUi();
+          },
+          { once: true }
+        );
         syncVolumeUi();
       }
       this.syncPlayerOverlayLayoutState();

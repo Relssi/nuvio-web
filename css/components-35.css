@@ -286,27 +286,67 @@
   left: 44px;
   top: 40px;
   bottom: 96px;
-  width: min(76vw, 1180px);
+  width: min(82vw, 1080px);
+  padding: 24px;
+  border-radius: 18px;
 }
 
 .desktop-web .player-audio-modal {
   left: 44px;
   bottom: 96px;
-  width: min(62vw, 960px);
+  width: min(72vw, 880px);
   height: min(68vh, calc(100vh - 140px));
+  padding: 24px;
+  border-radius: 18px;
+  display: flex;
+  flex-direction: column;
+}
+
+.desktop-web .player-audio-overlay-grid {
+  grid-template-columns: minmax(0, 1.35fr) minmax(240px, 0.9fr);
+  gap: 18px;
+}
+
+.desktop-web .player-audio-track-list,
+.desktop-web .player-audio-controls-list {
+  width: auto;
+  min-width: 0;
+  padding: 6px 0;
+  gap: 10px;
+}
+
+.desktop-web .player-audio-control-card {
+  padding: 10px 12px;
+  border-radius: 12px;
 }
 
 .desktop-web .player-speed-modal {
   left: 44px;
   bottom: 96px;
-  width: 360px;
+  width: 340px;
   padding: 24px;
   border-radius: 18px;
 }
 
 .desktop-web .player-subtitle-overlay-grid {
-  grid-template-columns: minmax(180px, 260px) minmax(240px, 1fr) minmax(220px, 340px);
-  row-gap: 12px;
+  grid-template-columns: minmax(170px, 220px) minmax(240px, 1fr) minmax(220px, 290px);
+  row-gap: 10px;
+  column-gap: 18px;
+}
+
+.desktop-web .player-subtitle-overlay-grid.is-off-only {
+  grid-template-columns: minmax(220px, 320px);
+}
+
+.desktop-web .player-subtitle-rail-heading {
+  font-size: 14px;
+}
+
+.desktop-web .player-dialog-item,
+.desktop-web .player-subtitle-language-rail .player-dialog-item,
+.desktop-web .player-subtitle-options-rail .player-dialog-item {
+  padding: 10px 14px;
+  border-radius: 10px;
 }
 
 .player-controls-top {
