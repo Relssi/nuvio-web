@@ -485,6 +485,12 @@ function browserViewportUnitsPlugin() {
     // @supports-guarded :root copies from the legacy fallbacks) are covered.
     OnceExit(root) {
       root.walkDecls((decl) => {
+        // The canvas variables themselves (css/mobile.css sets them from real
+        // vw/vh for zoomed phone screens) must keep plain units, or they would
+        // refer to themselves and resolve to nothing (docs/BUGS.md B27).
+        if (/^--nuvio-v[wh]$/i.test(decl.prop)) {
+          return;
+        }
         const rewritten = rewriteViewportUnits(decl.value);
         if (rewritten !== decl.value) {
           decl.value = rewritten;

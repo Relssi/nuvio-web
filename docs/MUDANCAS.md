@@ -8,6 +8,14 @@ Detalhes de bugs (causa e correção) ficam em [`BUGS.md`](BUGS.md).
 
 ---
 
+## 28/11/2026 — Celular arrumado, toque no player e áudio em português
+
+- **O que mudou no celular:** Busca, Biblioteca, Configurações, Addons, Descobrir e as outras telas agora cabem na tela com texto e botões no tamanho certo (antes estavam em tamanho de TV). Configurações mostram as seções numa fileira em cima. No player: tocar na imagem mostra/esconde os controles, os botões ficaram do tamanho do dedo, dá para tocar na barra para pular e há um botão de **tela cheia** (⛶) que deixa o filme deitado (no iPhone abre o player do próprio iPhone, que gira junto). Rolar com o dedo não dá mais "pulos". Com o celular deitado, a Início e a tela do filme se ajustam.
+- **Idioma do áudio:** com o TorBox Pro, o filme já começa na faixa do idioma escolhido em Configurações (por exemplo, português do Brasil), mesmo quando ela não é a primeira do arquivo.
+- **Como:** `css/mobile.css` reduz as telas de TV para o celular; mudanças no toque do player e da navegação; o site pede ao TorBox a faixa de áudio certa. Detalhes em BUGS.md (B26, B27, B28).
+- **Precisa fazer:** nada. Recarregue a página no celular. Para o português, deixe o idioma do áudio em Configurações > Reprodução como Português (ou "sistema", se o celular estiver em português).
+- **Não testado:** em celular de verdade (testado no simulador do navegador, em pé e deitado) e o áudio em português com um filme real do TorBox Pro.
+
 ## 28/11/2026 — Som em qualquer aparelho com o TorBox Pro
 
 - **O que mudou:** no navegador (Chrome, Brave, celular, iPhone), os filmes do TorBox passam a usar a versão convertida que o próprio TorBox gera, que toca com som em qualquer aparelho. Nas TVs nada muda.

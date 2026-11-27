@@ -384,8 +384,10 @@ async function main() {
         .forEach((selector) => selectors.push(selector));
       return match;
     });
+    // "@media (...)" is the condition of a block whose rules are checked too.
     const unscoped = selectors.filter(
-      (selector) => !selector.startsWith('html[data-layout="mobile"]')
+      (selector) =>
+        !selector.startsWith('html[data-layout="mobile"]') && !selector.startsWith("@media")
     );
     if (!selectors.length) return "css/mobile.css has no rules";
     if (unscoped.length) return `unscoped selectors: ${unscoped.slice(0, 3).join(" | ")}`;
@@ -412,8 +414,9 @@ async function main() {
     const anim = await source(
       "js/ui/screens/home/homeScreenMethods-02-restore-modern-focus-state.js"
     );
-    if (!anim.includes('axis === "x" && !options?.allowOnPhone && isPhoneTouchScroll()')) {
-      problems.push("animateScroll no longer blocks automatic horizontal scroll on phones");
+    // B28 widened the guard from horizontal only to both directions.
+    if (!anim.includes("if (!options?.allowOnPhone && isPhoneTouchScroll())")) {
+      problems.push("animateScroll no longer blocks automatic scrolling on phones");
     }
     const hover = await source("js/ui/screens/home/homeScreenMethods-19-handle-home-dpad.js");
     if (
@@ -472,9 +475,52 @@ async function main() {
     }
   );
 
+  await check("B26", "TorBox conversion asks for the preferred audio language", async () => {
+    const code = await source("js/core/debrid/directDebridResolver.js");
+    if (!code.includes("pickTorboxAudioIndex(")) return "preferred audio track is no longer chosen";
+    return true;
+  });
+
+  await check(
+    "B27",
+    "phone layout shrinks TV screens and the player, and has a full screen button",
+    async () => {
+      const problems = [];
+      const css = await source("css/mobile.css");
+      if (!css.includes("--mobile-ui-zoom")) problems.push("phone zoom rules missing");
+      if (!css.includes("#playerUiRoot")) problems.push("player overlay not sized for phones");
+      const build = await source("scripts/build.mjs");
+      if (!build.includes("/^--nuvio-v[wh]$/i.test(decl.prop)"))
+        problems.push("build rewrites the canvas variables themselves");
+      const controls = await source(
+        "js/ui/screens/player/playerScreenMethods-28-unbind-video-events.js"
+      );
+      if (!controls.includes('action: "fullscreen"')) problems.push("full screen button missing");
+      return problems.length ? problems.join("; ") : true;
+    }
+  );
+
+  await check(
+    "B28",
+    "touch: tapping the picture toggles the player controls; finger drags are not hovers",
+    async () => {
+      const problems = [];
+      const player = await source(
+        "js/ui/screens/player/playerScreenMethods-69-sync-pointer-focus.js"
+      );
+      if (!player.includes('target?.closest?.("#playerUiRoot")'))
+        problems.push("taps on the player layer are ignored");
+      const focus = await source("js/ui/navigation/focusEngine.js");
+      if (!focus.includes('event?.pointerType === "touch"'))
+        problems.push("touch drags move the focus");
+      return problems.length ? problems.join("; ") : true;
+    }
+  );
+
   // ---- Unit tests --------------------------------------------------------
   const tests = await run(process.execPath, [
     "--test",
+    "js/core/debrid/torboxAudioChoice.test.mjs",
     "js/core/debrid/torboxWebStream.test.mjs",
     "scripts/test-profile-scoped-store-cache.mjs",
     "scripts/test-general-settings-store.mjs",

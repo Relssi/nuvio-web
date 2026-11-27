@@ -1,5 +1,6 @@
 /* eslint-disable no-unused-vars */
 import * as internals from "./playerScreenContext.js";
+import { toggleBrowserFullscreen } from "./browserFullscreen.js";
 
 export function createPlayerScreenMethods68() {
   const {
@@ -223,11 +224,7 @@ export function createPlayerScreenMethods68() {
       }
 
       if (action === "fullscreen") {
-        if (document.fullscreenElement) {
-          document.exitFullscreen?.().catch?.(() => {});
-        } else {
-          (this.container || document.documentElement)?.requestFullscreen?.().catch?.(() => {});
-        }
+        void toggleBrowserFullscreen(PlayerController?.video || null);
         return;
       }
 

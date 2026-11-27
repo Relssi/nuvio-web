@@ -311,6 +311,11 @@ export const FocusEngine = {
     if (!isPointerNavigationEnabled()) {
       return;
     }
+    // A finger dragging to scroll is not a hover: focusing what is under it
+    // would scroll the list to that item and make the page jump (B28).
+    if (event?.pointerType === "touch" || event?.pointerType === "pen") {
+      return;
+    }
     this.pendingPointerMoveEvent = event;
     if (this.pointerMoveFrame) {
       return;

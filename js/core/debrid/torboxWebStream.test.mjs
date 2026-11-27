@@ -67,3 +67,37 @@ test("TV apps (not a browser) never ask for the converted stream", async () => {
   assert.equal(await requestTorboxWebStream("key", 1, 1, { enabled: false }), null);
   assert.equal(calls.length, 0);
 });
+
+test("asks TorBox for the Portuguese track when it is not the first one", async () => {
+  resetTorboxWebStreamAvailability();
+  const calls = [];
+  DebridApi.torboxCreateStream = async (apiKey, options) => {
+    calls.push(options);
+    const index = options.audioIndex ?? 0;
+    return {
+      ok: true,
+      status: 200,
+      data: {
+        data: {
+          hls_url: `https://cdn.example/hls/audio-${index}`,
+          needs_transcoding: true,
+          metadata: {
+            audios: [
+              { index: 1, language: "eng", language_full: "English" },
+              {
+                index: 2,
+                language: "por",
+                language_full: "Portuguese",
+                title: "Português (Brasil)"
+              }
+            ]
+          }
+        }
+      }
+    };
+  };
+  const url = await requestTorboxWebStream("key", 7, 1, { enabled: true, audioTargets: ["pt-br"] });
+  assert.equal(url, "https://cdn.example/hls/audio-1");
+  assert.equal(calls.length, 2);
+  assert.equal(calls[1].audioIndex, 1);
+});

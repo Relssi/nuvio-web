@@ -215,10 +215,11 @@ export function createHomeScreenMethods02() {
       if (!container) {
         return;
       }
-      // Phone layout: rows are scrolled by the finger. Automatic horizontal
-      // moves (camera follow, trailer expansion) would shift the row on their
-      // own (BUGS.md B20); arrow-key navigation is still allowed.
-      if (axis === "x" && !options?.allowOnPhone && isPhoneTouchScroll()) {
+      // Phone layout: the page and its rows are scrolled by the finger.
+      // Automatic moves (camera follow, trailer expansion) would shift them on
+      // their own (BUGS.md B20, and vertically B28: the Home opened scrolled
+      // down on a phone held sideways); arrow-key navigation is still allowed.
+      if (!options?.allowOnPhone && isPhoneTouchScroll()) {
         return;
       }
       if (options?.mode === "spring") {

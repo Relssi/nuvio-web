@@ -8,6 +8,8 @@ import {
 } from "./debridFileSelection.js";
 import { resolveAlternativeHashMatches, torboxCachedEntries } from "./torboxCacheAliases.js";
 import { Environment } from "../../platform/environment.js";
+import { PlayerSettingsStore } from "../../data/local/playerSettingsStore.js";
+import { pickTorboxAudioIndex, preferredAudioTargets } from "./torboxAudioChoice.js";
 
 const HLS_MIME_TYPE = "application/vnd.apple.mpegurl";
 // Set once TorBox says this account cannot use web streaming (not Pro), so
@@ -21,7 +23,7 @@ export async function requestTorboxWebStream(
   apiKey,
   torrentId,
   fileId,
-  { enabled = Environment.isBrowser() } = {}
+  { enabled = Environment.isBrowser(), audioTargets = null } = {}
 ) {
   if (!enabled || torboxWebStreamUnavailable || torrentId == null || fileId == null) {
     return null;
@@ -35,12 +37,32 @@ export async function requestTorboxWebStream(
     }
     return null;
   }
+  // The first answer lists the audio tracks. Browsers only play the first one,
+  // so when the preferred language is another track, ask for that one (B26).
+  const targets = audioTargets || preferredAudioTargets(PlayerSettingsStore.get(), browserLocale());
+  const audioIndex = pickTorboxAudioIndex(data?.metadata?.audios, targets);
+  if (audioIndex > 0) {
+    const chosen = await DebridApi.torboxCreateStream(apiKey, {
+      id: torrentId,
+      fileId,
+      audioIndex
+    });
+    const chosenUrl =
+      typeof chosen?.data?.data?.hls_url === "string" ? chosen.data.data.hls_url.trim() : "";
+    if (chosen?.ok && chosenUrl) {
+      return chosenUrl;
+    }
+  }
   const hlsUrl = typeof data.hls_url === "string" ? data.hls_url.trim() : "";
   // TorBox says the original file already plays in browsers: keep it direct.
   if (!hlsUrl || data.needs_transcoding === false) {
     return null;
   }
   return hlsUrl;
+}
+
+function browserLocale() {
+  return String(globalThis.navigator?.language || "");
 }
 
 export function resetTorboxWebStreamAvailability() {

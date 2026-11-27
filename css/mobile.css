@@ -671,3 +671,241 @@ html[data-layout="mobile"] .profile-grid-compact .profile-avatar {
   width: 92px;
   height: 92px;
 }
+
+/* ------------------------------------------------------------------ */
+/* Every other screen: the TV design, shrunk to phone size (B27)       */
+/* ------------------------------------------------------------------ */
+/*
+ * Search, Library, Settings, Addons, Discover, catalogs, collections and
+ * the rest were drawn for a 1920x1080 TV. On a phone their content is
+ * zoomed to half size (a ~750px wide canvas), which keeps text readable and
+ * buttons tappable without rewriting each screen. vw/vh units are rewritten
+ * by the build to var(--nuvio-vw/vh); doubling them inside the zoomed box
+ * keeps "100vw" equal to the real screen width.
+ */
+html[data-layout="mobile"] {
+  --mobile-ui-zoom: 0.5;
+}
+
+html[data-layout="mobile"]
+  .screen:not(#home):not(#detail):not(#stream):not(#profileSelection):not(#player)
+  > .home-shell
+  > :not(.home-sidebar):not(.settings-root-sidebar-slot),
+html[data-layout="mobile"]
+  .screen:not(#home):not(#detail):not(#stream):not(#profileSelection):not(#player)
+  > :not(.home-shell) {
+  zoom: var(--mobile-ui-zoom);
+  --nuvio-vw: calc(1vw / var(--mobile-ui-zoom));
+  --nuvio-vh: calc(1vh / var(--mobile-ui-zoom));
+}
+
+/* Room for the bottom tab bar (62px on screen = 124px at half size). */
+html[data-layout="mobile"]
+  .screen:not(#home):not(#detail):not(#stream):not(#profileSelection):not(#player)
+  > .home-shell
+  > .home-main {
+  padding-bottom: calc(124px + 2 * env(safe-area-inset-bottom, 0px));
+}
+
+/* Settings: section names become a row of chips on top, the open section
+   fills the rest of the screen. */
+html[data-layout="mobile"] #settings .settings-workspace {
+  width: calc(100 * var(--nuvio-vw));
+  height: calc(100 * var(--nuvio-vh) - 124px - 2 * env(safe-area-inset-bottom, 0px));
+  margin: 0;
+  padding: 32px 24px 16px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 20px;
+}
+
+html[data-layout="mobile"] #settings .settings-sidebar-frame {
+  height: auto;
+}
+
+html[data-layout="mobile"] #settings .settings-sidebar {
+  flex-direction: row;
+  gap: 14px;
+  height: auto;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 4px;
+}
+
+html[data-layout="mobile"] #settings .settings-sidebar > * {
+  flex: 0 0 auto;
+  width: auto;
+  white-space: nowrap;
+}
+
+html[data-layout="mobile"] #settings .settings-scroll-indicator {
+  display: none;
+}
+
+html[data-layout="mobile"] #settings .settings-content-frame {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ------------------------------------------------------------------ */
+/* Player: TV overlays at half size, finger-sized control buttons      */
+/* ------------------------------------------------------------------ */
+
+html[data-layout="mobile"] #playerUiRoot {
+  zoom: var(--mobile-ui-zoom);
+  --nuvio-vw: calc(1vw / var(--mobile-ui-zoom));
+  --nuvio-vh: calc(1vh / var(--mobile-ui-zoom));
+}
+
+html[data-layout="mobile"] #playerUiRoot .player-control-buttons {
+  gap: 18px;
+}
+
+html[data-layout="mobile"] #playerUiRoot .player-control-btn {
+  width: 84px;
+  min-width: 84px;
+  height: 84px;
+  font-size: 36px;
+}
+
+html[data-layout="mobile"] #playerUiRoot .player-control-icon {
+  width: 44px;
+  height: 44px;
+}
+
+html[data-layout="mobile"] #playerUiRoot .player-control-label {
+  font-size: 40px;
+  line-height: 1;
+}
+
+/* ------------------------------------------------------------------ */
+/* Title details: pieces still at TV size                              */
+/* ------------------------------------------------------------------ */
+
+html[data-layout="mobile"] .series-detail-shell .detail-meta-row,
+html[data-layout="mobile"] .series-detail-shell .detail-meta-row * {
+  font-size: 15px;
+}
+
+html[data-layout="mobile"] .series-detail-shell .series-insight-divider {
+  height: 20px;
+  font-size: 18px;
+}
+
+html[data-layout="mobile"] .series-detail-shell .detail-trailer-hint {
+  font-size: 14px;
+}
+
+html[data-layout="mobile"] .series-detail-shell .movie-cast-track .movie-cast-card {
+  width: 96px;
+  min-width: 96px;
+  height: auto;
+}
+
+html[data-layout="mobile"] .series-detail-shell .movie-cast-track .movie-cast-avatar {
+  width: 88px;
+  height: 88px;
+}
+
+html[data-layout="mobile"] .series-detail-shell .movie-cast-track .movie-cast-avatar-fallback {
+  font-size: 30px;
+}
+
+html[data-layout="mobile"] .series-detail-shell .movie-cast-track .movie-cast-name {
+  font-size: 13px;
+  line-height: 17px;
+}
+
+html[data-layout="mobile"] .series-detail-shell .movie-cast-track .movie-cast-role {
+  font-size: 12px;
+  line-height: 16px;
+}
+
+/* Addons: the actions (toggle, update, remove) go under the addon name. */
+html[data-layout="mobile"] #plugin .addons-installed-head {
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+html[data-layout="mobile"] #plugin .addons-installed-copy {
+  flex: 1 1 100%;
+  min-width: 0;
+}
+
+html[data-layout="mobile"] #plugin .addons-installed-actions {
+  flex: 1 1 100%;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+}
+
+/* The progress bar is 2px tall on a phone: give it an invisible ~26px tall
+   touch area (padding at half size) so a finger can tap or seek on it. */
+html[data-layout="mobile"] #playerUiRoot .player-progress-shell {
+  padding: 24px 0;
+  margin: -24px 0;
+  box-sizing: content-box;
+  background-clip: content-box;
+  touch-action: none;
+  /* The TV layout lets clicks pass through the bar; phones tap it to seek. */
+  pointer-events: auto;
+}
+
+/* ------------------------------------------------------------------ */
+/* Phone held sideways (landscape): short screens                      */
+/* ------------------------------------------------------------------ */
+
+@media (orientation: landscape) and (max-height: 560px) {
+  html[data-layout="mobile"] .home-screen-shell.home-layout-modern .home-hero-modern {
+    height: calc(100vh - var(--mobile-nav-height) - 24px);
+    min-height: 240px;
+  }
+
+  html[data-layout="mobile"] .home-screen-shell.home-layout-modern .home-modern-hero-copy {
+    right: 45%;
+  }
+
+  html[data-layout="mobile"]
+    .home-screen-shell.home-layout-modern
+    .home-modern-hero-copy
+    .home-hero-description {
+    -webkit-line-clamp: 2;
+    max-height: 38px;
+  }
+
+  html[data-layout="mobile"] .home-screen-shell.home-layout-modern .home-modern-hero-copy::after {
+    width: auto;
+    align-self: flex-start;
+    padding: 0 22px;
+    height: 38px;
+  }
+
+  html[data-layout="mobile"] .series-detail-shell .detail-hero-section {
+    padding-top: 64px;
+  }
+
+  html[data-layout="mobile"] .series-detail-shell .detail-hero-brand,
+  html[data-layout="mobile"] .series-detail-shell .detail-hero-body {
+    max-width: 60%;
+  }
+}
+
+/* Library / Discover filter pickers: their text is sized for a TV row and
+   ends up 4-6px on a phone. Sizes below are at half size (11px / 14px). */
+html[data-layout="mobile"] .library-picker {
+  min-height: 84px;
+  padding: 12px 22px;
+  border-radius: 20px;
+}
+
+html[data-layout="mobile"] .library-picker-title {
+  font-size: 22px;
+  line-height: 28px;
+}
+
+html[data-layout="mobile"] .library-picker-value {
+  font-size: 28px;
+  line-height: 34px;
+}

@@ -172,6 +172,28 @@ O script cobre automaticamente os itens marcados com **[auto]**. Os itens **[man
 - **Verificar:** checagem B25 e `torboxWebStream.test.mjs`; manualmente, com TorBox Pro, um filme DDP/DTS toca com som no Chrome e no iPhone.
 - **Não testado:** com conta Pro de verdade (formato real do `hls_url`, CORS dos pedaços).
 
+## B26 — Idioma do áudio: português selecionado, mas toca em outro idioma [auto + manual]
+
+- **Causa:** o navegador só toca a primeira faixa de áudio de um MKV e não consegue trocar (o Chrome não expõe as outras). O idioma escolhido no app não tinha efeito.
+- **Correção:** com a conversão do TorBox (B25), o site lê a lista de faixas que o TorBox devolve (`metadata.audios`), escolhe a do idioma preferido (Configurações > Reprodução > idioma do áudio; "sistema" usa o idioma do navegador) e pede o stream de novo com `chosen_audio_index`. Prefere português do Brasil ao de Portugal e pula faixas de comentário. Código: `js/core/debrid/torboxAudioChoice.js` e `requestTorboxWebStream`.
+- **Verificar:** checagem B26, `torboxAudioChoice.test.mjs` e `torboxWebStream.test.mjs`; manualmente, um filme com faixa PT-BR que não é a primeira toca em português no Chrome.
+- **Limite:** só vale para filmes que passam pela conversão do TorBox (Pro, link resolvido pelo próprio site). Trocar a faixa no meio do filme pelo menu de áudio ainda não usa o TorBox.
+
+## B27 — Celular: telas e janelas em tamanho de TV, filme sem tela cheia [auto + manual]
+
+- **Sintoma:** no celular, Busca, Biblioteca, Configurações, Addons, Descobrir e o player apareciam com texto e botões de TV (caixa de busca saindo da tela, menu de Configurações cortado, controles do player desproporcionais); não havia como deixar o filme em tela cheia para virar o celular.
+- **Correção (`css/mobile.css`):** as telas sem layout próprio de celular são reduzidas à metade (`zoom: var(--mobile-ui-zoom)`), com `--nuvio-vw/vh` dobrados para `100vw` continuar sendo a largura real. Configurações viram uma fileira de seções em cima e o conteúdo embaixo. A camada do player (`#playerUiRoot`) também é reduzida, com botões de 42px. Ajustes no celular deitado (Início e detalhes), no elenco da tela do filme e nos filtros da Biblioteca/Descobrir.
+- **Build:** o plugin que reescreve vw/vh não mexe mais nas próprias variáveis `--nuvio-vw/--nuvio-vh` (senão elas apontavam para si mesmas e ficavam vazias).
+- **Tela cheia:** novo botão ⛶ no player do navegador (`browserFullscreen.js`): Android/computador entram em tela cheia e o celular trava deitado; no iPhone abre o player do sistema, que gira com o aparelho.
+- **Verificar:** checagem B27; no simulador 375×812 e 812×375, nenhuma das 13 telas abertas tem texto saindo da tela; botões do player com 42px.
+
+## B28 — Toque no celular: player não reagia, rolagem dava pulos [auto + manual]
+
+- **Causa 1:** a camada de controles cobre o vídeo, mas o player só tratava toques no próprio `<video>`; com os controles escondidos, tocar na tela não fazia nada. A barra de progresso não recebia toques (`pointer-events: none`, 2px de altura).
+- **Causa 2:** arrastar o dedo gera `pointermove`, que o app tratava como mouse passando: focava o item sob o dedo e rolava a lista até ele.
+- **Correção:** `onPointerSurfaceActivate` aceita toques em qualquer parte do player que não seja botão/painel e alterna os controles (mostra/esconde). A barra de progresso recebe toques no celular, com área de ~26px. `FocusEngine.handlePointerMove` ignora `pointerType` "touch"/"pen". A Início não rola sozinha na vertical no celular (só com setas do teclado).
+- **Verificar:** checagem B28; no simulador, tocar na imagem mostra/esconde os controles e o botão de pausar responde ao toque.
+
 ## Não são bugs do código (para não perder tempo de novo)
 
 - **"No streams found" com Torrentio sem debrid:** o navegador não toca torrent; é preciso um debrid conectado.

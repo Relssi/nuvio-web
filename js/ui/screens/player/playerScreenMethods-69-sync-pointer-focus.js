@@ -194,12 +194,28 @@ export function createPlayerScreenMethods69() {
         this.consumeBackRequest();
         return true;
       }
-      if (this.isDialogOpen() || this.isStartupErrorVisible() || this.isPostPlayVisible() || this.controlsVisible) {
+      if (this.isDialogOpen() || this.isStartupErrorVisible() || this.isPostPlayVisible()) {
         return false;
       }
+      // The control layer (#playerUiRoot) covers the video, so a tap on the
+      // picture lands on it, not on the <video>. Any tap on the player that is
+      // not on a button or panel counts as a tap on the picture (B28).
       const video = this.container?.querySelector?.("#videoPlayer");
-      if (!video || (target !== video && target?.closest?.("#videoPlayer") !== video)) {
+      const onVideo = Boolean(video) && (target === video || target?.closest?.("#videoPlayer") === video);
+      const onPlayer = onVideo || Boolean(target?.closest?.("#playerUiRoot"));
+      if (!onPlayer) {
         return false;
+      }
+      const interactive = target.closest?.(
+        "button, a, input, select, textarea, [data-action], .focusable, .player-modal, .player-sources-panel, .player-controls-bar, .player-progress-shell"
+      );
+      if (interactive) {
+        return false;
+      }
+      // Tap toggles the controls, like phone video players.
+      if (this.controlsVisible) {
+        this.setControlsVisible(false, { focus: false });
+        return true;
       }
       this.setControlsVisible(true, { focus: true });
       return true;

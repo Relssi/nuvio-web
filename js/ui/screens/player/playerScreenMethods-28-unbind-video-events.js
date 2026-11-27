@@ -2,6 +2,7 @@
 import * as internals from "./playerScreenContext.js";
 
 import { PartyRepository } from "../../../core/party/partyRepository.js";
+import { Environment } from "../../../platform/environment.js";
 
 export function createPlayerScreenMethods28() {
   const { PlayerController, t, clamp, escapeHtml } = internals;
@@ -94,11 +95,12 @@ export function createPlayerScreenMethods28() {
         });
       }
 
-      if (internals.Platform?.isBrowser?.()) {
+      // Browser only (TV apps are always full screen): B27.
+      if (Environment.isBrowser()) {
         base.push({
           action: "fullscreen",
           label: "⛶",
-          title: t("player_fullscreen", {}, "Fullscreen")
+          title: t("player_fullscreen", {}, "Tela cheia")
         });
       }
 
