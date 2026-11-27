@@ -1,7 +1,12 @@
 import { expectedEpisodeFilename } from "../../../core/streams/filenameEpisodeMatcher.js";
 import { StreamLinkCacheStore, activeStreamLinkProfile } from "../../../data/local/streamLinkCacheStore.js";
 import { cachedStreamLinkCandidate } from "../../../core/streams/streamLinkReuse.js";
-import { PT_BR_FILTER_ID, isStreamPtBrAvailable } from "../../../core/streams/streamOrdering.js";
+import {
+  PT_BR_FILTER_ID,
+  isFrostStream,
+  isStreamPtBrAvailable,
+  sortStreamsBySizeDescending
+} from "../../../core/streams/streamOrdering.js";
 /* eslint-disable no-unused-vars */
 import * as internals from "./streamScreen.js";
 
@@ -284,7 +289,7 @@ export function createStreamScreenMethods05() {
         filter === "all"
           ? orderedStreams
           : filter === PT_BR_FILTER_ID
-            ? orderedStreams.filter((stream) => isStreamPtBrAvailable(stream))
+            ? sortStreamsBySizeDescending(orderedStreams.filter((stream) => isStreamPtBrAvailable(stream) && !isFrostStream(stream)))
             : orderedStreams.filter((stream) => stream.addonName === filter);
       const result = shared ? [shared, ...filtered] : filtered;
       this._filteredStreamsCache = {

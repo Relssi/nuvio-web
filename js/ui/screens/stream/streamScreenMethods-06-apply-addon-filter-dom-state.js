@@ -2,6 +2,7 @@
 import * as internals from "./streamScreen.js";
 import { focusWithoutScroll } from "../../navigation/focusWithoutScroll.js";
 import { startStreamBadgeMarquee, stopStreamBadgeMarquee } from "./streamBadgeMarquee.js";
+import { PT_BR_FILTER_ID } from "../../../core/streams/streamOrdering.js";
 
 export function createStreamScreenMethods06() {
   const { ScreenUtils, Environment, isStreamEmptyStateVisible, clamp } = internals;
@@ -14,6 +15,9 @@ export function createStreamScreenMethods06() {
       }
 
       const targetFilter = String(this.addonFilter || "all");
+      if (targetFilter === PT_BR_FILTER_ID) {
+        return false;
+      }
       // The All tab is defined by the complete stream list. Keep this explicit
       // so a stale filtered cache can never leave All with hidden cards and a
       // misleading empty state.

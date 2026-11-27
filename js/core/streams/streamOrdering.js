@@ -272,7 +272,45 @@ export function sortStreamsBySizeAscending(streams = []) {
     .map((entry) => entry.stream);
 }
 
+export function sortStreamsBySizeDescending(streams = []) {
+  const list = (Array.isArray(streams) ? streams : []).filter(Boolean);
+  if (list.length <= 1) {
+    return list.slice();
+  }
+  return list
+    .map((stream, index) => ({
+      stream,
+      index,
+      sizeBytes: getStreamSizeBytes(stream) ?? -1
+    }))
+    .sort((left, right) => {
+      if (left.sizeBytes !== right.sizeBytes) {
+        return right.sizeBytes - left.sizeBytes;
+      }
+      return left.index - right.index;
+    })
+    .map((entry) => entry.stream);
+}
+
 export const PT_BR_FILTER_ID = "__pt_br__";
+
+export function isFrostStream(stream = {}) {
+  if (!stream || typeof stream !== "object") {
+    return false;
+  }
+  const sourceFields = [
+    stream.addonName,
+    stream.pluginSourceName,
+    stream.streamOrigin?.addonName,
+    stream.streamOrigin?.sourceProviderId,
+    stream.sourceProviderId,
+    stream.name,
+    stream.title
+  ]
+    .map((value) => String(value || ""))
+    .join(" ");
+  return /\bfrost[\s._-]*stream\b/i.test(sourceFields);
+}
 
 const PT_BR_TEXT_PATTERN =
   /(?:🇧🇷|\b(?:pt[\s._-]*br|pob|brazil(?:ian)?|portugu[eê]s(?:a|es)?|dublado|dual|nacional)\b)/i;
