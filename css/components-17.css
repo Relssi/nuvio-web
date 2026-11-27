@@ -535,7 +535,7 @@
   margin-right: 12px;
 }
 
-/* Desktop Web: Netflix-inspired scrolling catalog (hero scrolls with page) */
+/* Desktop Web: Netflix-inspired catalog layout (keeping standard Hero at top) */
 .desktop-web .home-screen-shell.home-layout-modern {
   --home-sidebar-content-offset: 84px;
   --home-content-start: 104px;
@@ -543,12 +543,11 @@
   --home-continue-track-end: 84px;
   --modern-track-peek-extension: 84px;
   --home-row-gap: 18px;
-  --modern-rows-viewport-height: auto;
-  --modern-rows-viewport-padding-bottom: 64px;
-  --modern-hero-media-width: 78%;
-  --modern-hero-media-height: 100%;
+  --modern-rows-viewport-height: 52%;
+  --modern-rows-viewport-padding-bottom: 120px;
+  --modern-hero-media-width: 74%;
   --modern-hero-copy-top-safe: 36px;
-  --modern-hero-copy-bottom-gap: 96px;
+  --modern-hero-copy-bottom-gap: 24px;
   --modern-hero-copy-max-width: 44%;
   --modern-hero-logo-max-width: 380px;
   --modern-hero-logo-max-height: 156px;
@@ -565,81 +564,21 @@
   --home-continue-height: 202px;
 }
 
-.desktop-web .home-screen-shell.home-layout-modern .home-main {
-  height: 100vh;
-  overflow-x: hidden;
-  overflow-y: auto;
-  padding: 0 0 64px;
+.desktop-web .home-screen-shell.home-layout-modern .home-modern-rows-viewport {
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 255, 255, 0.28) transparent;
 }
 
-.desktop-web .home-screen-shell.home-layout-modern .home-main::-webkit-scrollbar {
+.desktop-web .home-screen-shell.home-layout-modern .home-modern-rows-viewport::-webkit-scrollbar {
+  display: block;
   width: 8px;
 }
 
-.desktop-web .home-screen-shell.home-layout-modern .home-main::-webkit-scrollbar-thumb {
+.desktop-web
+  .home-screen-shell.home-layout-modern
+  .home-modern-rows-viewport::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.28);
   border-radius: 999px;
-}
-
-.desktop-web .home-screen-shell.home-layout-modern .home-route-content {
-  height: auto;
-  min-height: 0;
-}
-
-.desktop-web .home-screen-shell.home-layout-modern .home-modern-stage {
-  position: relative;
-  display: block;
-  height: auto;
-}
-
-.desktop-web .home-screen-shell.home-layout-modern .home-hero-modern {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 50vh;
-  min-height: 380px;
-  z-index: 5;
-  overflow: hidden;
-  pointer-events: none;
-  opacity: 0;
-  transform: translateY(-14px);
-  transition:
-    opacity 220ms ease,
-    transform 220ms ease;
-}
-
-.desktop-web .home-screen-shell.home-layout-modern.is-hover-hero-visible .home-hero-modern {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.desktop-web .home-screen-shell.home-layout-modern .home-modern-hero-card {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-}
-
-.desktop-web .home-screen-shell.home-layout-modern .home-modern-hero-copy {
-  top: 0;
-  bottom: 0;
-  justify-content: flex-end;
-  padding-bottom: 48px;
-}
-
-.desktop-web .home-screen-shell.home-layout-modern .home-modern-rows-viewport {
-  position: relative;
-  left: auto;
-  right: auto;
-  bottom: auto;
-  height: auto;
-  margin-top: 0;
-  padding-top: 32px;
-  overflow: visible;
-  z-index: 3;
 }
 
 .desktop-web .home-screen-shell.home-layout-modern .home-modern-rows-scroll,
