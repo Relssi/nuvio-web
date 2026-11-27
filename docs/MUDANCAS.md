@@ -15,6 +15,12 @@ Detalhes de bugs (causa e correção) ficam em [`BUGS.md`](BUGS.md).
 - **Precisa fazer:** nada. Recarregue com Ctrl + F5.
 - **Não testado:** apps empacotados de TV (Tizen/webOS) depois da mudança no CSS; em teoria o resultado é idêntico ao anterior.
 
+## 27/11/2026 — Tela de perfis para desktop (enviado por Kiid)
+
+- **O que mudou:** a tela "Who's watching?" ficou mais compacta no navegador, sem o logo NUVIO, e o fundo ao passar o mouse segue o tema de cada perfil.
+- **Arquivos:** `css/components-03.css`, `js/app.js` (classe `desktop-web`), telas de seleção de perfil.
+- **Para combinar:** com a escala proporcional (fase 1), essa tela também é reduzida em notebooks; em 1366×768 os nomes dos perfis ficam bem pequenos. Vale o Kiid conferir se quer aumentar um pouco os tamanhos dela.
+
 ## 28/11/2026 — Análise para celular, tablet, desktop e TV
 
 - **O que mudou:** nada no site ainda. Adicionada a análise `docs/ANALISE-RESPONSIVO.md` com o que quebra em cada tamanho de tela e o plano em fases.
