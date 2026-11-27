@@ -148,6 +148,14 @@ O script cobre automaticamente os itens marcados com **[auto]**. Os itens **[man
 - **Limitação conhecida:** usando setas do teclado no layout de celular, o card focado pode não aparecer inteiro (as contas de margem são da TV). Com o dedo não acontece.
 - **Verificar:** checagem B20; no simulador 375×812, 2 fileiras inteiras visíveis, fileiras começam no início após recarregar, rolar a página carrega as imagens de baixo.
 
+## B21 — Início do celular no estilo do CineRotten [auto + manual]
+
+- **Pedido:** o Início do celular ainda estava ruim; fazer algo inspirado no CineRotten (`rt-api/docs/index.html`, bloco `@media(max-width:700px)`).
+- **O que mudou (`css/mobile.css`):** barra de baixo com nome embaixo do ícone, aba ativa com ícone e linha vermelhos; destaque em forma de cartão arredondado (≈58% da altura) com "Em destaque", descrição de 4 linhas e botão vermelho "Ver detalhes"; pôsteres de 118 px com o título escrito na parte de baixo do pôster (via `attr(data-item-title)`); cores do CineRotten (#e50914, fundo #0a0a0d).
+- **Toque no destaque:** `browser-viewport-scale.js` encaminha o toque no cartão de destaque para o pôster em foco (o que o destaque mostra), abrindo o filme.
+- **Verificar:** checagem B21; no simulador, tocar no destaque abre o filme certo; nada passa da largura na Início.
+- **Ainda não feito:** Busca, Biblioteca e Configurações passam da largura no celular (próxima parte).
+
 ## Não são bugs do código (para não perder tempo de novo)
 
 - **"No streams found" com Torrentio sem debrid:** o navegador não toca torrent; é preciso um debrid conectado.

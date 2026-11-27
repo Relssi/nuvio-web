@@ -426,6 +426,24 @@ async function main() {
     return problems.length ? problems.join("; ") : true;
   });
 
+  await check(
+    "B21",
+    "phone Home follows the CineRotten look and the hero opens the title",
+    async () => {
+      const css = await source("css/mobile.css");
+      const problems = [];
+      if (!css.includes("content: attr(data-item-title)"))
+        problems.push("poster title overlay missing");
+      if (!/\.home-nav-label \{[^}]*display: block;/.test(css))
+        problems.push("bottom bar labels hidden");
+      if (!css.includes("Ver detalhes")) problems.push("hero button missing");
+      const script = await source("assets/runtime/browser-viewport-scale.js");
+      if (!script.includes("openHeroTitleOnPhone"))
+        problems.push("hero tap no longer opens the title");
+      return problems.length ? problems.join("; ") : true;
+    }
+  );
+
   // ---- Unit tests --------------------------------------------------------
   const tests = await run(process.execPath, [
     "--test",

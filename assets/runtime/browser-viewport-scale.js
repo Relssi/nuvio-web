@@ -88,4 +88,29 @@
   apply();
   root.addEventListener("resize", apply);
   root.addEventListener("orientationchange", apply);
+
+  // Phone layout: the Home hero card (with its "Ver detalhes" button drawn by
+  // css/mobile.css) opens the title it is showing, which is the focused card.
+  document.addEventListener(
+    "click",
+    function openHeroTitleOnPhone(event) {
+      if (html.getAttribute("data-layout") !== "mobile") {
+        return;
+      }
+      var target = event.target;
+      var hero = target && target.closest ? target.closest(".home-screen-shell .home-hero-modern") : null;
+      if (!hero) {
+        return;
+      }
+      var card =
+        document.querySelector(".home-screen-shell .home-content-card.focused") ||
+        document.querySelector(".home-screen-shell .home-content-card");
+      if (card && typeof card.click === "function") {
+        event.preventDefault();
+        event.stopPropagation();
+        card.click();
+      }
+    },
+    true
+  );
 })();

@@ -8,6 +8,14 @@ Detalhes de bugs (causa e correção) ficam em [`BUGS.md`](BUGS.md).
 
 ---
 
+## 28/11/2026 — Início do celular no estilo do CineRotten
+
+- **O que mudou:** no celular, a Início ficou parecida com a do CineRotten: barra de baixo com o nome de cada aba e a aba ativa em vermelho; destaque em um cartão arredondado com "Em destaque", descrição e botão vermelho "Ver detalhes" (tocar no cartão abre o filme); pôsteres maiores (118 px) com o título escrito no pôster; cores do CineRotten.
+- **Como:** novo visual em `css/mobile.css` copiando as medidas do layout de celular do CineRotten; um pequeno código faz o toque no destaque abrir o filme.
+- **Precisa fazer:** nada. Recarregue no celular.
+- **Ainda falta:** Busca, Biblioteca e Configurações no celular; player; episódios de séries.
+- **Não testado:** em celular de verdade.
+
 ## 28/11/2026 — Início do celular mais compacto e fácil de navegar
 
 - **O que mudou:** no celular, a página Início inteira rola com o dedo, como num app de streaming: o destaque fica menor e sai de cena ao rolar, os pôsteres ficam menores (~3,5 por fileira) e as fileiras ficam mais juntas (2 inteiras na tela). As fileiras não "pulam" mais sozinhas.
