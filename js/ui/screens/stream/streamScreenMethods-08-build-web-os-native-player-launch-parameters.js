@@ -1,6 +1,6 @@
 import { saveReusableStreamLink } from "../../../core/streams/streamLinkReuse.js";
 import { hasClearKeys } from "../../../core/streams/clearKeys.js";
-import { streamProviderHeader } from "../../../core/streams/streamOrdering.js";
+import { PT_BR_FILTER_ID, streamProviderHeader } from "../../../core/streams/streamOrdering.js";
 /* eslint-disable no-unused-vars */
 import * as internals from "./streamScreen.js";
 
@@ -129,6 +129,7 @@ export function createStreamScreenMethods08() {
       return [
         `<button class="stream-route-chip focusable" data-action="refreshStreams" aria-label="${escapeHtml(t("cd_refresh", {}, "Refresh"))}"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><path d="M17.65 6.35A7.95 7.95 0 0 0 12 4a8 8 0 1 0 7.93 9h-2.02A6 6 0 1 1 12 6c1.66 0 3.14.69 4.22 1.78L13 11h7V4z"/></svg></button>`,
         this.renderChip("all", this.addonFilter === "all", "success"),
+        this.renderChip(PT_BR_FILTER_ID, this.addonFilter === PT_BR_FILTER_ID, "success"),
         ...this.getOrderedFilterNames().map((name) => {
           const chip = this.sourceChips.find((entry) => entry.name === name) || {
             name,
@@ -142,7 +143,7 @@ export function createStreamScreenMethods08() {
       const selectedFilter = String(this.addonFilter || "all");
       const availableFilters = this.getOrderedFilterNames();
       let filterReset = false;
-      if (selectedFilter !== "all" && !availableFilters.includes(selectedFilter)) {
+      if (selectedFilter !== "all" && selectedFilter !== PT_BR_FILTER_ID && !availableFilters.includes(selectedFilter)) {
         // An error chip can disappear after the user selected it. Do not leave
         // the state pointing at a filter that no longer has a chip or rows.
         this.addonFilter = "all";
@@ -190,10 +191,11 @@ export function createStreamScreenMethods08() {
         .filter(Boolean)
         .join(" ");
       const spinner = chipStatus === "loading" ? renderLoadingIndicator({ className: "stream-route-chip-spinner" }) : "";
+      const label = name === "all" ? t("common.all", {}, "All") : name === PT_BR_FILTER_ID ? "🇧🇷 PT-BR" : name;
       return `
           <button class="${classes}" data-action="setFilter" data-addon="${escapeHtml(name)}" aria-selected="${selected ? "true" : "false"}">
             ${spinner}
-            <span dir="${contentTextDirection(name === "all" ? t("common.all", {}, "All") : name)}">${escapeHtml(name === "all" ? t("common.all", {}, "All") : name)}</span>
+            <span dir="${contentTextDirection(label)}">${escapeHtml(label)}</span>
           </button>
         `;
     },

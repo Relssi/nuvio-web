@@ -271,3 +271,49 @@ export function sortStreamsBySizeAscending(streams = []) {
     })
     .map((entry) => entry.stream);
 }
+
+export const PT_BR_FILTER_ID = "__pt_br__";
+
+const PT_BR_TEXT_PATTERN =
+  /(?:🇧🇷|\b(?:pt[\s._-]*br|pob|brazil(?:ian)?|portugu[eê]s(?:a|es)?|dublado|dual|nacional)\b)/i;
+
+export function isStreamPtBrAvailable(stream = {}) {
+  if (!stream || typeof stream !== "object") {
+    return false;
+  }
+  const parsedLanguages = [
+    ...(Array.isArray(stream.languages) ? stream.languages : []),
+    ...(Array.isArray(stream.parsed?.languages) ? stream.parsed.languages : []),
+    stream.language,
+    stream.lang,
+    stream.raw?.language,
+    stream.raw?.lang
+  ]
+    .map((value) => String(value || "").trim())
+    .filter(Boolean);
+
+  if (
+    parsedLanguages.some((lang) =>
+      /^(?:pt|pt-br|pt_br|por|pob|portuguese|portugues|brazilian portuguese)$/i.test(lang)
+    )
+  ) {
+    return true;
+  }
+
+  const searchable = [
+    stream.title,
+    stream.name,
+    stream.description,
+    stream.label,
+    stream.filename,
+    stream.behaviorHints?.filename,
+    stream.behaviorHints?.bingeGroup,
+    stream.raw?.title,
+    stream.raw?.name,
+    stream.raw?.description
+  ]
+    .map((value) => String(value || ""))
+    .join(" ");
+
+  return PT_BR_TEXT_PATTERN.test(searchable);
+}

@@ -1,6 +1,7 @@
 import { expectedEpisodeFilename } from "../../../core/streams/filenameEpisodeMatcher.js";
 import { StreamLinkCacheStore, activeStreamLinkProfile } from "../../../data/local/streamLinkCacheStore.js";
 import { cachedStreamLinkCandidate } from "../../../core/streams/streamLinkReuse.js";
+import { PT_BR_FILTER_ID, isStreamPtBrAvailable } from "../../../core/streams/streamOrdering.js";
 /* eslint-disable no-unused-vars */
 import * as internals from "./streamScreen.js";
 
@@ -279,7 +280,12 @@ export function createStreamScreenMethods05() {
         return cache.result;
       }
       const orderedStreams = sortStreamsByAddonOrder(this.streams, this.sourceChips);
-      const filtered = filter === "all" ? orderedStreams : orderedStreams.filter((stream) => stream.addonName === filter);
+      const filtered =
+        filter === "all"
+          ? orderedStreams
+          : filter === PT_BR_FILTER_ID
+            ? orderedStreams.filter((stream) => isStreamPtBrAvailable(stream))
+            : orderedStreams.filter((stream) => stream.addonName === filter);
       const result = shared ? [shared, ...filtered] : filtered;
       this._filteredStreamsCache = {
         streams: this.streams,
@@ -297,7 +303,7 @@ export function createStreamScreenMethods05() {
       if (!Array.isArray(this.sourceChips) || !this.sourceChips.length) {
         return false;
       }
-      if (filter === "all") {
+      if (filter === "all" || filter === PT_BR_FILTER_ID) {
         return this.sourceChips.some((chip) => chip.status === "loading");
       }
       return this.sourceChips.some((chip) => chip.name === filter && chip.status === "loading");
@@ -317,7 +323,7 @@ export function createStreamScreenMethods05() {
           action: "play"
         };
       } else {
-        const ordered = ["all", ...this.getOrderedFilterNames()];
+        const ordered = ["all", PT_BR_FILTER_ID, ...this.getOrderedFilterNames()];
         this.focusState = {
           zone: "filter",
           index: 1 + clamp(ordered.indexOf(targetFilter), 0, Math.max(0, ordered.length - 1))
