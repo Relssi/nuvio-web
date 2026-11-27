@@ -15,6 +15,12 @@ Detalhes de bugs (causa e correção) ficam em [`BUGS.md`](BUGS.md).
 - **Precisa fazer:** rodar `docs/supabase/03-general-vs-personal.sql` no SQL Editor do Supabase (depois do 02).
 - **Não testado:** o SQL no Supabase de verdade; a tela foi testada localmente (perfil secundário vê só as seções pessoais e o aviso nos addons).
 
+## 27/11/2026 — Mouse no navegador e controles do trailer (enviado por Kiid)
+
+- **O que mudou:** navegação com mouse no navegador e controles interativos no trailer da tela de detalhes (tocar/pausar, progresso).
+- **Arquivos:** `focusEngine.js`, telas de detalhes (trailer e comentários), `css/components-40.css` e `components-41.css`.
+- **Precisa fazer:** nada.
+
 ## 28/11/2026 — Este arquivo
 
 - **O que mudou:** criado este registro de mudanças em português.
