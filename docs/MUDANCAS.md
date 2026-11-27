@@ -8,6 +8,13 @@ Detalhes de bugs (causa e correção) ficam em [`BUGS.md`](BUGS.md).
 
 ---
 
+## 28/11/2026 — Conversor de áudio (preparação, ainda desligado)
+
+- **O que mudou:** nada para quem usa, por enquanto. Foi criado o conversor que vai dar som aos filmes com áudio Dolby/DTS em qualquer aparelho (Chrome, Brave, celular, iPhone).
+- **Como:** novo programa `transcoder/server.mjs`, que mantém a imagem e converte só o áudio para AAC, em pedaços de 6 segundos. Vai rodar num servidor grátis da Oracle Cloud. Explicação e passo a passo em `docs/TRANSCODER.md`.
+- **Precisa fazer:** criar a conta na Oracle Cloud (passo 1 do `docs/TRANSCODER.md`). Depois, criar o servidor junto comigo e ligá-lo ao player.
+- **Não testado:** na Oracle e com filme real (testado no computador com um filme de teste de 40 min com áudio Dolby 5.1, pulando para vários pontos).
+
 ## 28/11/2026 — Vídeo centralizado no computador
 
 - **O que mudou:** no computador, o vídeo do player ocupa a tela toda e fica centralizado (antes ficava menor e encostado à esquerda).
