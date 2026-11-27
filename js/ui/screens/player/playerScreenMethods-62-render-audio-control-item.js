@@ -1,7 +1,5 @@
 /* eslint-disable no-unused-vars */
 import * as internals from "./playerScreenContext.js";
-import { filterBrowserAudibleStreams } from "../../../core/player/browserAudioCompatibility.js";
-import { Environment } from "../../../platform/environment.js";
 
 export function createPlayerScreenMethods62() {
   const { PlayerController, streamRepository, orderStreamsByAddonOrder, DebridStreamPresentation, isSelectKeyCode, t, clamp, escapeHtml } =
@@ -217,13 +215,9 @@ export function createPlayerScreenMethods62() {
       return ["all", ...addons];
     },
     getOrderedStreamCandidates() {
-      // Browser: hide sources whose audio the browser cannot play (B23).
-      return filterBrowserAudibleStreams(
-        orderStreamsByAddonOrder(this.streamCandidates || [], [], {
-          isDirectDebrid: (stream) => DebridStreamPresentation.isDirectDebrid(stream)
-        }),
-        { enabled: Environment.isBrowser() }
-      );
+      return orderStreamsByAddonOrder(this.streamCandidates || [], [], {
+        isDirectDebrid: (stream) => DebridStreamPresentation.isDirectDebrid(stream)
+      });
     },
     getFilteredSources(orderedStreams = this.getOrderedStreamCandidates()) {
       if (this.sourceFilter === "all") {

@@ -2,7 +2,6 @@ import { canResolveMediaServerStream } from "../../../data/mediaserver/mediaServ
 import { loadPlayerShuffleWatched } from "./playerEpisodeShuffle.js";
 import { activeStreamLinkProfile } from "../../../data/local/streamLinkCacheStore.js";
 import { sourceFallbackKey } from "../../../core/player/sourceFallback.js";
-import { chooseBrowserAudibleStream, probeBrowserAudioCapabilities } from "../../../core/player/browserAudioCompatibility.js";
 import { PluginRuntime } from "../../../core/player/pluginRuntime.js";
 import { suspendIdleArtworkWorkers, suspendIdleHomeArtworkWorkers } from "../../images/tvPosterRescaler.js";
 /* global __NUVIO_APP_VERSION__ */
@@ -124,18 +123,9 @@ export function createPlayerScreenMethods01() {
       const preferredStreamCandidate = preferredStreamId
         ? this.streamCandidates.find((stream) => String(stream?.id || "") === preferredStreamId) || null
         : null;
-      const browserAudioChoice = chooseBrowserAudibleStream({
-        candidate: preferredStreamCandidate || this.selectBestStreamCandidate(this.streamCandidates),
-        streams: this.streamCandidates,
-        capabilities: probeBrowserAudioCapabilities(PlayerController?.video),
-        enabled: Environment.isBrowser()
-      });
-      let initialStreamCandidate = browserAudioChoice.candidate;
-      this.browserAudioNotice = browserAudioChoice.notice;
-      const browserAudioSwapped = browserAudioChoice.notice === "swapped";
-      const requestedStreamUrl = browserAudioSwapped ? "" : params.streamUrl;
-      const initialStreamLocator = requestedStreamUrl || initialStreamCandidate?.url || initialStreamCandidate?.externalUrl || null;
-      const initialStreamUrl = directPlaybackUrl(requestedStreamUrl) || streamDirectPlaybackUrl(initialStreamCandidate);
+      const initialStreamCandidate = preferredStreamCandidate || this.selectBestStreamCandidate(this.streamCandidates);
+      const initialStreamLocator = params.streamUrl || initialStreamCandidate?.url || initialStreamCandidate?.externalUrl || null;
+      const initialStreamUrl = directPlaybackUrl(params.streamUrl) || streamDirectPlaybackUrl(initialStreamCandidate);
       // Android source fallback: only a source auto selection picked falls back.
       this.autoSelectedSourceKey = params?.autoPlayNav && initialStreamCandidate ? sourceFallbackKey(initialStreamCandidate) : null;
       this.sourceFallbackAttempts = 0;
@@ -153,11 +143,9 @@ export function createPlayerScreenMethods01() {
         ]);
       }
 
-      const indexAnchor = browserAudioSwapped ? initialStreamCandidate : preferredStreamCandidate;
-      const anchorId = String(indexAnchor?.id || "").trim();
       this.currentStreamIndex = this.streamCandidates.findIndex(
         (stream) =>
-          (anchorId && String(stream?.id || "") === anchorId) ||
+          (preferredStreamCandidate && String(stream?.id || "") === String(preferredStreamCandidate.id || "")) ||
           stream.url === initialStreamLocator ||
           stream.externalUrl === initialStreamLocator ||
           (initialStreamUrl && streamDirectPlaybackUrl(stream) === initialStreamUrl)
@@ -175,10 +163,7 @@ export function createPlayerScreenMethods01() {
       }
       this.activePlaybackSourceContext =
         this.getPlaybackSourceContext(
-          (browserAudioSwapped ? initialStreamCandidate : preferredStreamCandidate) ||
-            initialStreamCandidate ||
-            this.streamCandidates[this.currentStreamIndex] ||
-            null
+          preferredStreamCandidate || initialStreamCandidate || this.streamCandidates[this.currentStreamIndex] || null
         ) || this.normalizePlaybackSourceContext(params.playbackSourceContext || params.sourceContext || null);
       this.currentEngineFsStream = null;
       this.engineFsCleanupInFlight = new Set();
@@ -209,7 +194,6 @@ export function createPlayerScreenMethods01() {
       this.audioMediaSource = null;
 
       this.renderPlayerUi();
-      this.showBrowserAudioNotice?.();
       this.bindPlayerExitCleanup();
       if (!this.isExternalFrameMode()) {
         this.bindParty(navigationContext);

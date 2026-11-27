@@ -32,35 +32,6 @@ export function createPlayerScreenMethods70() {
         return false;
       }
 
-      if (target.closest?.("[data-player-volume-slider]")) {
-        return false;
-      }
-
-      if (target.closest?.("[data-player-pointer-action='toggleMute']")) {
-        const video = this.container?.querySelector?.("#videoPlayer");
-        if (video) {
-          if (video.muted && video.volume === 0) {
-            video.volume = 1;
-          }
-          video.muted = !video.muted;
-          this._userMutedVideo = Boolean(video.muted);
-        }
-        this.resetControlsAutoHide?.();
-        return true;
-      }
-
-      if (target.closest?.("[data-player-pointer-action='back']")) {
-        if (!this.navigateBackToStreamScreen()) {
-          Router.back();
-        }
-        return true;
-      }
-
-      if (target.closest?.("[data-player-pointer-action='home']")) {
-        Router.navigate("home");
-        return true;
-      }
-
       if (target.closest?.("[data-player-pointer-action='skipIntro']")) {
         return this.skipActiveInterval();
       }
@@ -122,12 +93,6 @@ export function createPlayerScreenMethods70() {
           this.subtitleStyleControlSide = side;
           this.adjustSubtitleStyleControl(styleItem.id, this.getSubtitleStyleControlDelta(side));
         }
-        return true;
-      }
-
-      const subtitleCloseNode = target.closest?.("[data-subtitle-dialog-action='close']");
-      if (subtitleCloseNode && this.subtitleDialogVisible) {
-        this.closeSubtitleDialog();
         return true;
       }
 

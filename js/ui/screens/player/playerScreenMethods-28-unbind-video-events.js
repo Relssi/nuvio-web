@@ -94,17 +94,9 @@ export function createPlayerScreenMethods28() {
         });
       }
 
-      if (internals.Platform?.isBrowser?.()) {
-        base.push({
-          action: "fullscreen",
-          label: "⛶",
-          title: t("player_fullscreen", {}, "Fullscreen")
-        });
-      }
-
       base.push({
         action: "more",
-        label: this.moreActionsVisible ? "×" : "•••",
+        label: this.moreActionsVisible ? "<" : ">",
         title: t("player_more_actions_title", {}, "More Actions")
       });
 

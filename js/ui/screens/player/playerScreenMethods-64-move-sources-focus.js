@@ -1,10 +1,4 @@
 /* eslint-disable no-unused-vars */
-import {
-  browserAudioDecodeVerdict,
-  classifyBrowserStreamAudio,
-  pickPlayableBrowserStream,
-  probeBrowserAudioCapabilities
-} from "../../../core/player/browserAudioCompatibility.js";
 import * as internals from "./playerScreenContext.js";
 
 export function createPlayerScreenMethods64() {
@@ -18,8 +12,7 @@ export function createPlayerScreenMethods64() {
     Environment,
     SOURCE_NAVIGATION_REPEAT_THROTTLE_MS,
     isSelectKeyCode,
-    clamp,
-    t
+    clamp
   } = internals;
 
   return {
@@ -134,98 +127,8 @@ export function createPlayerScreenMethods64() {
 
       const selectedStream = list[clamp(index, 0, Math.max(0, list.length - 1))] || null;
       if (selectedStream) {
-        this.noteBrowserAudioChoice(selectedStream);
         await this.playStreamCandidate(selectedStream, { preservePlaybackState: true });
       }
-    },
-    noteBrowserAudioChoice(stream) {
-      if (!Environment.isBrowser() || !stream) {
-        return;
-      }
-      const kind = classifyBrowserStreamAudio(stream, probeBrowserAudioCapabilities(PlayerController?.video));
-      if (kind === "unsupported") {
-        this.browserAudioNotice = "silent";
-        this.showBrowserAudioNotice();
-        return;
-      }
-      if (kind === "playable") {
-        this.browserAudioNotice = "";
-      }
-    },
-    // Browser only: once the picture is moving, check that audio is really
-    // being decoded. A Dolby/DTS file the label did not name plays silent; in
-    // that case switch once to a source labelled with browser audio (AAC/Opus)
-    // or tell the viewer to pick another source.
-    startBrowserSilentAudioWatch() {
-      this.stopBrowserSilentAudioWatch();
-      if (!Environment.isBrowser()) {
-        return;
-      }
-      const video = PlayerController?.video;
-      if (!video || PlayerController?.isUsingAvPlay?.()) {
-        return;
-      }
-      const streamAtStart = this.getCurrentStreamCandidate?.() || null;
-      const startSeconds = Number(video.currentTime) || 0;
-      let checks = 0;
-      this.browserSilentAudioTimer = setInterval(() => {
-        checks += 1;
-        if (this.getCurrentStreamCandidate?.() !== streamAtStart) {
-          this.stopBrowserSilentAudioWatch();
-          return;
-        }
-        const verdict = browserAudioDecodeVerdict(PlayerController?.video, startSeconds);
-        if (verdict === "pending" && checks < 30) {
-          return;
-        }
-        this.stopBrowserSilentAudioWatch();
-        if (verdict === "silent") {
-          this.handleSilentBrowserAudio(streamAtStart);
-        }
-      }, 1000);
-    },
-    stopBrowserSilentAudioWatch() {
-      if (this.browserSilentAudioTimer) {
-        clearInterval(this.browserSilentAudioTimer);
-        this.browserSilentAudioTimer = null;
-      }
-    },
-    async handleSilentBrowserAudio(silentStream = null) {
-      const alreadySwitched = Boolean(this.browserSilentAudioSwitched);
-      const replacement = alreadySwitched
-        ? null
-        : pickPlayableBrowserStream(this.streamCandidates, probeBrowserAudioCapabilities(PlayerController?.video), silentStream);
-      if (!replacement) {
-        this.browserAudioNotice = "silent";
-        this.showBrowserAudioNotice();
-        return;
-      }
-      this.browserSilentAudioSwitched = true;
-      this.browserAudioNotice = "swapped";
-      this.showBrowserAudioNotice();
-      await this.playStreamCandidate(replacement, { preservePlaybackState: true });
-    },
-    showBrowserAudioNotice() {
-      if (this.browserAudioNotice !== "swapped" && this.browserAudioNotice !== "silent") {
-        return;
-      }
-      const toast = this.uiRefs?.aspectToast;
-      if (!toast) {
-        return;
-      }
-      toast.textContent =
-        this.browserAudioNotice === "swapped"
-          ? t("player_browser_audio_swapped", {}, "This browser can't play that audio. Switched to a source with sound.")
-          : t("player_browser_audio_silent", {}, "This browser can't play this file's audio (AC-3, E-AC-3, DTS or TrueHD).");
-      toast.classList.add("is-browser-audio-notice");
-      toast.classList.remove("hidden");
-      if (this.aspectToastTimer) {
-        clearTimeout(this.aspectToastTimer);
-      }
-      this.aspectToastTimer = setTimeout(() => {
-        toast.classList.add("hidden");
-        toast.classList.remove("is-browser-audio-notice");
-      }, 7000);
     },
     async handleSourcesPanelKey(event) {
       const keyCode = Number(event?.keyCode || 0);
@@ -276,7 +179,6 @@ export function createPlayerScreenMethods64() {
       }
 
       toast.textContent = label;
-      toast.classList.remove("is-browser-audio-notice");
       toast.classList.remove("hidden");
 
       if (this.aspectToastTimer) {
@@ -354,7 +256,7 @@ export function createPlayerScreenMethods64() {
         // tracks render inside it. Tizen positions those cues against the
         // viewport, so a letterboxed element clips their bottom line; webOS
         // also needs the full viewport for its screensaver.
-        const useFullViewport = Environment.isWebOS() || Environment.isBrowser() || usingTizenHtmlVideo;
+        const useFullViewport = Environment.isWebOS() || usingTizenHtmlVideo;
         const canTransformVideo = !Environment.isWebOS() && !usingTizenAvPlay;
         const videoRect = usingTizenAvPlay ? rect.displayRect : rect;
         video.style.position = "fixed";

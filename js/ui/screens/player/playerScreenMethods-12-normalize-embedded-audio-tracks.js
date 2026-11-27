@@ -102,14 +102,9 @@ export function createPlayerScreenMethods12() {
       );
     },
     getAudioDialogSupportNotice() {
-      const notices = [];
-      if (this.isTizenDashAudioSwitchingUnsupported()) {
-        notices.push(t("player_audio_tizen_dash_unsupported", {}, "Changing DASH audio tracks is not supported on this TV."));
-      }
-      if (Environment.isBrowser() && this.browserAudioNotice === "silent") {
-        notices.push(t("player_browser_audio_silent", {}, "This browser can't play this file's audio (AC-3, E-AC-3, DTS or TrueHD)."));
-      }
-      return notices.join(" ");
+      return this.isTizenDashAudioSwitchingUnsupported()
+        ? t("player_audio_tizen_dash_unsupported", {}, "Changing DASH audio tracks is not supported on this TV.")
+        : "";
     },
     getSubtitleDialogSupportNotice() {
       const notices = [];

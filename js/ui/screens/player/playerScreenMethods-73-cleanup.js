@@ -173,7 +173,6 @@ export function createPlayerScreenMethods73() {
           clearTimeout(this.aspectToastTimer);
           this.aspectToastTimer = null;
         }
-        this.stopBrowserSilentAudioWatch?.();
         clearTimeout(this.sourceStartupTimeoutTimer);
         this.sourceStartupTimeoutTimer = null;
         this.sourceFallbackInFlight = false;

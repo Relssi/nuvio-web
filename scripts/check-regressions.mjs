@@ -444,51 +444,9 @@ async function main() {
     }
   );
 
-  await check(
-    "B22",
-    "player notices silent Dolby/DTS audio in the browser and switches source",
-    async () => {
-      const problems = [];
-      const helper = await source("js/core/player/browserAudioCompatibility.js");
-      if (!helper.includes("webkitAudioDecodedByteCount"))
-        problems.push("silent-audio verdict no longer reads the decoder");
-      const player = await source(
-        "js/ui/screens/player/playerScreenMethods-64-move-sources-focus.js"
-      );
-      if (!player.includes("handleSilentBrowserAudio"))
-        problems.push("silent-audio source switch missing");
-      const start = await source(
-        "js/ui/screens/player/playerScreenMethods-30-schedule-buffering-spinner-refresh.js"
-      );
-      if (!start.includes("startBrowserSilentAudioWatch"))
-        problems.push("silent-audio watch no longer starts on the first frame");
-      return problems.length ? problems.join("; ") : true;
-    }
-  );
-
-  await check(
-    "B23",
-    "browser source lists hide sources whose audio the browser cannot play",
-    async () => {
-      const problems = [];
-      const screen = await source(
-        "js/ui/screens/stream/streamScreenMethods-05-maybe-auto-resume-stream.js"
-      );
-      if (!screen.includes("filterBrowserAudibleStreams("))
-        problems.push("stream screen no longer filters silent sources");
-      const panel = await source(
-        "js/ui/screens/player/playerScreenMethods-62-render-audio-control-item.js"
-      );
-      if (!panel.includes("filterBrowserAudibleStreams("))
-        problems.push("player sources panel no longer filters silent sources");
-      return problems.length ? problems.join("; ") : true;
-    }
-  );
-
   // ---- Unit tests --------------------------------------------------------
   const tests = await run(process.execPath, [
     "--test",
-    "js/core/player/browserAudioCompatibility.test.mjs",
     "scripts/test-profile-scoped-store-cache.mjs",
     "scripts/test-general-settings-store.mjs",
     "scripts/test-supports-root-dedupe.mjs",

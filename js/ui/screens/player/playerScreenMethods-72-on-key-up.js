@@ -1,6 +1,5 @@
 /* eslint-disable no-unused-vars */
 import { canResolveMediaServerStream } from "../../../data/mediaserver/mediaServerRepository.js";
-import { browserAudioScoreAdjustment, probeBrowserAudioCapabilities } from "../../../core/player/browserAudioCompatibility.js";
 import * as internals from "./playerScreenContext.js";
 
 export function createPlayerScreenMethods72() {
@@ -85,7 +84,6 @@ export function createPlayerScreenMethods72() {
 
       const hasCapabilityProbe = Boolean(PlayerController?.video);
       const isWebOsRuntime = Environment.isWebOS();
-      const browserAudioCapabilities = Environment.isBrowser() ? probeBrowserAudioCapabilities(PlayerController?.video) : null;
       const capabilities =
         hasCapabilityProbe && typeof PlayerController.getPlaybackCapabilities === "function"
           ? PlayerController.getPlaybackCapabilities()
@@ -188,9 +186,6 @@ export function createPlayerScreenMethods72() {
           }
           if (/\b(stereo|2\.0|2ch)\b/.test(text)) {
             score += isWebOsRuntime ? 10 : 4;
-          }
-          if (browserAudioCapabilities) {
-            score += browserAudioScoreAdjustment(stream, browserAudioCapabilities);
           }
 
           if (

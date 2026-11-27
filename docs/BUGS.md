@@ -156,21 +156,6 @@ O script cobre automaticamente os itens marcados com **[auto]**. Os itens **[man
 - **Verificar:** checagem B21; no simulador, tocar no destaque abre o filme certo; nada passa da largura na Início.
 - **Ainda não feito:** Busca, Biblioteca e Configurações passam da largura no celular (próxima parte).
 
-## B22 — Player sem som no navegador [auto + manual]
-
-- **Sintoma:** o filme toca com imagem, mas sem som, mesmo com volume no máximo e sem mudo.
-- **Causa:** quase todo arquivo de torrent/debrid (WEB-DL, BluRay) vem com áudio Dolby (AC-3/E-AC-3), DTS ou TrueHD. Chrome, Brave, Edge e Firefox mostram a imagem e jogam esse áudio fora, sem dar erro. Confirmado com um arquivo de teste: o AAC decodifica áudio, o AC-3 decodifica 0 bytes. O Kiid já escolhia uma fonte com AAC quando o **nome** da fonte dizia o codec, mas muitas fontes não dizem.
-- **Correção:** `browserAudioDecodeVerdict` (`js/core/player/browserAudioCompatibility.js`) olha, 3 s depois de o vídeo começar, se o navegador decodificou algum áudio (`webkitAudioDecodedByteCount` no Chrome/Brave/Edge, `mozHasAudio` no Firefox). Se não decodificou, o player (`playerScreenMethods-64`) troca uma vez para uma fonte com AAC/Opus no nome, mantendo o ponto do filme; se não houver, mostra o aviso "escolha outra fonte, de preferência com AAC no nome".
-- **Verificar:** checagem B22 e o teste `browserAudioCompatibility.test.mjs`; manualmente, um MKV com AC-3 troca sozinho para a fonte AAC e continua com som.
-- **Limite:** um arquivo que só tem áudio Dolby/DTS não tem como tocar com som no navegador sem converter o áudio num servidor (pesado para o Render grátis).
-
-## B23 — Fontes sem som aparecendo na lista [auto + manual]
-
-- **Pedido:** mostrar só as fontes cujo áudio funciona no navegador.
-- **Correção:** `filterBrowserAudibleStreams` (`js/core/player/browserAudioCompatibility.js`) esconde as fontes cujo nome diz Dolby (DD/DDP/Atmos), DTS ou TrueHD e coloca no topo as que dizem AAC/Opus/MP3. Usado na tela de fontes (`streamScreenMethods-05`, `getFilteredStreams`) e no painel de fontes do player (`playerScreenMethods-62`, `getOrderedStreamCandidates`). Só vale no navegador; nas TVs todas as fontes continuam.
-- **Cuidados:** se todas as fontes forem Dolby/DTS, a lista fica inteira (senão o filme não abriria); fontes sem o áudio no nome continuam (a troca automática do B22 cobre as que vierem mudas). A capacidade do navegador é testada uma vez (Edge/Safari que tocam Dolby não escondem nada).
-- **Verificar:** checagem B23 e o teste do filtro; no painel de fontes do player, uma lista com DDP, DTS, sem rótulo e AAC mostra só AAC e a sem rótulo, nessa ordem.
-
 ## Não são bugs do código (para não perder tempo de novo)
 
 - **"No streams found" com Torrentio sem debrid:** o navegador não toca torrent; é preciso um debrid conectado.

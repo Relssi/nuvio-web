@@ -3,8 +3,6 @@ import { StreamLinkCacheStore, activeStreamLinkProfile } from "../../../data/loc
 import { cachedStreamLinkCandidate } from "../../../core/streams/streamLinkReuse.js";
 /* eslint-disable no-unused-vars */
 import * as internals from "./streamScreen.js";
-import { filterBrowserAudibleStreams } from "../../../core/player/browserAudioCompatibility.js";
-import { Environment } from "../../../platform/environment.js";
 
 export function createStreamScreenMethods05() {
   const {
@@ -280,10 +278,7 @@ export function createStreamScreenMethods05() {
       ) {
         return cache.result;
       }
-      // Browser: hide sources whose audio the browser cannot play (B23).
-      const orderedStreams = filterBrowserAudibleStreams(sortStreamsByAddonOrder(this.streams, this.sourceChips), {
-        enabled: Environment.isBrowser()
-      });
+      const orderedStreams = sortStreamsByAddonOrder(this.streams, this.sourceChips);
       const filtered = filter === "all" ? orderedStreams : orderedStreams.filter((stream) => stream.addonName === filter);
       const result = shared ? [shared, ...filtered] : filtered;
       this._filteredStreamsCache = {

@@ -176,15 +176,9 @@ export function createPlayerScreenMethods15() {
               <div class="player-controls-gradient player-controls-gradient-top"></div>
               <div class="player-controls-gradient player-controls-gradient-bottom"></div>
 
-              <div class="player-controls-top">
-                <div class="player-top-actions">
-                  <button type="button" class="player-top-btn" data-player-pointer-action="back" aria-label="Voltar">&#8592; Voltar</button>
-                  <button type="button" class="player-top-btn" data-player-pointer-action="home" aria-label="Início">&#8962; Início</button>
-                </div>
-                <div class="player-top-clock${osdClockEnabled ? "" : " hidden"}">
-                  <div id="playerClock" class="player-clock">--:--</div>
-                  <div id="playerEndsAt" class="player-ends-at${isLivePlayback ? " hidden" : ""}">${escapeHtml(t("player_ends_at", ["--:--"], "Ends at %1$s"))}</div>
-                </div>
+              <div class="player-controls-top${osdClockEnabled ? "" : " hidden"}">
+                <div id="playerClock" class="player-clock">--:--</div>
+                <div id="playerEndsAt" class="player-ends-at${isLivePlayback ? " hidden" : ""}">${escapeHtml(t("player_ends_at", ["--:--"], "Ends at %1$s"))}</div>
               </div>
 
               <div class="player-controls-bottom">
@@ -207,10 +201,6 @@ export function createPlayerScreenMethods15() {
 
                   <div class="player-controls-row">
                     <div id="playerControlButtons" class="player-control-buttons"></div>
-                    <div class="player-volume-control" data-player-volume-control>
-                      <button type="button" class="player-volume-mute-btn" data-player-pointer-action="toggleMute" aria-label="Silenciar ou ativar som" title="Volume / Mudo">🔊</button>
-                      <input type="range" class="player-volume-slider" data-player-volume-slider min="0" max="100" value="100" aria-label="Volume" />
-                    </div>
                     <div id="playerTimeLabel" class="player-time-label">${isLivePlayback ? escapeHtml(t("player_live_watched", ["0:00"], "LIVE  %1$s")) : "0:00 / 0:00"}</div>
                   </div>
                 </div>
@@ -221,45 +211,6 @@ export function createPlayerScreenMethods15() {
 
       this.container.appendChild(root);
       this.cachePlayerUiRefs(root);
-      const videoEl = this.container?.querySelector?.("#videoPlayer") || PlayerController?.video || null;
-      const muteBtn = root.querySelector("[data-player-pointer-action='toggleMute']");
-      const volumeSlider = root.querySelector("[data-player-volume-slider]");
-      if (videoEl && volumeSlider) {
-        const syncVolumeUi = () => {
-          const muted = Boolean(videoEl.muted || videoEl.volume === 0);
-          const pct = videoEl.muted ? 0 : Math.round(Number(videoEl.volume ?? 1) * 100);
-          volumeSlider.value = String(pct);
-          if (muteBtn) {
-            muteBtn.textContent = muted ? "🔇" : pct < 50 ? "🔉" : "🔊";
-          }
-        };
-        volumeSlider.addEventListener("input", (event) => {
-          event.stopPropagation();
-          const nextVol = Math.max(0, Math.min(1, Number(volumeSlider.value) / 100));
-          videoEl.volume = nextVol;
-          videoEl.muted = nextVol === 0;
-          syncVolumeUi();
-          this.resetControlsAutoHide?.();
-        });
-        volumeSlider.addEventListener("click", (event) => event.stopPropagation());
-        videoEl.addEventListener("volumechange", syncVolumeUi);
-        videoEl.addEventListener(
-          "playing",
-          () => {
-            if (internals.Platform?.isBrowser?.() && !this.startupAudioGateActive && !this._userMutedVideo && videoEl.muted) {
-              try {
-                videoEl.muted = false;
-                if (videoEl.volume === 0) {
-                  videoEl.volume = 1;
-                }
-              } catch (_) {}
-            }
-            syncVolumeUi();
-          },
-          { once: true }
-        );
-        syncVolumeUi();
-      }
       this.syncPlayerOverlayLayoutState();
       this.bindLoadingLogoFallback();
       if (!this.isExternalFrameMode()) {

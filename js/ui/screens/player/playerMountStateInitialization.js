@@ -347,8 +347,6 @@ export function initializePlayerMountState(params, initialStreamUrl) {
   this.playerExitCleanupHandler = null;
   this.lastPlaybackProgressAt = Date.now();
   this.hasPresentedPlaybackFrame = false;
-  this.browserSilentAudioTimer = null;
-  this.browserSilentAudioSwitched = false;
   this.startupErrorMessage = "";
   this.startupErrorMediaCode = 0;
   this.startupErrorDetails = [];
