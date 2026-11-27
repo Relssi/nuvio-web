@@ -535,81 +535,126 @@
   margin-right: 12px;
 }
 
-/* Desktop Web: Netflix-inspired catalog layout */
+/* Desktop Web: Netflix-inspired scrolling catalog (hero scrolls with page) */
 .desktop-web .home-screen-shell.home-layout-modern {
-  --home-sidebar-content-offset: 56px;
-  --home-content-start: 64px;
-  --home-track-end: 64px;
-  --home-continue-track-end: 64px;
-  --modern-track-peek-extension: 64px;
-  --home-row-gap: 14px;
-  --modern-rows-viewport-height: 46%;
-  --modern-rows-viewport-padding-bottom: 120px;
+  --home-sidebar-content-offset: 84px;
+  --home-content-start: 104px;
+  --home-track-end: 84px;
+  --home-continue-track-end: 84px;
+  --modern-track-peek-extension: 84px;
+  --home-row-gap: 18px;
+  --modern-rows-viewport-height: auto;
+  --modern-rows-viewport-padding-bottom: 64px;
   --modern-hero-media-width: 78%;
-  --modern-hero-copy-top-safe: 28px;
-  --modern-hero-copy-bottom-gap: 20px;
+  --modern-hero-media-height: 100%;
+  --modern-hero-copy-top-safe: 36px;
+  --modern-hero-copy-bottom-gap: 96px;
   --modern-hero-copy-max-width: 44%;
-  --modern-hero-logo-max-width: 340px;
-  --modern-hero-logo-max-height: 136px;
-  --modern-hero-title-size: 40px;
-  --modern-hero-title-line-height: 46px;
-  --modern-hero-copy-gap: 10px;
-  --modern-hero-meta-size: 15px;
-  --modern-hero-secondary-size: 15px;
-  --modern-hero-description-size: 16px;
-  --modern-hero-description-line-height: 22px;
-  --home-poster-width: 184px;
-  --home-poster-radius: 6px;
-  --home-continue-width: 312px;
-  --home-continue-height: 176px;
+  --modern-hero-logo-max-width: 380px;
+  --modern-hero-logo-max-height: 156px;
+  --modern-hero-title-size: 46px;
+  --modern-hero-title-line-height: 54px;
+  --modern-hero-copy-gap: 12px;
+  --modern-hero-meta-size: 20px;
+  --modern-hero-secondary-size: 20px;
+  --modern-hero-description-size: 21px;
+  --modern-hero-description-line-height: 30px;
+  --home-poster-width: 204px;
+  --home-poster-radius: 10px;
+  --home-continue-width: 360px;
+  --home-continue-height: 202px;
 }
 
-.desktop-web .home-screen-shell.home-layout-modern .home-modern-rows-viewport {
+.desktop-web .home-screen-shell.home-layout-modern .home-main {
+  height: 100vh;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: 0 0 64px;
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 255, 255, 0.28) transparent;
 }
 
-.desktop-web .home-screen-shell.home-layout-modern .home-modern-rows-viewport::-webkit-scrollbar {
-  display: block;
+.desktop-web .home-screen-shell.home-layout-modern .home-main::-webkit-scrollbar {
   width: 8px;
 }
 
-.desktop-web
-  .home-screen-shell.home-layout-modern
-  .home-modern-rows-viewport::-webkit-scrollbar-thumb {
+.desktop-web .home-screen-shell.home-layout-modern .home-main::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.28);
   border-radius: 999px;
 }
 
+.desktop-web .home-screen-shell.home-layout-modern .home-route-content {
+  height: auto;
+  min-height: 0;
+}
+
+.desktop-web .home-screen-shell.home-layout-modern .home-modern-stage {
+  position: relative;
+  display: block;
+  height: auto;
+}
+
+.desktop-web .home-screen-shell.home-layout-modern .home-hero-modern {
+  position: relative;
+  height: 54vh;
+  min-height: 420px;
+  overflow: hidden;
+}
+
+.desktop-web .home-screen-shell.home-layout-modern .home-modern-hero-card {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.desktop-web .home-screen-shell.home-layout-modern .home-modern-hero-copy {
+  top: 0;
+  bottom: 0;
+  justify-content: flex-end;
+  padding-bottom: 88px;
+}
+
+.desktop-web .home-screen-shell.home-layout-modern .home-modern-rows-viewport {
+  position: relative;
+  left: auto;
+  right: auto;
+  bottom: auto;
+  height: auto;
+  margin-top: -72px;
+  overflow: visible;
+  z-index: 3;
+}
+
 .desktop-web .home-screen-shell.home-layout-modern .home-modern-rows-scroll,
 .desktop-web .home-screen-shell.home-layout-modern .home-modern-catalogs {
-  gap: 28px;
+  gap: 32px;
 }
 
 .desktop-web .home-screen-shell.home-layout-modern .home-row-head {
-  margin-bottom: 10px;
+  margin-bottom: 14px;
 }
 
 .desktop-web .home-screen-shell.home-layout-modern .home-row-title {
-  font-size: 20px;
-  line-height: 26px;
+  font-size: 24px;
+  line-height: 30px;
   font-weight: 700;
   letter-spacing: -0.01em;
 }
 
 .desktop-web .home-screen-shell.home-layout-modern .home-track {
-  --home-track-gap: 10px;
-  padding-top: 8px;
-  padding-bottom: 14px;
+  --home-track-gap: 14px;
+  padding-top: 10px;
+  padding-bottom: 16px;
 }
 
 .desktop-web .home-screen-shell.home-layout-modern .home-poster-card:not(.is-landscape),
 .desktop-web .home-screen-shell.home-layout-modern .home-seeall-card {
-  --home-poster-radius: 6px;
+  --home-poster-radius: 10px;
 }
 
 .desktop-web .home-screen-shell.home-layout-modern .home-poster-frame {
-  border-radius: 6px;
+  border-radius: 10px;
   transition:
     transform 180ms cubic-bezier(0.2, 0.8, 0.2, 1),
     box-shadow 180ms cubic-bezier(0.2, 0.8, 0.2, 1),
@@ -624,12 +669,12 @@
 }
 
 .desktop-web .home-screen-shell.home-layout-modern .home-poster-title {
-  font-size: 14px;
-  line-height: 18px;
+  font-size: 16px;
+  line-height: 21px;
   font-weight: 500;
 }
 
 .desktop-web .home-screen-shell.home-layout-modern .home-poster-subtitle {
-  font-size: 12px;
-  line-height: 16px;
+  font-size: 14px;
+  line-height: 18px;
 }

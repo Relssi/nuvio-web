@@ -198,6 +198,13 @@ export function createHomeScreenMethods19() {
             event.stopPropagation?.();
             return;
           }
+          const clickedInsideSidebar = Boolean(event?.target?.closest?.(".home-sidebar, .modern-sidebar-panel, .modern-sidebar-pill"));
+          if (!clickedInsideSidebar && (this.sidebarExpanded || this.isSidebarFocusActive?.())) {
+            this.closeSidebarToContent?.();
+            event.preventDefault?.();
+            event.stopPropagation?.();
+            return;
+          }
           const target = event?.target?.closest?.(".home-main .focusable");
           if (!target || !this.container?.contains(target)) {
             return;

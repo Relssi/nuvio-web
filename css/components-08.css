@@ -441,120 +441,119 @@
   display: block;
 }
 
-/* Desktop Web: compact sidebar proportions (profile, search, home, library) */
+/* Desktop Web: balanced sidebar proportions (profile, search, home, library) */
 .desktop-web .home-shell {
-  --legacy-sidebar-rail-width: 72px;
-  --legacy-sidebar-open-width: 236px;
-  --legacy-sidebar-item-width: 48px;
-  --legacy-sidebar-item-expanded-width: 196px;
-  --legacy-sidebar-item-height: 46px;
-  --legacy-sidebar-item-radius: 14px;
-  --legacy-sidebar-padding: 14px;
-  --legacy-sidebar-item-gap: 6px;
-  --legacy-sidebar-leading-offset: 13px;
-  --legacy-sidebar-label-start: 48px;
-  --legacy-sidebar-label-end: 14px;
-  --legacy-sidebar-profile-top-gap: 16px;
-  --legacy-sidebar-profile-bottom-gap: 12px;
-  --sidebar-leading-visual-size: 32px;
-  --sidebar-icon-size: 22px;
-  --modern-sidebar-collapsed-width: 200px;
-  --modern-sidebar-open-width: 276px;
-  --modern-sidebar-surface-width: 248px;
-  --modern-sidebar-surface-top: 16px;
-  --modern-sidebar-surface-left: 16px;
-  --modern-sidebar-surface-bottom: 16px;
-  --modern-sidebar-panel-padding-x: 12px;
-  --modern-sidebar-panel-padding-y: 14px;
-  --modern-sidebar-button-width: 100%;
-  --modern-sidebar-button-height: 46px;
-  --modern-sidebar-button-gap: 12px;
-  --modern-sidebar-button-radius: 14px;
-  --modern-sidebar-list-gap: 4px;
-  --modern-sidebar-pill-top: 16px;
-  --modern-sidebar-pill-left: 16px;
-  --modern-sidebar-pill-height: 44px;
-  --modern-sidebar-pill-chevron-width: 12px;
-  --modern-sidebar-pill-chevron-height: 20px;
-  --modern-sidebar-pill-chip-start: 8px;
-  --modern-sidebar-pill-chip-end: 14px;
-  --modern-sidebar-pill-chip-gap: 10px;
+  --legacy-sidebar-rail-width: 112px;
+  --legacy-sidebar-open-width: 316px;
+  --legacy-sidebar-item-width: 76px;
+  --legacy-sidebar-item-expanded-width: 248px;
+  --legacy-sidebar-item-height: 76px;
+  --legacy-sidebar-item-radius: 24px;
+  --legacy-sidebar-padding: 18px;
+  --legacy-sidebar-item-gap: 12px;
+  --legacy-sidebar-leading-offset: 20px;
+  --legacy-sidebar-label-start: 76px;
+  --legacy-sidebar-label-end: 20px;
+  --legacy-sidebar-profile-top-gap: 32px;
+  --legacy-sidebar-profile-bottom-gap: 16px;
+  --sidebar-leading-visual-size: 48px;
+  --sidebar-icon-size: 32px;
+  --modern-sidebar-collapsed-width: 280px;
+  --modern-sidebar-open-width: 360px;
+  --modern-sidebar-surface-width: 328px;
+  --modern-sidebar-surface-top: 24px;
+  --modern-sidebar-surface-left: 22px;
+  --modern-sidebar-surface-bottom: 20px;
+  --modern-sidebar-panel-padding-x: 18px;
+  --modern-sidebar-panel-padding-y: 20px;
+  --modern-sidebar-button-width: 94%;
+  --modern-sidebar-button-height: 78px;
+  --modern-sidebar-button-gap: 20px;
+  --modern-sidebar-button-radius: 24px;
+  --modern-sidebar-list-gap: 8px;
+  --modern-sidebar-pill-top: 24px;
+  --modern-sidebar-pill-left: 22px;
+  --modern-sidebar-pill-height: 68px;
+  --modern-sidebar-pill-chevron-width: 14px;
+  --modern-sidebar-pill-chevron-height: 26px;
+  --modern-sidebar-pill-chip-start: 10px;
+  --modern-sidebar-pill-chip-end: 18px;
+  --modern-sidebar-pill-chip-gap: 14px;
 }
 
 .desktop-web .modern-sidebar-panel {
-  border-radius: 20px;
-  border-width: 1px;
+  border-radius: 36px;
+  border-width: 2px;
 }
 
 .desktop-web .modern-sidebar-profile {
-  margin: 4px auto 12px;
-  padding: 6px 10px;
-  gap: 12px;
-  border-width: 1px;
+  margin: 12px auto 20px;
+  padding: 12px 18px;
+  gap: 20px;
+  border-width: 2px;
 }
 
 .desktop-web .modern-sidebar-profile-avatar {
-  width: 34px;
-  height: 34px;
-  font-size: 15px;
+  width: 50px;
+  height: 50px;
+  font-size: 22px;
 }
 
 .desktop-web .modern-sidebar-profile-name,
 .desktop-web .home-profile-name {
-  font-size: 16px;
-  line-height: 22px;
+  font-size: 28px;
+  line-height: 36px;
 }
 
 .desktop-web .modern-sidebar-nav-list {
-  transform: none;
-  justify-content: flex-start;
-  margin-top: 4px;
+  transform: translateY(-10px);
+  justify-content: center;
 }
 
 .desktop-web .modern-sidebar-nav-item {
-  padding: 6px 10px;
-  border-width: 1px;
+  padding: 12px 18px;
+  border-width: 2px;
 }
 
 .desktop-web .modern-sidebar-nav-item.focused {
-  transform: scale(1.02);
+  transform: scale(1.04);
 }
 
 .desktop-web .modern-sidebar-nav-icon-circle,
 .desktop-web .modern-sidebar-pill-icon-wrap {
-  width: 32px;
-  height: 32px;
-  padding: 4px;
+  width: 48px;
+  height: 48px;
+  padding: 8px;
 }
 
 .desktop-web .modern-sidebar-nav-icon,
 .desktop-web .modern-sidebar-pill-icon {
-  width: 20px;
-  height: 20px;
+  width: 32px;
+  height: 32px;
 }
 
 .desktop-web .modern-sidebar-nav-label,
 .desktop-web .home-nav-label {
-  font-size: 15px;
-  line-height: 20px;
-  letter-spacing: 0.2px;
+  font-size: 24px;
+  line-height: 32px;
+  letter-spacing: 0.4px;
 }
 
 .desktop-web .modern-sidebar-pill {
-  transform: translateY(0) scale(1);
+  transform: translateY(-8px) scale(1);
 }
 
 .desktop-web .modern-sidebar-pill-label {
-  font-size: 15px;
-  line-height: 20px;
+  font-size: 26px;
+  line-height: 34px;
 }
 
 .desktop-web .home-profile-pill {
-  gap: 10px;
-  padding: 0 10px;
+  gap: 14px;
+  padding: 0 14px 0 22px;
 }
 
 .desktop-web .home-nav-item {
-  font-size: 15px;
-  line-height: 20px;
+  font-size: 24px;
+  line-height: 32px;
 }
