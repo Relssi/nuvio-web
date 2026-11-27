@@ -15,6 +15,12 @@ Detalhes de bugs (causa e correção) ficam em [`BUGS.md`](BUGS.md).
 - **Precisa fazer:** nada. Recarregue com Ctrl + F5.
 - **Não testado:** apps empacotados de TV (Tizen/webOS) depois da mudança no CSS; em teoria o resultado é idêntico ao anterior.
 
+## 27/11/2026 — Tema de cada perfil na tela de perfis (enviado por Kiid)
+
+- **O que mudou:** a tela "Who's watching?" busca na nuvem as configurações de cada perfil, para mostrar o fundo/tema certo de cada um.
+- **Arquivos:** `profileSelectionScreen.js`, `profileSelectionScreenMethods-01-mount.js`.
+- **Compatível com a etapa 3:** tema é configuração pessoal, então cada perfil mostra o seu.
+
 ## 27/11/2026 — Tela de perfis para desktop (enviado por Kiid)
 
 - **O que mudou:** a tela "Who's watching?" ficou mais compacta no navegador, sem o logo NUVIO, e o fundo ao passar o mouse segue o tema de cada perfil.
