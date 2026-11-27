@@ -1,4 +1,5 @@
 /* eslint-disable no-unused-vars */
+import { classifyBrowserStreamAudio, probeBrowserAudioCapabilities } from "../../../core/player/browserAudioCompatibility.js";
 import * as internals from "./playerScreenContext.js";
 
 export function createPlayerScreenMethods64() {
@@ -12,7 +13,8 @@ export function createPlayerScreenMethods64() {
     Environment,
     SOURCE_NAVIGATION_REPEAT_THROTTLE_MS,
     isSelectKeyCode,
-    clamp
+    clamp,
+    t
   } = internals;
 
   return {
@@ -127,8 +129,45 @@ export function createPlayerScreenMethods64() {
 
       const selectedStream = list[clamp(index, 0, Math.max(0, list.length - 1))] || null;
       if (selectedStream) {
+        this.noteBrowserAudioChoice(selectedStream);
         await this.playStreamCandidate(selectedStream, { preservePlaybackState: true });
       }
+    },
+    noteBrowserAudioChoice(stream) {
+      if (!Environment.isBrowser() || !stream) {
+        return;
+      }
+      const kind = classifyBrowserStreamAudio(stream, probeBrowserAudioCapabilities(PlayerController?.video));
+      if (kind === "unsupported") {
+        this.browserAudioNotice = "silent";
+        this.showBrowserAudioNotice();
+        return;
+      }
+      if (kind === "playable") {
+        this.browserAudioNotice = "";
+      }
+    },
+    showBrowserAudioNotice() {
+      if (this.browserAudioNotice !== "swapped" && this.browserAudioNotice !== "silent") {
+        return;
+      }
+      const toast = this.uiRefs?.aspectToast;
+      if (!toast) {
+        return;
+      }
+      toast.textContent =
+        this.browserAudioNotice === "swapped"
+          ? t("player_browser_audio_swapped", {}, "This browser can't play that audio. Switched to a source with sound.")
+          : t("player_browser_audio_silent", {}, "This browser can't play this file's audio (AC-3, E-AC-3, DTS or TrueHD).");
+      toast.classList.add("is-browser-audio-notice");
+      toast.classList.remove("hidden");
+      if (this.aspectToastTimer) {
+        clearTimeout(this.aspectToastTimer);
+      }
+      this.aspectToastTimer = setTimeout(() => {
+        toast.classList.add("hidden");
+        toast.classList.remove("is-browser-audio-notice");
+      }, 7000);
     },
     async handleSourcesPanelKey(event) {
       const keyCode = Number(event?.keyCode || 0);
@@ -179,6 +218,7 @@ export function createPlayerScreenMethods64() {
       }
 
       toast.textContent = label;
+      toast.classList.remove("is-browser-audio-notice");
       toast.classList.remove("hidden");
 
       if (this.aspectToastTimer) {

@@ -1364,6 +1364,8 @@
     <string name="player_more_aspect_ratio">Proporção</string>
     <string name="player_more_open_external">Abrir em Player Externo</string>
     <string name="player_error_no_stream_url">Nenhum link de vídeo fornecido</string>
+    <string name="player_browser_audio_swapped">Este navegador não toca esse áudio. Abrindo outra fonte com som.</string>
+    <string name="player_browser_audio_silent">Este navegador não toca o áudio deste arquivo (AC-3, E-AC-3, DTS ou TrueHD).</string>
     <string name="stream_info_section_source">FONTE</string>
     <string name="stream_info_section_file">ARQUIVO</string>
     <string name="stream_info_section_video">VÍDEO</string>

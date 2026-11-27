@@ -1525,6 +1525,8 @@
     <string name="player_more_aspect_ratio">Aspect Ratio</string>
     <string name="player_more_open_external">Open in External Player</string>
     <string name="player_error_no_stream_url">No stream URL provided</string>
+    <string name="player_browser_audio_swapped">This browser can\'t play that audio. Switched to a source with sound.</string>
+    <string name="player_browser_audio_silent">This browser can\'t play this file\'s audio (AC-3, E-AC-3, DTS or TrueHD).</string>
     <string name="player_error_source_not_supported">Source not supported on this TV</string>
     <string name="player_error_stream_load_failed">Playback failed to load</string>
     <string name="stream_info_section_source">SOURCE</string>
