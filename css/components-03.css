@@ -437,3 +437,152 @@
   font-weight: 700;
   color: var(--text-color);
 }
+
+.profile-card {
+  position: relative;
+}
+
+.profile-manage-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 3;
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  background: rgba(15, 18, 24, 0.82);
+  color: #fff;
+  font-size: 14px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  transition:
+    opacity 160ms ease,
+    background-color 140ms ease,
+    border-color 140ms ease,
+    transform 120ms ease;
+}
+
+.profile-card:hover .profile-manage-btn,
+.profile-card.focused .profile-manage-btn,
+.profile-manage-btn:focus-visible {
+  opacity: 1;
+}
+
+.profile-manage-btn:hover,
+.profile-manage-btn:focus-visible {
+  background: rgba(255, 255, 255, 0.22);
+  border-color: rgba(255, 255, 255, 0.78);
+  transform: scale(1.06);
+  outline: none;
+}
+
+.desktop-web .profile-main-layer {
+  padding: 48px 32px;
+  justify-content: center;
+}
+
+.desktop-web .profile-title {
+  font-size: clamp(28px, 2.5vw, 40px);
+  letter-spacing: -0.5px;
+}
+
+.desktop-web .profile-subtitle {
+  margin: 10px 0 0;
+  font-size: clamp(14px, 1.1vw, 17px);
+}
+
+.desktop-web .profile-grid,
+.desktop-web .profile-grid-compact {
+  margin-top: 32px;
+  min-height: auto;
+  gap: 24px;
+}
+
+.desktop-web .profile-card,
+.desktop-web .profile-grid-compact .profile-card {
+  width: 172px;
+  padding: 14px 12px;
+  border-radius: 16px;
+  transition:
+    transform 180ms cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 180ms ease;
+}
+
+.desktop-web .profile-card:hover {
+  background: rgba(255, 255, 255, 0.05);
+  transform: translateY(-4px);
+}
+
+.desktop-web .profile-avatar-ring,
+.desktop-web .profile-grid-compact .profile-avatar-ring {
+  width: 124px;
+  height: 124px;
+  margin: 4px auto 12px;
+}
+
+.desktop-web .profile-card.focused .profile-avatar-ring,
+.desktop-web .profile-card:hover .profile-avatar-ring,
+.desktop-web .profile-grid-compact .profile-card.focused .profile-avatar-ring {
+  width: 130px;
+  height: 130px;
+  border-width: 3px;
+  border-color: var(--focus-color);
+}
+
+.desktop-web .profile-avatar,
+.desktop-web .profile-grid-compact .profile-avatar {
+  width: 108px;
+  height: 108px;
+  font-size: 40px;
+}
+
+.desktop-web .profile-card.focused .profile-avatar,
+.desktop-web .profile-card:hover .profile-avatar,
+.desktop-web .profile-grid-compact .profile-card.focused .profile-avatar {
+  width: 114px;
+  height: 114px;
+  font-size: 42px;
+}
+
+.desktop-web .profile-avatar-add::before,
+.desktop-web .profile-grid-compact .profile-avatar-add::before {
+  width: 34px;
+  height: 3px;
+}
+
+.desktop-web .profile-avatar-add::after,
+.desktop-web .profile-grid-compact .profile-avatar-add::after {
+  width: 3px;
+  height: 34px;
+}
+
+.desktop-web .profile-name,
+.desktop-web .profile-grid-compact .profile-name {
+  font-size: 16px;
+}
+
+.desktop-web .profile-badge,
+.desktop-web .profile-grid-compact .profile-badge {
+  font-size: 11px;
+  margin-top: 4px;
+}
+
+.desktop-web .profile-primary-dot,
+.desktop-web .profile-grid-compact .profile-primary-dot {
+  width: 26px;
+  height: 26px;
+  font-size: 13px;
+  right: 2px;
+  bottom: 2px;
+}
+
+.desktop-web .profile-hint {
+  margin-top: 28px;
+  font-size: 13px;
+  opacity: 0.65;
+}

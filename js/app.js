@@ -127,6 +127,9 @@ const UPDATE_ROUTE_WAIT_TIMEOUT_MS = 60_000;
 // is ready; after 3 s (offline) the names show again as before.
 function preloadMaterialIconFont() {
   const root = document.documentElement;
+  if (Platform.isBrowser()) {
+    root.classList.add("desktop-web");
+  }
   const markReady = () => root.classList.add("material-icons-ready");
   const timer = setTimeout(markReady, 3000);
   // The icon stylesheet is injected asynchronously (see REMOTE_FONT_STYLESHEETS);

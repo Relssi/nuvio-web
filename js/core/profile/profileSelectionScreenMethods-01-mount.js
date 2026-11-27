@@ -227,7 +227,9 @@ export function createProfileSelectionScreenMethods01() {
         : t("profile_selection_subtitle", {}, "Select a profile to continue");
       const hint = this.isManagementMode
         ? t("profile_manage_hint", {}, "Select a profile to manage")
-        : t("profile_selection_hint", {}, "Hold to manage profile");
+        : globalThis?.document?.documentElement?.classList?.contains("desktop-web")
+          ? "Clique em um perfil para entrar ou no ícone ✎ para gerenciar"
+          : t("profile_selection_hint", {}, "Hold to manage profile");
       const renderedPinState = this.getRenderedPinOverlayState();
       const isPinActive = Boolean(renderedPinState);
       const pinScreenPhaseClass = isPinActive ? ` is-pin-${escapeHtml(this.pinOverlayPhase || "open")}` : "";
@@ -237,12 +239,6 @@ export function createProfileSelectionScreenMethods01() {
           <div class="profile-screen${pinScreenPhaseClass}${compactGridScreenClass}">
             <div class="profile-screen-background" data-role="profile-screen-background" aria-hidden="true"></div>
             <div class="profile-main-layer"${isPinActive ? ' aria-hidden="true"' : ""}>
-              ${renderMemberBrandWordmark({
-                access: this.memberAccess,
-                imageClass: "profile-logo",
-                wrapperClass: "profile-brand-lockup"
-              })}
-
               <h1 class="profile-title">${escapeHtml(title)}</h1>
               <p class="profile-subtitle">${escapeHtml(subtitle)}</p>
 
@@ -276,6 +272,12 @@ export function createProfileSelectionScreenMethods01() {
                data-profile-id="${escapeHtml(profile.id)}"
                data-focus-key="profile:${escapeHtml(profile.id)}"
                tabindex="0">
+            <button type="button"
+                    class="profile-manage-btn"
+                    data-action="manage-profile"
+                    data-profile-id="${escapeHtml(profile.id)}"
+                    aria-label="${escapeHtml(`Gerenciar ${profile.name}`)}"
+                    title="Gerenciar perfil">&#9998;</button>
             <div class="profile-avatar-ring">
               <div class="profile-avatar" style="background:${escapeHtml(profile.avatarColorHex || getDefaultProfileColor())}">
                 ${

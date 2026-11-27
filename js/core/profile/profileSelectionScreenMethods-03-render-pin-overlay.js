@@ -71,8 +71,23 @@ export function createProfileSelectionScreenMethods03() {
       const gridCards = Array.from(this.container.querySelectorAll(".profile-card"));
       gridCards.forEach((card) => {
         card.addEventListener("focus", () => this.handleFocusableFocus(card));
-        card.addEventListener("click", async () => {
+        card.addEventListener("click", async (event) => {
+          if (event?.target?.closest?.('[data-action="manage-profile"]')) {
+            return;
+          }
           await this.activateFocusedNode(card);
+        });
+      });
+
+      Array.from(this.container.querySelectorAll('[data-action="manage-profile"]')).forEach((btn) => {
+        btn.addEventListener("click", (event) => {
+          event.stopPropagation();
+          event.preventDefault();
+          const profileId = String(btn.dataset.profileId || "");
+          const profile = this.getProfileById(profileId);
+          if (profile) {
+            this.openOptionsDialog(profile);
+          }
         });
       });
 
