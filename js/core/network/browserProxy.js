@@ -79,7 +79,9 @@ export function fetchViaBrowserProxy(url, init = {}) {
     body: method === "GET" || method === "HEAD" ? undefined : init.body,
     signal: init.signal,
     cache: "no-store",
-    credentials: "omit"
+    // The proxy is same-origin; its session cookie (password login) must be
+    // sent. Upstream cookies never travel here: they go in the encoded header.
+    credentials: "same-origin"
   });
 }
 
