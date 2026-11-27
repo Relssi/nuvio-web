@@ -168,8 +168,7 @@
   margin-right: 0;
 }
 
-.player-episode-stream-filters::-webkit-scrollbar,
-.player-episode-stream-list::-webkit-scrollbar {
+.player-episode-stream-filters::-webkit-scrollbar {
   display: none;
 }
 
@@ -181,10 +180,29 @@
   flex: 1 1 auto;
   min-height: 0;
   margin-top: 16px;
-  padding: 4px 4px 16px;
+  padding: 4px 6px 16px;
   overflow-x: hidden;
   overflow-y: auto;
-  scrollbar-width: none;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.35) rgba(255, 255, 255, 0.06);
+}
+
+.player-episode-stream-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.player-episode-stream-list::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 999px;
+}
+
+.player-episode-stream-list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.35);
+  border-radius: 999px;
+}
+
+.player-episode-stream-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.55);
 }
 
 .player-episode-stream-card,
