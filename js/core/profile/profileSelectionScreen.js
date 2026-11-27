@@ -7,6 +7,9 @@ import { AvatarRepository } from "../../data/remote/supabase/avatarRepository.js
 import { MemberAccessRepository } from "../../data/remote/supabase/memberAccessRepository.js";
 import { ProfileBackgroundRepository } from "../../data/remote/supabase/profileBackgroundRepository.js";
 import { ThemeManager } from "../../ui/theme/themeManager.js";
+import { ThemeStore } from "../../data/local/themeStore.js";
+import { ThemeColors } from "../../ui/theme/themeColors.js";
+import { normalizeCustomThemeColors } from "../util/customThemeColors.js";
 import { renderMemberBrandWordmark } from "../../ui/components/memberBrandWordmark.js";
 import { I18n } from "../../i18n/index.js";
 import { NuvioDialog } from "../../ui/components/nuvioDialog.js";
@@ -39,6 +42,9 @@ export {
   MemberAccessRepository,
   ProfileBackgroundRepository,
   ThemeManager,
+  ThemeStore,
+  ThemeColors,
+  normalizeCustomThemeColors,
   renderMemberBrandWordmark,
   I18n,
   NuvioDialog,

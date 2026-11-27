@@ -71,6 +71,19 @@ export function createProfileSelectionScreenMethods03() {
       const gridCards = Array.from(this.container.querySelectorAll(".profile-card"));
       gridCards.forEach((card) => {
         card.addEventListener("focus", () => this.handleFocusableFocus(card));
+        card.addEventListener("mouseenter", () => {
+          const profileId = card.dataset.profileId;
+          if (profileId && profileId !== "add") {
+            const profile = this.getProfileById(profileId);
+            if (profile) {
+              this.updateBackgroundForProfile(profile);
+              this.updateProfileBackground(profile);
+            }
+          } else if (profileId === "add") {
+            this.updateBackground("#555555");
+            this.updateProfileBackground(null);
+          }
+        });
         card.addEventListener("click", async (event) => {
           if (event?.target?.closest?.('[data-action="manage-profile"]')) {
             return;
@@ -177,7 +190,7 @@ export function createProfileSelectionScreenMethods03() {
         const profile = this.getProfileById(profileId);
         if (profile) {
           this.lastProfileFocusKey = `profile:${profile.id}`;
-          this.updateBackground(profile.avatarColorHex || getDefaultProfileColor());
+          this.updateBackgroundForProfile(profile);
           this.updateProfileBackground(profile);
         }
       } else if (profileId === "add") {

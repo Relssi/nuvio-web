@@ -108,7 +108,9 @@ export function createProfileSelectionScreenMethods01() {
         if (this.editorState) {
           this.render();
         } else {
-          this.updateProfileBackground(this.getFocusedProfile());
+          const initialProfile = this.getFocusedProfile();
+          this.updateBackgroundForProfile(initialProfile);
+          this.updateProfileBackground(initialProfile);
         }
       });
     },
@@ -263,7 +265,9 @@ export function createProfileSelectionScreenMethods01() {
         }
       }
       this.restoreFocus();
-      this.updateProfileBackground(this.getFocusedProfile());
+      const initialProfile = this.getFocusedProfile();
+      this.updateBackgroundForProfile(initialProfile);
+      this.updateProfileBackground(initialProfile);
     },
     renderProfileCard(profile) {
       const avatarUrl = resolveProfileAvatarUrl(profile, (avatarId) => this.getAvatarImageUrl(avatarId));

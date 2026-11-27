@@ -205,25 +205,74 @@ export function createProfileSelectionScreenMethods04() {
       focusWithoutScroll(cards[nextIndex]);
       return true;
     },
-    updateBackground(colorHex) {
+    resolveProfileThemeBackground(profile) {
+      if (!profile) {
+        return {
+          accentHex: getDefaultProfileColor(),
+          themeColors: this.getBackgroundThemeColors()
+        };
+      }
+      const { ThemeStore, ThemeColors, normalizeCustomThemeColors } = internals;
+      let theme = null;
+      try {
+        theme = ThemeStore?.getForProfile?.(profile.id) || null;
+      } catch (_) {
+        theme = null;
+      }
+      const themeName = String(theme?.themeName || "WHITE").toUpperCase();
+      const palette = ThemeColors?.getPalette?.(themeName, theme?.customThemeColors) || null;
+      const baseThemeColors = this.getBackgroundThemeColors();
+      const themeColors = theme?.amoledMode
+        ? {
+            background: { r: 0, g: 0, b: 0 },
+            elevated: { r: 10, g: 10, b: 12 }
+          }
+        : palette
+          ? {
+              background: parseHexColor(palette["--bg-color"], baseThemeColors.background),
+              elevated: parseHexColor(palette["--bg-elevated"], baseThemeColors.elevated)
+            }
+          : baseThemeColors;
+
+      let accentHex = profile.avatarColorHex || getDefaultProfileColor();
+      if (themeName === "CUSTOM") {
+        const [, customAccent] = normalizeCustomThemeColors ? normalizeCustomThemeColors(theme?.customThemeColors) : [];
+        if (customAccent) {
+          accentHex = customAccent;
+        } else if (theme?.accentColor) {
+          accentHex = theme.accentColor;
+        }
+      } else if (themeName !== "WHITE") {
+        accentHex = palette?.["--secondary-color"] || theme?.accentColor || accentHex;
+      }
+      return { accentHex, themeColors };
+    },
+    updateBackgroundForProfile(profile) {
+      const { accentHex, themeColors } = this.resolveProfileThemeBackground(profile);
+      this.updateBackground(accentHex, themeColors);
+    },
+    updateBackground(colorHex, themeColorsOverride = null) {
       const screen = this.container?.querySelector(".profile-screen");
       if (!screen) return;
 
       const screenChanged = this._bgScreen !== screen;
       this._bgScreen = screen;
       const targetColor = parseHexColor(colorHex, parseHexColor(getDefaultProfileColor()));
-      if (!screenChanged && colorsEqual(this._bgTargetColor, targetColor)) {
+      const themeColors = themeColorsOverride || this.getBackgroundThemeColors();
+      const themeKey = `${themeColors.background.r},${themeColors.background.g},${themeColors.background.b}|${themeColors.elevated.r},${themeColors.elevated.g},${themeColors.elevated.b}`;
+      const themeChanged = this._bgThemeKey !== themeKey;
+      this._bgThemeKey = themeKey;
+      if (!screenChanged && !themeChanged && colorsEqual(this._bgTargetColor, targetColor)) {
         return;
       }
-      if (!this._bgAnimRaf && colorsEqual(this._bgCurrentColor, targetColor)) {
+      if (!this._bgAnimRaf && !themeChanged && colorsEqual(this._bgCurrentColor, targetColor)) {
         this._bgTargetColor = targetColor;
         if (screenChanged) {
-          screen.style.background = this.buildBackgroundStyleFromColor(targetColor, this.getBackgroundThemeColors());
+          screen.style.background = this.buildBackgroundStyleFromColor(targetColor, themeColors);
         }
         return;
       }
       this._bgTargetColor = targetColor;
-      const themeColors = this.getBackgroundThemeColors();
 
       if (this._bgAnimRaf) {
         cancelAnimationFrame(this._bgAnimRaf);
