@@ -124,6 +124,12 @@ export function createPlayerScreenMethods70() {
         return true;
       }
 
+      const subtitleCloseNode = target.closest?.("[data-subtitle-dialog-action='close']");
+      if (subtitleCloseNode && this.subtitleDialogVisible) {
+        this.closeSubtitleDialog();
+        return true;
+      }
+
       const subtitleDelayNode = target.closest?.("[data-subtitle-delay-action='open']");
       if (subtitleDelayNode && this.subtitleDialogVisible && subtitleDelayNode.getAttribute("aria-disabled") !== "true") {
         this.showSubtitleDelayOverlay();

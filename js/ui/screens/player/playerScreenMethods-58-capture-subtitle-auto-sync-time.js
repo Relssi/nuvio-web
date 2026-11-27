@@ -288,7 +288,10 @@ export function createPlayerScreenMethods58() {
       });
 
       const nextMarkup = `
-          <div class="player-dialog-title">${escapeHtml(t("subtitle_dialog_title", {}, "Subtitles"))}</div>
+          <div class="player-subtitle-modal-header">
+            <div class="player-dialog-title">${escapeHtml(t("subtitle_dialog_title", {}, "Subtitles"))}</div>
+            <button type="button" class="player-dialog-close-btn" data-subtitle-dialog-action="close" aria-label="Fechar">&#10005;</button>
+          </div>
           ${supportNotice ? `<div class="player-dialog-support-message" role="status">${escapeHtml(supportNotice)}</div>` : ""}
           <div class="player-subtitle-overlay-grid">
             <div class="player-subtitle-rail-heading player-subtitle-language-heading">${escapeHtml(t("subtitle_tab_languages", {}, "Languages"))}</div>

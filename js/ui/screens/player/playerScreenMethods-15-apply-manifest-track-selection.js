@@ -221,7 +221,7 @@ export function createPlayerScreenMethods15() {
 
       this.container.appendChild(root);
       this.cachePlayerUiRefs(root);
-      const videoEl = root.querySelector("#videoPlayer");
+      const videoEl = this.container?.querySelector?.("#videoPlayer") || PlayerController?.video || null;
       const muteBtn = root.querySelector("[data-player-pointer-action='toggleMute']");
       const volumeSlider = root.querySelector("[data-player-volume-slider]");
       if (videoEl && volumeSlider) {

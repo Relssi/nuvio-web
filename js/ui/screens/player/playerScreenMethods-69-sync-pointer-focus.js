@@ -170,14 +170,14 @@ export function createPlayerScreenMethods69() {
       return true;
     },
     onPointerSurfaceActivate(target) {
-      if (
-        !target ||
-        this.isExternalFrameMode() ||
-        this.isDialogOpen() ||
-        this.isStartupErrorVisible() ||
-        this.isPostPlayVisible() ||
-        this.controlsVisible
-      ) {
+      if (!target || this.isExternalFrameMode()) {
+        return false;
+      }
+      if (this.isDialogOpen() && target === this.uiRefs?.modalBackdrop) {
+        this.consumeBackRequest();
+        return true;
+      }
+      if (this.isDialogOpen() || this.isStartupErrorVisible() || this.isPostPlayVisible() || this.controlsVisible) {
         return false;
       }
       const video = this.container?.querySelector?.("#videoPlayer");

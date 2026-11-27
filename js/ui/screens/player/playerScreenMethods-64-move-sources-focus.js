@@ -256,7 +256,7 @@ export function createPlayerScreenMethods64() {
         // tracks render inside it. Tizen positions those cues against the
         // viewport, so a letterboxed element clips their bottom line; webOS
         // also needs the full viewport for its screensaver.
-        const useFullViewport = Environment.isWebOS() || usingTizenHtmlVideo;
+        const useFullViewport = Environment.isWebOS() || Environment.isBrowser() || usingTizenHtmlVideo;
         const canTransformVideo = !Environment.isWebOS() && !usingTizenAvPlay;
         const videoRect = usingTizenAvPlay ? rect.displayRect : rect;
         video.style.position = "fixed";
