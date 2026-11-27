@@ -1,0 +1,86 @@
+# Registro de bugs (web)
+
+Todo bug corrigido entra aqui, com **sintoma**, **causa**, **correção** e **como verificar**.
+Antes de qualquer mudança ou envio para o GitHub, rode:
+
+```
+node scripts/check-regressions.mjs
+```
+
+O script cobre automaticamente os itens marcados com **[auto]**. Os itens **[manual]** precisam ser conferidos no navegador quando a mudança mexer naquela parte.
+
+---
+
+## B01 — Addons e plugins bloqueados no navegador (CORS) [auto]
+
+- **Sintoma:** addons não carregam ou não instalam no navegador; plugins dão "Plugin execution is TV-only".
+- **Causa:** o app foi feito para TV, onde as requisições saem por um serviço Node sem CORS. No navegador, a maioria dos sites bloqueia por CORS, e os plugins estavam desativados de propósito no modo browser.
+- **Correção:** proxy em `scripts/serve.mjs` (`/__nuvio_proxy?url=...`) e `js/core/network/browserProxy.js`. O `httpClient` tenta direto e cai no proxy se for bloqueado; os plugins usam sempre o proxy. O `nuvio.env.js` servido pelo `serve` liga `__NUVIO_WEB_PROXY__` e `__NUVIO_ALLOW_BROWSER_PLUGIN_RUNTIME__`.
+- **Verificar:** o proxy busca um site sem CORS; o `nuvio.env.js` contém as duas flags.
+
+## B02 — Proxy podia ser usado para acessar a própria máquina [auto]
+
+- **Sintoma (risco):** qualquer pessoa com acesso ao site poderia pedir ao proxy `localhost`/`127.x`/`169.254.x`.
+- **Correção:** `isBlockedProxyHost` em `scripts/serve.mjs` responde 403 para esses destinos.
+- **Verificar:** o proxy recusa `http://127.0.0.1/...` com 403.
+
+## B03 — Login do TorBox/Real-Debrid falhava no navegador (CORS) [auto]
+
+- **Sintoma:** não dava para conectar o debrid no navegador.
+- **Causa:** `js/data/remote/api/debridApi.js` usava `fetch` direto; as APIs do TorBox e do Real-Debrid não liberam CORS.
+- **Correção:** `debridApi.js` usa `fetchWithBrowserCorsFallback`.
+- **Verificar:** o bundle contém a chamada com fallback no `debridApi`.
+
+## B04 — "Could not resolve this Debrid stream": formulário chegava ilegível [auto]
+
+- **Sintoma:** ao dar Play com TorBox, erro `stream-resolve`.
+- **Causa:** o TorBox recebe o torrent como `FormData`. O navegador põe o `Content-Type` (com o `boundary`) no pedido ao proxy, mas o proxy só repassava os cabeçalhos codificados, e o TorBox recebia um corpo que não conseguia ler.
+- **Correção:** o proxy copia o `content-type` do pedido quando a página não definiu um.
+- **Verificar:** um POST multipart pelo proxy chega ao destino com os campos e o `boundary` certos.
+
+## B05 — "Login required" ao conectar o TorBox no site com senha [auto]
+
+- **Sintoma:** no Render, com `NUVIO_PASSWORD` ativo, a conexão do TorBox e as chamadas de addons pelo proxy davam "Login required".
+- **Causa:** `fetchViaBrowserProxy` usava `credentials: "omit"`, então o cookie de sessão do login não ia junto.
+- **Correção:** `credentials: "same-origin"` em `browserProxy.js`.
+- **Verificar:** com senha ativa, o proxy responde 401 sem cookie e 200 com o cookie de sessão; o bundle não tem `credentials:"omit"` no `fetchViaBrowserProxy`.
+
+## B06 — Site público sem senha [auto]
+
+- **Sintoma (risco):** sem senha, qualquer pessoa usaria o site e o proxy.
+- **Correção:** `scripts/serveAuth.mjs`; com `NUVIO_PASSWORD` definido, tudo exige login (página `/__login`), com limite de tentativas.
+- **Verificar:** sem cookie, `/` redireciona para `/__login` e o proxy responde 401; com a senha certa, tudo libera.
+
+## B07 — Grade de avatares vazia, sem como pôr foto de perfil [manual]
+
+- **Sintoma:** não dava para escolher foto no editor de perfil.
+- **Causa:** o catálogo de avatares vem do servidor Supabase oficial do Nuvio, que não está configurado.
+- **Correção:** botões "Enviar foto", "Trocar foto" e "Remover foto" (`js/core/profile/profileAvatarUpload.js`). A imagem é cortada em quadrado, reduzida para JPEG de 256 px e salva no `avatarUrl` do perfil.
+- **Verificar (manual):** Settings → Profiles → Manage Profiles → editar ou criar perfil → Enviar foto → salvar; a foto aparece na tela de perfis e na barra lateral.
+
+## B08 — Configurações e addons diferentes em cada perfil [auto]
+
+- **Sintoma:** cada perfil tinha os próprios addons e configurações.
+- **Pedido:** configurações gerais, iguais para todos os perfis.
+- **Correção:** `js/core/profile/sharedProfileData.js`. `profileScopedStore`, `addonRepository` e `pluginStore` sempre usam o perfil "1". Apagar um perfil secundário não apaga as configurações compartilhadas. Histórico e biblioteca continuam por perfil.
+- **Verificar:** `scripts/test-profile-scoped-store-cache.mjs`.
+
+## B09 — Correção "não funcionou", mas era o servidor antigo rodando [manual]
+
+- **Sintoma:** o erro persistia depois da correção.
+- **Causa:** o `npm run serve` não tinha sido reiniciado e continuava rodando o código antigo.
+- **Como evitar:** depois de mudar `scripts/serve.mjs` ou `scripts/serveAuth.mjs`, reinicie o servidor (Ctrl+C e rode de novo). Depois de mudar arquivos em `js/` ou `css/`, rode `npm.cmd run build`. No Render, confira em **Events** se o último deploy está "Live".
+
+## B10 — `npm` bloqueado no PowerShell [manual]
+
+- **Sintoma:** `npm.ps1 cannot be loaded because running scripts is disabled`.
+- **Causa:** política de execução de scripts do Windows.
+- **Como evitar:** use `npm.cmd` no lugar de `npm` (ex.: `npm.cmd run serve`).
+
+## Não são bugs do código (para não perder tempo de novo)
+
+- **"No streams found" com Torrentio sem debrid:** o navegador não toca torrent; é preciso um debrid conectado.
+- **TorBox `PLAN_RESTRICTED_FEATURE`:** o plano grátis do TorBox não libera a API para apps; precisa do plano pago.
+- **"FrostStream - Não autenticado":** é um aviso do addon, não um vídeo; faça login no site do addon ou ignore.
+- **`Media code 4 / source not supported`:** o arquivo não é vídeo ou o formato (MKV com AC3/DTS/HEVC) não toca no navegador; escolha outra fonte.
+- **Requisições `/rest/v1/rpc/...` com 401/404:** o app tentando falar com o backend Nuvio, que ainda não está configurado. Não quebram nada.

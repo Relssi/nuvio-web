@@ -327,7 +327,12 @@ async function handleWebProxyRequest(request, response, requestUrl) {
     sendError(400, "Only http(s) URLs can be proxied");
     return;
   }
-  if (isBlockedProxyHost(target.hostname)) {
+  // NUVIO_PROXY_ALLOW_LOOPBACK=1 is only used by scripts/check-regressions.mjs
+  // so it can test the proxy against a local echo server. Never set it online.
+  const allowLoopback =
+    process.env.NUVIO_PROXY_ALLOW_LOOPBACK === "1" &&
+    /^(127\.0\.0\.1|localhost)$/.test(target.hostname);
+  if (isBlockedProxyHost(target.hostname) && !allowLoopback) {
     sendError(403, "Proxying to local/loopback hosts is not allowed");
     return;
   }
