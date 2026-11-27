@@ -164,4 +164,149 @@
   );
 
   root.__NUVIO_MOVE_PHONE_HERO__ = moveHeroBy;
+
+  // Carousel drag (B32): rows of posters, episodes and cast follow a finger
+  // (phone) or a held mouse button (computer) and keep gliding on release.
+  // The page handles this itself instead of relying on the browser's own
+  // horizontal scrolling, which some phones did not start inside the app.
+  var DRAG_TRACKS =
+    ".home-track, .home-grid-track, .series-episode-track, .series-cast-track, .movie-cast-track, .search-results-track, .seeall-track";
+  var drag = null;
+  var suppressClickUntil = 0;
+
+  function dragTrackFor(target) {
+    var track = target && target.closest ? target.closest(DRAG_TRACKS) : null;
+    if (!track || track.scrollWidth <= track.clientWidth + 2) {
+      return null;
+    }
+    return track;
+  }
+
+  function stopGlide(state) {
+    if (state && state.glide) {
+      cancelAnimationFrame(state.glide);
+      state.glide = 0;
+    }
+  }
+
+  document.addEventListener(
+    "pointerdown",
+    function carouselDragStart(event) {
+      if (event.pointerType === "mouse" && event.button !== 0) {
+        return;
+      }
+      if (event.pointerType === "touch" && html.getAttribute("data-layout") !== "mobile") {
+        return;
+      }
+      var track = dragTrackFor(event.target);
+      if (!track) {
+        return;
+      }
+      stopGlide(drag);
+      drag = {
+        track: track,
+        id: event.pointerId,
+        type: event.pointerType,
+        startX: event.clientX,
+        startY: event.clientY,
+        startLeft: track.scrollLeft,
+        lastX: event.clientX,
+        lastT: performance.now(),
+        velocity: 0,
+        moved: false,
+        horizontal: null,
+        glide: 0
+      };
+    },
+    true
+  );
+
+  document.addEventListener(
+    "pointermove",
+    function carouselDragMove(event) {
+      if (!drag || event.pointerId !== drag.id) {
+        return;
+      }
+      var dx = event.clientX - drag.startX;
+      var dy = event.clientY - drag.startY;
+      if (drag.horizontal === null) {
+        if (Math.abs(dx) < 6 && Math.abs(dy) < 6) {
+          return;
+        }
+        drag.horizontal = Math.abs(dx) > Math.abs(dy);
+        if (!drag.horizontal) {
+          drag = null;
+          return;
+        }
+        drag.moved = true;
+        drag.track.classList.add("is-carousel-dragging");
+      }
+      var now = performance.now();
+      var dt = Math.max(1, now - drag.lastT);
+      drag.velocity = (event.clientX - drag.lastX) / dt;
+      drag.lastX = event.clientX;
+      drag.lastT = now;
+      drag.track.scrollLeft = drag.startLeft - dx;
+      if (event.cancelable) {
+        event.preventDefault();
+      }
+    },
+    { capture: true, passive: false }
+  );
+
+  function carouselDragEnd(event) {
+    if (!drag || event.pointerId !== drag.id) {
+      return;
+    }
+    var state = drag;
+    drag = null;
+    state.track.classList.remove("is-carousel-dragging");
+    if (!state.moved) {
+      return;
+    }
+    // A drag is not a tap: do not open the poster under the finger.
+    suppressClickUntil = Date.now() + 400;
+    var velocity = state.velocity;
+    var track = state.track;
+    var last = performance.now();
+    function glide(now) {
+      var dt = Math.max(1, now - last);
+      last = now;
+      velocity *= Math.pow(0.94, dt / 16);
+      if (Math.abs(velocity) < 0.02) {
+        state.glide = 0;
+        return;
+      }
+      track.scrollLeft -= velocity * dt;
+      state.glide = requestAnimationFrame(glide);
+    }
+    if (Math.abs(velocity) > 0.1) {
+      state.glide = requestAnimationFrame(glide);
+    }
+  }
+
+  document.addEventListener("pointerup", carouselDragEnd, true);
+  document.addEventListener("pointercancel", carouselDragEnd, true);
+
+  root.addEventListener(
+    "click",
+    function swallowClickAfterDrag(event) {
+      if (Date.now() < suppressClickUntil) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+      }
+    },
+    true
+  );
+
+  // Holding the mouse on a poster image would start dragging the image.
+  document.addEventListener(
+    "dragstart",
+    function noImageDragInTracks(event) {
+      if (dragTrackFor(event.target)) {
+        event.preventDefault();
+      }
+    },
+    true
+  );
 })();

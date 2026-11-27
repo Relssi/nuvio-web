@@ -473,31 +473,6 @@ html[data-layout="mobile"] .series-detail-shell .detail-meta-stack {
   margin-top: 12px;
 }
 
-html[data-layout="mobile"] .series-detail-shell .series-insight-tabs {
-  padding: 16px 16px 0;
-  gap: 8px;
-}
-
-html[data-layout="mobile"] .series-detail-shell .series-insight-tab {
-  font-size: 18px;
-  height: 40px;
-}
-
-html[data-layout="mobile"] .series-detail-shell .series-insight-divider {
-  height: 28px;
-}
-
-html[data-layout="mobile"] .series-detail-shell .movie-cast-track {
-  padding: 8px 16px 16px;
-  gap: 12px;
-}
-
-html[data-layout="mobile"] .series-detail-shell .movie-cast-card {
-  width: 110px;
-  min-width: 110px;
-  height: auto;
-}
-
 html[data-layout="mobile"] .series-detail-shell .series-detail-content {
   padding-bottom: 24px;
 }
@@ -790,45 +765,6 @@ html[data-layout="mobile"] .series-detail-shell .detail-meta-row * {
   font-size: 15px;
 }
 
-html[data-layout="mobile"] .series-detail-shell .series-insight-divider {
-  height: 20px;
-  font-size: 18px;
-}
-
-html[data-layout="mobile"] .series-detail-shell .detail-trailer-hint {
-  font-size: 14px;
-}
-
-html[data-layout="mobile"] .series-detail-shell .movie-cast-track .movie-cast-card,
-html[data-layout="mobile"] .series-detail-shell .series-cast-track .movie-cast-card {
-  width: 96px;
-  min-width: 96px;
-  height: auto;
-}
-
-html[data-layout="mobile"] .series-detail-shell .movie-cast-track .movie-cast-avatar,
-html[data-layout="mobile"] .series-detail-shell .series-cast-track .movie-cast-avatar {
-  width: 88px;
-  height: 88px;
-}
-
-html[data-layout="mobile"] .series-detail-shell .movie-cast-track .movie-cast-avatar-fallback,
-html[data-layout="mobile"] .series-detail-shell .series-cast-track .movie-cast-avatar-fallback {
-  font-size: 30px;
-}
-
-html[data-layout="mobile"] .series-detail-shell .movie-cast-track .movie-cast-name,
-html[data-layout="mobile"] .series-detail-shell .series-cast-track .movie-cast-name {
-  font-size: 13px;
-  line-height: 17px;
-}
-
-html[data-layout="mobile"] .series-detail-shell .movie-cast-track .movie-cast-role,
-html[data-layout="mobile"] .series-detail-shell .series-cast-track .movie-cast-role {
-  font-size: 12px;
-  line-height: 16px;
-}
-
 /* Addons: the actions (toggle, update, remove) go under the addon name. */
 html[data-layout="mobile"] #plugin .addons-installed-head {
   flex-wrap: wrap;
@@ -921,26 +857,45 @@ html[data-layout="mobile"] .home-screen-shell.home-layout-modern .home-hero-mode
   touch-action: pan-y;
 }
 
-/* Series (B31): season buttons and episode cards are TV-sized; show them at
-   half size like the other TV screens (about 1.3 episode cards per screen). */
-html[data-layout="mobile"] .series-detail-shell .series-season-row,
-html[data-layout="mobile"] .series-detail-shell .series-episode-track {
+/* Title details, lower part (B33): seasons, episodes, cast, ratings, trailers
+   and the other tabs are TV-sized. Everything below the top section is shown
+   at half size, like the other TV screens. */
+html[data-layout="mobile"]
+  .series-detail-shell
+  .series-detail-content
+  > :not(:has(.detail-hero-section)) {
   zoom: var(--mobile-ui-zoom);
   --nuvio-vw: calc(1vw / var(--mobile-ui-zoom));
   --nuvio-vh: calc(1vh / var(--mobile-ui-zoom));
 }
 
-html[data-layout="mobile"] .series-detail-shell .series-cast-track {
-  padding: 8px 16px 16px;
-  gap: 12px;
+/* Carousel drag (B32, assets/runtime/browser-viewport-scale.js): the page
+   moves rows sideways itself; the browser keeps vertical page scrolling. */
+html[data-layout="mobile"] .home-track,
+html[data-layout="mobile"] .series-episode-track,
+html[data-layout="mobile"] .series-cast-track,
+html[data-layout="mobile"] .movie-cast-track {
+  touch-action: pan-y;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
-html[data-layout="mobile"]
-  .series-detail-shell
-  .series-cast-track
-  .movie-cast-card.series-cast-card {
-  width: 96px;
-  min-width: 96px;
-  flex: 0 0 96px;
-  height: auto;
+/* Discover and "See all" grids (B33): three posters per row on a phone. */
+html[data-layout="mobile"] .seeall-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  column-gap: 20px;
+}
+
+html[data-layout="mobile"] .seeall-grid > .seeall-card {
+  width: 100%;
+  min-width: 0;
+}
+
+html[data-layout="mobile"] .seeall-grid > .seeall-card .home-poster-frame,
+html[data-layout="mobile"] .seeall-grid > .seeall-card img {
+  width: 100%;
+}
+
+html[data-layout="mobile"] .discover-filter-shell {
+  flex-wrap: wrap;
 }

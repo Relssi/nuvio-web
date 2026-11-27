@@ -537,9 +537,21 @@ async function main() {
 
   await check("B31", "series seasons, episodes and cast are phone-sized", async () => {
     const css = await source("css/mobile.css");
-    if (!css.includes(".series-episode-track")) return "episode track not sized for phones";
-    if (!css.includes(".movie-cast-card.series-cast-card"))
-      return "series cast not sized for phones";
+    if (!css.includes(":not(:has(.detail-hero-section))"))
+      return "lower part of the details screen is not sized for phones";
+    return true;
+  });
+
+  await check("B32", "rows follow a finger or mouse drag like a carousel", async () => {
+    const runtime = await source("assets/runtime/browser-viewport-scale.js");
+    if (!runtime.includes("carouselDragStart")) return "carousel drag missing";
+    if (!runtime.includes("swallowClickAfterDrag")) return "a drag would open the poster";
+    return true;
+  });
+
+  await check("B33", "Discover / See all show three posters per row on phones", async () => {
+    const css = await source("css/mobile.css");
+    if (!/\.seeall-grid \{[^}]*repeat\(3/.test(css)) return "phone grid is not three columns";
     return true;
   });
 

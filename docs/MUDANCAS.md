@@ -8,6 +8,13 @@ Detalhes de bugs (causa e correção) ficam em [`BUGS.md`](BUGS.md).
 
 ---
 
+## 28/11/2026 — Arrastar fileiras como carrossel, telas de filme/série e Descobrir
+
+- **O que mudou:** dá para arrastar as fileiras de filmes para o lado com o dedo (celular) ou segurando o mouse (computador), e elas continuam deslizando ao soltar, como um carrossel. Arrastar não abre o filme sem querer. No celular, a parte de baixo das telas de filme e série (temporadas, episódios, elenco, avaliações, trailer) ficou no tamanho certo, e o Descobrir mostra 3 pôsteres por linha.
+- **Como:** o site cuida do arraste das fileiras; a parte de baixo das telas de filme/série usa meia escala. Detalhes em BUGS.md (B32, B33).
+- **Precisa fazer:** nada. Recarregue a página.
+- **Não testado:** em celular de verdade (testado no simulador do navegador).
+
 ## 28/11/2026 — Destaque que desliza, séries no celular e PT-BR padrão
 
 - **O que mudou:** na Início do celular, deslize o destaque para o lado para ver o próximo filme (ou o anterior). A tela de série no celular ficou no tamanho certo (temporadas, episódios e elenco). O áudio padrão agora é **português do Brasil** quando o filme tiver essa faixa.

@@ -213,6 +213,17 @@ O script cobre automaticamente os itens marcados com **[auto]**. Os itens **[man
 - **Correção (`css/mobile.css`):** temporadas e episódios em meia escala (como as outras telas de TV); o elenco de séries (`.series-cast-track`) usa os mesmos tamanhos do elenco de filmes.
 - **Verificar:** checagem B31; no simulador 375px, temporada 110×45, episódio 280×179, elenco 96px.
 
+## B32 — Fileiras não arrastavam para o lado (carrossel) [auto + manual]
+
+- **Sintoma:** no celular (e com o mouse no computador) não dava para arrastar as fileiras de filmes para o lado.
+- **Correção:** `assets/runtime/browser-viewport-scale.js` faz o arraste ele mesmo: com o dedo (celular) ou com o botão do mouse segurado, a fileira acompanha e continua deslizando ao soltar. Vale para fileiras da Início, episódios e elenco. Um arraste não abre o pôster (o clique logo depois é ignorado). No celular essas fileiras têm `touch-action: pan-y` (o navegador cuida só da rolagem vertical).
+- **Verificar:** checagem B32; no simulador, arrastar 200px move a fileira 200px, ela desliza até ~490px e o filme não abre.
+
+## B33 — Parte de baixo das telas de filme/série e Descobrir ainda grandes [auto + manual]
+
+- **Correção:** tudo abaixo do topo da tela do filme/série (temporadas, episódios, abas Elenco/Avaliações/Trailer) fica em meia escala, substituindo os ajustes peça por peça de B27/B31. Descobrir e "Ver tudo" mostram 3 pôsteres por linha no celular, e os filtros quebram linha se precisar.
+- **Verificar:** checagens B31 e B33; no simulador nenhuma das três abas tem texto saindo da tela; Descobrir com cartões de 102px, 3 por linha.
+
 ## Teste que já falhava
 
 - `js/ui/screens/home/homeHeroBackdropBitmap.test.mjs` (2 testes de troca suave da imagem do destaque) falha também na versão do GitHub antes destas mudanças. Não investigado.
