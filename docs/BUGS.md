@@ -90,12 +90,20 @@ O script cobre automaticamente os itens marcados com **[auto]**. Os itens **[man
 - **O que faz:** `scripts/statusPage.mjs` mostra se a senha e as chaves estão configuradas (só o tipo da chave, nunca o valor), se o servidor consegue entrar na conta da casa, quais perfis existem no Supabase e em qual conta **aquele navegador** está logado.
 - **Verificar:** sem a senha do site, responde 401; com a senha, lista os perfis e não contém nenhuma chave.
 
-## B13 — Navegador do amigo "não logado" mesmo com o servidor certo [em investigação]
+## B13 — Navegador do amigo "não logado" mesmo com o servidor certo [resolvido]
 
 - **Sintoma:** `/__status` mostrava o servidor todo ✅, mas "Logado no Supabase: não" no navegador do amigo, com perfis só locais (Profile 1, Luska). Por isso ninguém via o perfil do outro.
 - **O que foi adicionado para descobrir a causa:** o `nuvio.env.js` agora guarda no navegador um histórico do login (`__nuvioAuthDebugLog`): login automático ok/falhou e **quando o app apaga a sessão e de onde** (qual código chamou). O `/__status` mostra esse histórico e tem o botão "Conectar este navegador à conta da casa".
 - **Atenção:** ao conectar, o app baixa os perfis do Supabase e substitui os perfis locais daquele navegador; um perfil criado só localmente (ex.: Luska) precisa ser criado de novo depois de conectar.
+- **Resultado:** com o botão "Conectar este navegador" funcionou. Causa provável: o navegador já estava aberto antes do login automático ser ativado no Render, então não pediu a sessão.
 - **Verificar:** `nuvio.env.js` contém `__nuvioAuthDebugLog`.
+
+## B14 — Addons/configurações salvos "no perfil" em vez de gerais (na nuvem) [auto]
+
+- **Sintoma:** os addons e as configurações não eram iguais para todos; cada aparelho/perfil tinha os seus.
+- **Causa:** a sincronização nativa do Nuvio é por perfil (`p_profile_id`). Com o perfil Luska ativo, o app buscaria "os addons do Luska" (vazio) e não enviaria mudanças feitas nele.
+- **Correção:** `librarySyncService.js` sempre usa o perfil compartilhado ("1") e envia a lista a partir de qualquer perfil. No banco (`docs/supabase/02-shared-addons-settings.sql`), as funções de configurações, credenciais (TorBox) e plugins ignoram o perfil e guardam uma cópia única; addons e plugins gravados direto na tabela são forçados para o perfil 1 por um trigger.
+- **Verificar:** checagens B14 no `check-regressions.mjs`.
 
 ## Não são bugs do código (para não perder tempo de novo)
 

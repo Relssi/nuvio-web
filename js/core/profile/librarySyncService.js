@@ -3,6 +3,7 @@ import { isMissingResourceError, isSyncBackoffActive } from "../sync/syncBackoff
 import { addonRepository } from "../../data/repository/addonRepository.js";
 import { SupabaseApi } from "../../data/remote/supabase/supabaseApi.js";
 import { ProfileManager } from "./profileManager.js";
+import { sharedProfileId } from "./sharedProfileData.js";
 import { getSyncClientId } from "../sync/syncClientIdentity.js";
 
 const ADDONS_TABLE = "addons";
@@ -50,22 +51,10 @@ async function resolveProfileId() {
 }
 
 async function resolveAddonProfileId() {
-  const profileId = await resolveProfileId();
-  if (profileId === 1) {
-    return 1;
-  }
-
-  const profiles = await ProfileManager.getProfiles();
-  const activeProfile = profiles.find((profile) => {
-    const id = Number(profile?.profileIndex || profile?.id || 1);
-    return Number.isFinite(id) && Math.trunc(id) === profileId;
-  });
-  const usesPrimaryAddons = readRemoteBoolean(
-    activeProfile?.usesPrimaryAddons ?? activeProfile?.uses_primary_addons,
-    false
-  );
-
-  return usesPrimaryAddons ? 1 : profileId;
+  // Addons are shared by every profile in this build (see
+  // js/core/profile/sharedProfileData.js), so the cloud copy is always the
+  // primary profile's list, whichever profile is active.
+  return Number(sharedProfileId());
 }
 
 function normalizeProfileId(profileId = null) {
@@ -345,12 +334,9 @@ export const LibrarySyncService = {
       }
       const requestedProfileId = await resolveProfileId();
       const profileId = await resolveAddonProfileId();
-      // Android treats a secondary profile that inherits the primary addon
-      // set as read-only. Do not publish the primary profile's local state
-      // merely because this profile became active.
-      if (requestedProfileId !== profileId) {
-        return true;
-      }
+      // Upstream skipped the push for secondary profiles. Here the addon list
+      // is shared and editable from every profile, so any profile publishes
+      // it (always under the shared profile id).
       const urls = addonRepository.getInstalledAddonUrls();
       if ((await resolveProfileId()) !== requestedProfileId) {
         return false;

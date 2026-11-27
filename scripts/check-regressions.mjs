@@ -246,6 +246,32 @@ async function main() {
     if (!ok) return "a store no longer resolves to sharedProfileId()";
   });
 
+  await check("B14", "cloud addon sync always uses the shared list", async () => {
+    const text = await source("js/core/profile/librarySyncService.js");
+    const block = text.slice(text.indexOf("async function resolveAddonProfileId"));
+    if (!/return Number\(sharedProfileId\(\)\);/.test(block.slice(0, 400))) {
+      return "resolveAddonProfileId must return the shared profile id";
+    }
+    if (/if \(requestedProfileId !== profileId\) \{\s*return true;/.test(text)) {
+      return "push still skips secondary profiles";
+    }
+  });
+  await check("B14", "stage 2 SQL keeps settings/credentials/addons shared", async () => {
+    const sql = await source("docs/supabase/02-shared-addons-settings.sql");
+    const needed = [
+      "sync_push_addons",
+      "sync_push_plugins",
+      "sync_pull_profile_settings_blob",
+      "sync_push_profile_settings_blob",
+      "sync_pull_provider_credentials",
+      "sync_push_provider_credentials",
+      "sync_seed_provider_credentials",
+      "nuvio_force_shared_profile"
+    ];
+    const missing = needed.filter((name) => !sql.includes(name));
+    if (missing.length) return `missing in SQL: ${missing.join(", ")}`;
+  });
+
   // ---- Unit tests --------------------------------------------------------
   const tests = await run(process.execPath, [
     "--test",
