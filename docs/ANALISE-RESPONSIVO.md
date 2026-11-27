@@ -61,7 +61,7 @@ janela (ex.: numa tela 4K tudo fica 2× maior; num notebook de 1366, ~0,7×). Re
   desalinhar cliques ou o foco. Precisa testar bem (Home, detalhes, player, ajustes).
 - **TV de verdade não muda:** no Tizen/webOS a escala fica desligada.
 
-### Fase 2 — Celular e tablet: layout próprio (grande)
+### Fase 2 — Celular e tablet: layout próprio (grande) — EM ANDAMENTO (feito: navegação, Início, filme, fontes, perfis)
 
 Prioridade pelas telas mais usadas:
 

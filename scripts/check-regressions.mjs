@@ -372,6 +372,32 @@ async function main() {
     }
   });
 
+  await check("B19", "phone layout rules only apply on phones", async () => {
+    const css = await source("css/mobile.css");
+    const withoutComments = css.replace(/\/\*[\s\S]*?\*\//g, "");
+    const selectors = [];
+    withoutComments.replace(/([^{}]+)\{/g, (match, group) => {
+      group
+        .split(",")
+        .map((part) => part.trim())
+        .filter(Boolean)
+        .forEach((selector) => selectors.push(selector));
+      return match;
+    });
+    const unscoped = selectors.filter(
+      (selector) => !selector.startsWith('html[data-layout="mobile"]')
+    );
+    if (!selectors.length) return "css/mobile.css has no rules";
+    if (unscoped.length) return `unscoped selectors: ${unscoped.slice(0, 3).join(" | ")}`;
+    const script = await source("assets/runtime/browser-viewport-scale.js");
+    if (!script.includes('setLayout("mobile")') || !script.includes('setLayout("desktop")')) {
+      return "browser-viewport-scale.js no longer marks data-layout";
+    }
+    const bundle = await source("dist/css/bundle.css");
+    if (!bundle.includes("html[data-layout=mobile]"))
+      return "mobile rules missing from dist/css/bundle.css";
+  });
+
   // ---- Unit tests --------------------------------------------------------
   const tests = await run(process.execPath, [
     "--test",

@@ -132,6 +132,14 @@ O script cobre automaticamente os itens marcados com **[auto]**. Os itens **[man
 - **Correção:** `librarySyncService.js` tenta `sync_pull_addons` quando a leitura da tabela é negada; `docs/supabase/04-table-access.sql` libera as tabelas `addons`, `plugins` e `profiles` para usuários logados (a segurança por linha continua valendo). O `/__status` ganhou a linha "App consegue ler a tabela de addons".
 - **Verificar:** checagem B18; teste local com o Supabase simulado negando a tabela: o perfil secundário recebeu os addons pela função.
 
+## B19 — Layout de celular (fase 2 do responsivo) [auto + manual]
+
+- **O que faz:** `css/mobile.css`, ativado por `html[data-layout="mobile"]` (o script de escala marca a página assim quando a tela é menor que 1000×560). Menu vira barra embaixo; Início com destaque em cima e pôsteres menores; tela do filme em uma coluna; lista de fontes em largura total; tela de perfis com dois por linha.
+- **Cuidados:** todas as regras ficam dentro de `html[data-layout="mobile"]`, então computador e TV não mudam. Os tamanhos de pôster das configurações de Layout são escritos direto no elemento da tela, por isso são sobrescritos num elemento interno (`.home-main`).
+- **Verificar (auto):** checagem B19 garante que nenhuma regra do arquivo escapa do escopo de celular.
+- **Verificar (manual):** em 375×812, nenhuma tela passa da largura (Início, filme, fontes, perfis); tocar num pôster abre o filme; a barra de baixo troca de tela.
+- **Nota de teste:** o navegador embutido do Claude Code corta a lateral direita das capturas em tamanho de celular; a largura foi conferida medindo os elementos.
+
 ## Não são bugs do código (para não perder tempo de novo)
 
 - **"No streams found" com Torrentio sem debrid:** o navegador não toca torrent; é preciso um debrid conectado.

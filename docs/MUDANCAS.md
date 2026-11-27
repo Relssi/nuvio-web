@@ -8,6 +8,15 @@ Detalhes de bugs (causa e correção) ficam em [`BUGS.md`](BUGS.md).
 
 ---
 
+## 28/11/2026 — Site no celular (fase 2, primeira parte)
+
+- **O que mudou:** no celular (e tablet em pé) o menu virou uma barra de ícones embaixo; a tela Início mostra o destaque em cima com texto legível e fileiras com ~3 pôsteres que rolam com o dedo; a tela do filme ficou em uma coluna com botões do tamanho do dedo; a lista de fontes ocupa a largura toda; a tela de perfis mostra dois por linha.
+- **Como:** novo arquivo `css/mobile.css`, que só vale quando a tela é pequena; computador e TV não mudam.
+- **Precisa fazer:** nada. Recarregue no celular (se o navegador do celular guardar a versão antiga, feche a aba e abra de novo).
+- **Ainda falta (próximas partes):** player (controles maiores, girar a tela), Configurações, Busca e Biblioteca no celular; episódios de séries; celular deitado.
+- **Não testado:** em celular de verdade (só no simulador do navegador) e com fontes reais na lista (aqui não há TorBox).
+- **Também chegou do Kiid:** botões "Voltar" visíveis nas telas internas e atalhos de teclado no player do desktop.
+
 ## 28/11/2026 — Addons carregam para os amigos mesmo se o Supabase bloquear a tabela
 
 - **O que mudou:** os navegadores dos amigos passam a receber os addons do perfil principal mesmo quando o Supabase não libera a leitura direta da tabela. O `/__status` mostra se a tabela está liberada.

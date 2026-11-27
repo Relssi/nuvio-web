@@ -1,0 +1,440 @@
+/*
+ * Phone / standing tablet layout (docs/ANALISE-RESPONSIVO.md, phase 2).
+ *
+ * Everything here is scoped to html[data-layout="mobile"], which
+ * assets/runtime/browser-viewport-scale.js sets in the browser when the
+ * window is smaller than 1000x560. TV apps and desktop never get it, so
+ * their layout is unchanged.
+ */
+
+/* ------------------------------------------------------------------ */
+/* Navigation: the side rail becomes a bottom tab bar                  */
+/* ------------------------------------------------------------------ */
+
+html[data-layout="mobile"] .home-shell {
+  --legacy-sidebar-rail-width: 0px;
+  --home-sidebar-content-offset: 0px;
+  --mobile-nav-height: 64px;
+}
+
+html[data-layout="mobile"] .home-shell::before {
+  display: none;
+}
+
+html[data-layout="mobile"] .home-sidebar,
+html[data-layout="mobile"] .home-sidebar.expanded {
+  position: fixed;
+  top: auto;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  flex-basis: auto;
+  height: calc(var(--mobile-nav-height) + env(safe-area-inset-bottom, 0px));
+  padding: 0 8px env(safe-area-inset-bottom, 0px);
+  flex-direction: row;
+  align-items: center;
+  z-index: 50;
+  background: rgba(13, 13, 13, 0.97);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  transition: none;
+  overflow: visible;
+}
+
+html[data-layout="mobile"] .home-sidebar .home-profile-pill {
+  display: none;
+}
+
+html[data-layout="mobile"] .home-sidebar .home-nav-list {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  height: 100%;
+  justify-content: space-around;
+  align-items: center;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  transform: none;
+}
+
+html[data-layout="mobile"] .home-sidebar .home-nav-item {
+  width: 56px;
+  height: 48px;
+  min-width: 0;
+  flex: 0 0 auto;
+  margin: 0;
+  padding: 0;
+  border-radius: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+html[data-layout="mobile"] .home-sidebar .home-nav-label {
+  display: none;
+}
+
+html[data-layout="mobile"] .home-main {
+  margin-left: 0;
+}
+
+/* ------------------------------------------------------------------ */
+/* Home (modern layout): hero on top, rows below, small posters        */
+/* ------------------------------------------------------------------ */
+
+html[data-layout="mobile"] .home-screen-shell.home-layout-modern {
+  --home-content-start: 16px;
+  --modern-hero-copy-right: 16px;
+  --modern-hero-copy-top-safe: 16px;
+  --modern-hero-copy-bottom-gap: 28px;
+  --modern-hero-copy-max-width: 100%;
+  --modern-hero-copy-gap: 8px;
+  --modern-hero-media-width: 100%;
+  --modern-rows-viewport-height: 50%;
+  --modern-hero-description-size: 14px;
+  --modern-hero-description-line-height: 20px;
+  --modern-hero-logo-max-height: 72px;
+  --modern-hero-logo-max-width: 62%;
+  --modern-hero-meta-size: 13px;
+  --modern-hero-secondary-size: 13px;
+  --modern-hero-title-size: 28px;
+  --modern-hero-title-line-height: 34px;
+  --home-track-gap: 10px;
+  --modern-track-peek-extension: 16px;
+  --home-track-end: 16px;
+  --home-row-gap: 6px;
+}
+
+/* The poster sizes from Layout settings are written inline on the shell, so
+   they are overridden on an inner element. */
+html[data-layout="mobile"] .home-screen-shell .home-main {
+  --home-poster-width: 112px;
+  --home-poster-height: 168px;
+  --home-modern-portrait-poster-width: 112px;
+  --home-modern-portrait-poster-height: 168px;
+  --home-modern-portrait-expanded-width: 112px;
+  --home-poster-expanded-width: 112px;
+  --home-landscape-poster-width: 200px;
+  --home-landscape-poster-height: 112px;
+  --home-poster-radius: 14px;
+  --home-continue-width: 220px;
+}
+
+html[data-layout="mobile"] .home-screen-shell.home-layout-modern .home-modern-hero-media {
+  right: 0;
+  left: 0;
+}
+
+html[data-layout="mobile"] .home-screen-shell.home-layout-modern .home-modern-hero-media::before {
+  width: 100%;
+  background: linear-gradient(
+    180deg,
+    rgba(13, 13, 13, 0) 35%,
+    rgba(13, 13, 13, 0.85) 80%,
+    #0d0d0d 100%
+  );
+}
+
+html[data-layout="mobile"] .home-screen-shell.home-layout-modern .home-modern-hero-copy {
+  justify-content: flex-end;
+}
+
+html[data-layout="mobile"] .home-screen-shell.home-layout-modern .home-modern-rows-viewport {
+  bottom: calc(var(--mobile-nav-height) + env(safe-area-inset-bottom, 0px));
+  height: calc(var(--modern-rows-viewport-height) - var(--mobile-nav-height));
+  padding-top: 6px;
+}
+
+html[data-layout="mobile"] .home-screen-shell .home-row-title {
+  font-size: 17px;
+}
+
+html[data-layout="mobile"] .home-screen-shell.home-layout-modern .home-row-head {
+  margin-bottom: 10px;
+}
+
+html[data-layout="mobile"] .home-screen-shell .home-hero-description {
+  -webkit-line-clamp: 3;
+  max-height: 60px;
+}
+
+/* ------------------------------------------------------------------ */
+/* Title details: one column, phone-sized buttons and text             */
+/* ------------------------------------------------------------------ */
+
+html[data-layout="mobile"] .series-detail-shell {
+  --detail-button-height: 48px;
+  --detail-label-size: 16px;
+  --detail-action-gap: 12px;
+}
+
+html[data-layout="mobile"] .series-detail-shell .detail-hero-section {
+  padding: 88px 16px 24px;
+  min-height: 100%;
+  height: auto;
+  box-sizing: border-box;
+}
+
+html[data-layout="mobile"] .series-detail-shell .detail-hero-brand,
+html[data-layout="mobile"] .series-detail-shell .detail-hero-body {
+  width: 100%;
+  max-width: 100%;
+}
+
+html[data-layout="mobile"] .series-detail-shell .series-detail-logo {
+  height: auto;
+  max-height: 80px;
+  max-width: 70%;
+  padding-bottom: 16px;
+  object-fit: contain;
+  object-position: left center;
+}
+
+html[data-layout="mobile"] .series-detail-shell .series-detail-actions {
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+html[data-layout="mobile"] .series-detail-shell .series-primary-btn {
+  min-height: 48px;
+  height: 48px;
+  padding: 0 24px;
+  font-size: 16px;
+  line-height: 1;
+  gap: 8px;
+}
+
+html[data-layout="mobile"] .series-detail-shell .series-circle-btn {
+  width: 48px;
+  height: 48px;
+  min-width: 48px;
+  padding: 0;
+  font-size: 16px;
+}
+
+html[data-layout="mobile"] .series-detail-shell .series-circle-btn svg,
+html[data-layout="mobile"] .series-detail-shell .series-circle-btn img,
+html[data-layout="mobile"] .series-detail-shell .series-primary-btn svg {
+  width: 22px;
+  height: 22px;
+}
+
+html[data-layout="mobile"] .series-detail-shell .series-detail-support {
+  font-size: 14px;
+  line-height: 20px;
+  max-width: 100%;
+  margin-top: 16px;
+}
+
+html[data-layout="mobile"] .series-detail-shell .series-detail-description {
+  font-size: 15px;
+  line-height: 22px;
+  max-width: 100%;
+  margin-top: 12px;
+}
+
+html[data-layout="mobile"] .series-detail-shell .detail-meta-stack {
+  font-size: 14px;
+  margin-top: 12px;
+}
+
+html[data-layout="mobile"] .series-detail-shell .series-insight-tabs {
+  padding: 16px 16px 0;
+  gap: 8px;
+}
+
+html[data-layout="mobile"] .series-detail-shell .series-insight-tab {
+  font-size: 18px;
+  height: 40px;
+}
+
+html[data-layout="mobile"] .series-detail-shell .series-insight-divider {
+  height: 28px;
+}
+
+html[data-layout="mobile"] .series-detail-shell .movie-cast-track {
+  padding: 8px 16px 16px;
+  gap: 12px;
+}
+
+html[data-layout="mobile"] .series-detail-shell .movie-cast-card {
+  width: 110px;
+  min-width: 110px;
+  height: auto;
+}
+
+html[data-layout="mobile"] .series-detail-shell .series-detail-content {
+  padding-bottom: 24px;
+}
+
+html[data-layout="mobile"] .nuvio-web-back-btn {
+  top: 16px;
+  left: 16px;
+}
+
+/* ------------------------------------------------------------------ */
+/* Stream (sources) list: title on top, full-width list below          */
+/* ------------------------------------------------------------------ */
+
+html[data-layout="mobile"] .stream-route-content {
+  display: flex;
+  flex-direction: column;
+}
+
+html[data-layout="mobile"] .stream-route-left {
+  flex: 0 0 auto;
+  padding: 72px 16px 8px;
+}
+
+html[data-layout="mobile"] .stream-route-left-inner {
+  width: 100%;
+}
+
+html[data-layout="mobile"] .stream-route-logo {
+  height: auto;
+  max-height: 56px;
+  max-width: 60%;
+  object-fit: contain;
+  object-position: left center;
+}
+
+html[data-layout="mobile"] .stream-route-title {
+  font-size: 24px;
+}
+
+html[data-layout="mobile"] .stream-route-episode-code {
+  font-size: 16px;
+}
+
+html[data-layout="mobile"] .stream-route-subtitle,
+html[data-layout="mobile"] .stream-route-detail-line,
+html[data-layout="mobile"] .stream-route-detail-line.is-info {
+  font-size: 14px;
+  line-height: 20px;
+}
+
+html[data-layout="mobile"] .stream-route-right {
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 0 8px calc(8px + env(safe-area-inset-bottom, 0px));
+}
+
+html[data-layout="mobile"] .stream-route-panel-shell {
+  height: 100%;
+}
+
+html[data-layout="mobile"] .stream-route-panel-header {
+  padding: 8px 8px 0;
+}
+
+html[data-layout="mobile"] .stream-route-chip-wrap {
+  height: 52px;
+  flex-basis: 52px;
+}
+
+html[data-layout="mobile"] .stream-route-chip-track {
+  padding: 4px 8px;
+}
+
+html[data-layout="mobile"] .stream-route-chip {
+  min-height: 36px;
+  padding: 0 14px;
+  font-size: 14px;
+}
+
+html[data-layout="mobile"] .stream-route-list {
+  padding: 8px 8px 24px;
+}
+
+html[data-layout="mobile"] .stream-route-card-row {
+  margin-bottom: 8px;
+}
+
+html[data-layout="mobile"] .stream-route-card {
+  padding: 14px;
+  gap: 12px;
+  border-radius: 16px;
+}
+
+html[data-layout="mobile"] .stream-route-card-heading {
+  font-size: 15px;
+  line-height: 21px;
+}
+
+html[data-layout="mobile"] .stream-route-card-quality {
+  margin-top: 4px;
+  font-size: 13px;
+  line-height: 18px;
+}
+
+html[data-layout="mobile"] .stream-route-card-line {
+  margin-top: 4px;
+  font-size: 12px;
+  line-height: 17px;
+  letter-spacing: 0.2px;
+}
+
+html[data-layout="mobile"] .stream-route-card-meta {
+  margin-top: 8px;
+  gap: 8px;
+}
+
+html[data-layout="mobile"] .stream-route-addon-badge {
+  width: 36px;
+  height: 36px;
+}
+
+html[data-layout="mobile"] .stream-route-native-button {
+  width: 40px;
+  height: 40px;
+}
+
+/* ------------------------------------------------------------------ */
+/* Profile selection ("Who's watching?"): two profiles per row         */
+/* ------------------------------------------------------------------ */
+
+html[data-layout="mobile"] .profile-main-layer {
+  justify-content: flex-start;
+  overflow-y: auto;
+  padding: 56px 16px 32px;
+  box-sizing: border-box;
+}
+
+html[data-layout="mobile"] .profile-title {
+  height: auto;
+  font-size: 26px;
+  line-height: 32px;
+}
+
+html[data-layout="mobile"] .profile-subtitle {
+  height: auto;
+}
+
+html[data-layout="mobile"] .profile-grid,
+html[data-layout="mobile"] .profile-grid-compact {
+  width: 100%;
+  height: auto;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 24px;
+}
+
+html[data-layout="mobile"] .profile-card,
+html[data-layout="mobile"] .profile-grid-compact .profile-card {
+  width: 136px;
+  height: auto;
+}
+
+html[data-layout="mobile"] .profile-avatar-ring,
+html[data-layout="mobile"] .profile-grid-compact .profile-avatar-ring {
+  width: 104px;
+  height: 104px;
+}
+
+html[data-layout="mobile"] .profile-avatar,
+html[data-layout="mobile"] .profile-grid-compact .profile-avatar {
+  width: 92px;
+  height: 92px;
+}

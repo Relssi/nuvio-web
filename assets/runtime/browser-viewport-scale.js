@@ -45,6 +45,14 @@
     html.removeAttribute("data-viewport-scale");
   }
 
+  // css/mobile.css styles phones and standing tablets through
+  // html[data-layout="mobile"] (phase 2 of docs/ANALISE-RESPONSIVO.md).
+  function setLayout(layout) {
+    if (html.getAttribute("data-layout") !== layout) {
+      html.setAttribute("data-layout", layout);
+    }
+  }
+
   function apply() {
     var width = Number(root.innerWidth) || 0;
     var height = Number(root.innerHeight) || 0;
@@ -55,14 +63,17 @@
     lastKey = key;
     if (width < MIN_WIDTH || height < MIN_HEIGHT) {
       clear();
+      setLayout("mobile");
       return;
     }
     var scale = Math.min(width / DESIGN_WIDTH, height / DESIGN_HEIGHT);
     scale = Math.round(scale * 1000) / 1000;
     if (!(scale > 0)) {
       clear();
+      setLayout("mobile");
       return;
     }
+    setLayout("desktop");
     html.style.zoom = String(scale);
     // Size of the virtual canvas in CSS px; zoom maps it back to the window.
     html.style.setProperty("--nuvio-vw", width / scale / 100 + "px");
