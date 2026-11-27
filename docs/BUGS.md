@@ -88,7 +88,8 @@ O script cobre automaticamente os itens marcados com **[auto]**. Os itens **[man
 
 - **Motivo:** amigos não viam os perfis uns dos outros, e não havia como saber se o problema era a configuração do Supabase, as chaves ou o navegador logado em outra conta.
 - **O que faz:** `scripts/statusPage.mjs` mostra se a senha e as chaves estão configuradas (só o tipo da chave, nunca o valor), se o servidor consegue entrar na conta da casa, quais perfis existem no Supabase e em qual conta **aquele navegador** está logado.
-- **Verificar:** sem a senha do site, responde 401; com a senha, lista os perfis e não contém nenhuma chave.
+- **Também mostra:** addons salvos no Supabase e se o TorBox/debrid está conectado (só o nome do serviço).
+- **Verificar:** sem a senha do site, responde 401; com a senha, lista perfis, addons e TorBox e não contém nenhuma chave nem a credencial do TorBox.
 
 ## B13 — Navegador do amigo "não logado" mesmo com o servidor certo [resolvido]
 

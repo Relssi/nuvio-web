@@ -8,6 +8,12 @@ Detalhes de bugs (causa e correção) ficam em [`BUGS.md`](BUGS.md).
 
 ---
 
+## 28/11/2026 — `/__status` mostra addons e TorBox salvos no Supabase
+
+- **O que mudou:** a página `/__status` agora diz quais addons estão salvos no banco (e se estão ligados) e se o TorBox/debrid está conectado. A chave do TorBox nunca aparece, só o nome do serviço.
+- **Como:** o servidor consulta `sync_pull_addons` e `sync_pull_provider_credentials` com a conta da casa e mostra só nomes.
+- **Precisa fazer:** nada.
+
 ## 28/11/2026 — Perfil principal controla o geral; cada perfil tem o pessoal (etapa 3)
 
 - **O que mudou:** o perfil principal (o da estrela) é o único que muda addons, plugins, TorBox, conexões, catálogos e selos; isso vale para todo mundo. Nos outros perfis essas telas somem ou ficam só para ver, com um aviso. Cada perfil mantém as **suas** configurações pessoais: tema, layout, modo ambiente, Essencial/Avançado, player (legendas e áudio), trailers e Trakt.

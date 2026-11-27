@@ -181,6 +181,46 @@ export async function probeHousehold() {
   } catch (error) {
     info.profilesError = String(error?.message || error);
   }
+
+  const rpc = async (name) => {
+    const response = await fetch(`${supabaseUrl}/rest/v1/rpc/${name}`, {
+      method: "POST",
+      headers: {
+        apikey: anonKey,
+        Authorization: `Bearer ${session.access_token}`,
+        "Content-Type": "application/json"
+      },
+      body: "{}"
+    });
+    const text = await response.text();
+    if (!response.ok) {
+      throw new Error(`${response.status}: ${text.slice(0, 200)}`);
+    }
+    return JSON.parse(text || "[]");
+  };
+
+  // Shared addons (stage 2). Only URLs, names and on/off are reported.
+  try {
+    const rows = await rpc("sync_pull_addons");
+    info.addons = (Array.isArray(rows) ? rows : []).map((row) => ({
+      url: String(row.url || ""),
+      name: row.name || null,
+      enabled: row.enabled !== false
+    }));
+  } catch (error) {
+    info.addonsError = String(error?.message || error);
+  }
+
+  // Connected providers (TorBox...). Only the provider NAME is reported,
+  // never the credential itself.
+  try {
+    const rows = await rpc("sync_pull_provider_credentials");
+    info.providers = (Array.isArray(rows) ? rows : [])
+      .map((row) => String(row.provider || ""))
+      .filter(Boolean);
+  } catch (error) {
+    info.providersError = String(error?.message || error);
+  }
   return info;
 }
 

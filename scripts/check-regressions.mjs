@@ -124,6 +124,14 @@ async function startFakeSupabase() {
         { profile_index: 1, name: "Relssi", avatar_url: "data:image/jpeg;base64,AAAA" }
       ]);
     }
+    if (url.pathname === "/rest/v1/rpc/sync_pull_addons") {
+      return send(200, [{ url: "https://torrentio.strem.fun", name: "Torrentio", enabled: true }]);
+    }
+    if (url.pathname === "/rest/v1/rpc/sync_pull_provider_credentials") {
+      return send(200, [
+        { provider: "debrid:torbox", credential_json: { apiKey: "SECRET-TORBOX-KEY" } }
+      ]);
+    }
     if (url.pathname.startsWith("/auth/v1/admin/users")) {
       if (bearer !== FAKE_SERVICE_KEY) return send(401, { message: "not admin" });
       const id = url.pathname.split("/")[5];
@@ -481,6 +489,9 @@ async function main() {
       }
       if (!html.includes("1. Relssi (foto)")) return "profiles from Supabase not listed";
       if (!html.includes("user-household")) return "household account id missing";
+      if (!html.includes("1: Torrentio")) return "saved addons not listed";
+      if (!html.includes("conectado: torbox")) return "TorBox connection not shown";
+      if (html.includes("SECRET-TORBOX-KEY")) return "TorBox credential leaked into /__status";
     });
   } finally {
     app?.child.kill();

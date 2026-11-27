@@ -40,6 +40,8 @@ async function renderStatusPage() {
   const serviceKind = keyKind(process.env.SUPABASE_SERVICE_ROLE_KEY);
   const household = await probeHousehold();
   const profiles = household.profiles || [];
+  const addons = household.addons || [];
+  const debridProviders = (household.providers || []).filter((name) => name.startsWith("debrid:"));
 
   const serverRows = [
     row("Senha do site", isAuthEnabled() ? "ativa" : "DESLIGADA", isAuthEnabled()),
@@ -67,6 +69,26 @@ async function renderStatusPage() {
         ? `erro ${household.profilesError}`
         : `${profiles.length}: ${profiles.map((p) => `${p.index}. ${p.name}${p.hasPhoto ? " (foto)" : ""}`).join(", ") || "nenhum"}`,
       !household.profilesError && profiles.length > 0
+    ),
+    row(
+      "Addons no Supabase",
+      household.addonsError
+        ? `erro ${household.addonsError}`
+        : addons.length
+          ? `${addons.length}: ${addons
+              .map((addon) => `${addon.name || addon.url}${addon.enabled ? "" : " (desligado)"}`)
+              .join(", ")}`
+          : "nenhum (no perfil principal, mude algo na tela Addons para enviar)",
+      !household.addonsError && addons.length > 0
+    ),
+    row(
+      "TorBox / debrid no Supabase",
+      household.providersError
+        ? `erro ${household.providersError}`
+        : debridProviders.length
+          ? `conectado: ${debridProviders.map((name) => name.replace(/^debrid:/, "")).join(", ")}`
+          : "não conectado (conecte pelo perfil principal)",
+      !household.providersError && debridProviders.length > 0
     )
   ].join("");
 
