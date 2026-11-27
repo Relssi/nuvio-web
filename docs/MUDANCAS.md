@@ -8,6 +8,17 @@ Detalhes de bugs (causa e correção) ficam em [`BUGS.md`](BUGS.md).
 
 ---
 
+## 28/11/2026 — Análise para celular, tablet, desktop e TV
+
+- **O que mudou:** nada no site ainda. Adicionada a análise `docs/ANALISE-RESPONSIVO.md` com o que quebra em cada tamanho de tela e o plano em fases.
+- **Precisa fazer:** decidir por qual fase começar.
+
+## 27/11/2026 — Spinner da Home travado (enviado por Kiid)
+
+- **O que mudou:** o carregamento da Home não fica mais preso ao navegar ou quando a sincronização demora.
+- **Arquivos:** barra lateral (`sidebarNavigationHelpers-02/03`) e Home (`homeScreenMethods-21-load-data.js`, `-30-cleanup.js`).
+- **Precisa fazer:** nada.
+
 ## 28/11/2026 — `/__status` mostra addons e TorBox salvos no Supabase
 
 - **O que mudou:** a página `/__status` agora diz quais addons estão salvos no banco (e se estão ligados) e se o TorBox/debrid está conectado. A chave do TorBox nunca aparece, só o nome do serviço.
