@@ -16,3 +16,9 @@ services:
       # Set this in the Render dashboard to require a password to open the site.
       - key: NUVIO_PASSWORD
         sync: false
+      # Supabase backend (docs/supabase/*.sql). Public values: the project URL
+      # and the anon/public key. Never put the service_role key here.
+      - key: NUVIO_SUPABASE_URL
+        sync: false
+      - key: NUVIO_SUPABASE_ANON_KEY
+        sync: false
