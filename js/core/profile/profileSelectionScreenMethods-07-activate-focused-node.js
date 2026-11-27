@@ -205,6 +205,9 @@ export function createProfileSelectionScreenMethods07() {
         // results into the newly selected profile's stream screen.
         PluginRuntime.cancelAll();
         await ProfileManager.setActiveProfile(profileId);
+        try {
+          globalThis?.sessionStorage?.setItem("nuvio_session_selected_profile", "1");
+        } catch (_) {}
         // The account wins at sign-in. Load its settings before Home so an
         // edit made right after login cannot be pushed over them first.
         await ProfileSettingsSyncService.pull(profileId).catch(() => false);

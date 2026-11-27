@@ -113,7 +113,27 @@ const SIGNED_OUT_ALLOWED_ROUTES = new Set([
   "authSignIn",
   "serverConnection"
 ]);
-let hasSelectedProfileThisSession = false;
+const SESSION_SELECTED_PROFILE_KEY = "nuvio_session_selected_profile";
+
+function readSessionSelectedProfile() {
+  try {
+    return globalThis?.sessionStorage?.getItem(SESSION_SELECTED_PROFILE_KEY) === "1";
+  } catch (_) {
+    return false;
+  }
+}
+
+function writeSessionSelectedProfile(selected) {
+  try {
+    if (selected) {
+      globalThis?.sessionStorage?.setItem(SESSION_SELECTED_PROFILE_KEY, "1");
+    } else {
+      globalThis?.sessionStorage?.removeItem(SESSION_SELECTED_PROFILE_KEY);
+    }
+  } catch (_) {}
+}
+
+let hasSelectedProfileThisSession = readSessionSelectedProfile();
 let appShellRendered = false;
 let updateCheckStarted = false;
 
@@ -427,6 +447,7 @@ async function shouldShowProfileSelection() {
 
 async function enterWithLastProfile({ restoreWebOsRoute = false } = {}) {
   hasSelectedProfileThisSession = true;
+  writeSessionSelectedProfile(true);
   const profiles = await ProfileManager.getProfiles();
   const activeProfileId = ProfileManager.getActiveProfileId();
   const activeProfile =
@@ -845,6 +866,7 @@ async function bootstrapApp() {
       ProfileSyncService.clearCachedProfileLockStates();
       Router.routes?.home?.resetForSignOut?.();
       hasSelectedProfileThisSession = false;
+      writeSessionSelectedProfile(false);
       const shouldBypassQr = Boolean(LocalStore.get(GUEST_QR_BYPASS_KEY, false));
       if (isSignedOutRouteAllowed()) {
         return;
