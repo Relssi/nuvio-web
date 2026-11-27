@@ -140,6 +140,14 @@ O script cobre automaticamente os itens marcados com **[auto]**. Os itens **[man
 - **Verificar (manual):** em 375×812, nenhuma tela passa da largura (Início, filme, fontes, perfis); tocar num pôster abre o filme; a barra de baixo troca de tela.
 - **Nota de teste:** o navegador embutido do Claude Code corta a lateral direita das capturas em tamanho de celular; a largura foi conferida medindo os elementos.
 
+## B20 — Início no celular grande demais e ruim de navegar [auto + manual]
+
+- **Sintoma:** no celular, o destaque ocupava metade da tela e as fileiras ficavam numa janela pequena embaixo (só 1–2 visíveis); a primeira fileira às vezes abria já rolada, com o primeiro pôster cortado.
+- **Causa:** o layout "moderno" da TV prende as fileiras numa área fixa sob o destaque. O app também rola as fileiras sozinho (câmera que segue o foco, expansão do card com trailer, foco ao passar o mouse/dedo), o que faz sentido com controle remoto, mas não com o dedo.
+- **Correção:** no celular, a página inteira rola (destaque de ~44% da altura que sai de cena ao rolar), pôsteres de 100 px e menos espaço entre fileiras. Em JS: `animateScroll` não rola fileiras na horizontal no celular, a não ser logo após uma tecla de seta; o foco por "hover" fica desligado no celular; os alinhamentos automáticos de foco só rodam com tecla.
+- **Limitação conhecida:** usando setas do teclado no layout de celular, o card focado pode não aparecer inteiro (as contas de margem são da TV). Com o dedo não acontece.
+- **Verificar:** checagem B20; no simulador 375×812, 2 fileiras inteiras visíveis, fileiras começam no início após recarregar, rolar a página carrega as imagens de baixo.
+
 ## Não são bugs do código (para não perder tempo de novo)
 
 - **"No streams found" com Torrentio sem debrid:** o navegador não toca torrent; é preciso um debrid conectado.

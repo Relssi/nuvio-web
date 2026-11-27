@@ -4,6 +4,11 @@ import * as internals from "./homeScreenContext.js";
 // turn as its mousemove, so this only has to cover that pair.
 const HOME_POINTER_HOVER_GRACE_MS = 250;
 
+// Set by assets/runtime/browser-viewport-scale.js on phones / standing tablets.
+function isPhoneLayout() {
+  return globalThis.document?.documentElement?.getAttribute?.("data-layout") === "mobile";
+}
+
 export function createHomeScreenMethods19() {
   const {
     getLegacySidebarSelectedNode,
@@ -257,6 +262,12 @@ export function createHomeScreenMethods19() {
       }
       if (!this.boundHomeMouseOverHandler) {
         this.boundHomeMouseOverHandler = (event) => {
+          // Phone layout: a finger swipe emits pointer/mouse events, and taking
+          // focus on hover would scroll the row under the finger (BUGS.md B20).
+          // A tap opens the title directly, so hover focus is not needed.
+          if (isPhoneLayout()) {
+            return;
+          }
           const target = event?.target?.closest?.(".home-main .home-content-card.focusable");
           if (!target || !this.container?.contains(target) || target.classList.contains("focused")) {
             return;

@@ -398,6 +398,34 @@ async function main() {
       return "mobile rules missing from dist/css/bundle.css";
   });
 
+  await check("B20", "phone Home: page scrolls and rows do not move by themselves", async () => {
+    const css = await source("css/mobile.css");
+    const problems = [];
+    if (
+      !/\.home-modern-rows-viewport \{[^}]*position: relative;[^}]*overflow: visible;/.test(css)
+    ) {
+      problems.push("rows viewport must flow in the scrolling page on phones");
+    }
+    if (!/\.home-main \{[^}]*overflow-y: auto;/.test(css)) {
+      problems.push("home-main must scroll on phones");
+    }
+    const anim = await source(
+      "js/ui/screens/home/homeScreenMethods-02-restore-modern-focus-state.js"
+    );
+    if (!anim.includes('axis === "x" && !options?.allowOnPhone && isPhoneTouchScroll()')) {
+      problems.push("animateScroll no longer blocks automatic horizontal scroll on phones");
+    }
+    const hover = await source("js/ui/screens/home/homeScreenMethods-19-handle-home-dpad.js");
+    if (
+      !/boundHomeMouseOverHandler = \(event\) => \{[\s\S]{0,400}if \(isPhoneLayout\(\)\) \{\s*return;/.test(
+        hover
+      )
+    ) {
+      problems.push("hover focus must be disabled on phones");
+    }
+    return problems.length ? problems.join("; ") : true;
+  });
+
   // ---- Unit tests --------------------------------------------------------
   const tests = await run(process.execPath, [
     "--test",

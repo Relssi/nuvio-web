@@ -8,6 +8,14 @@ Detalhes de bugs (causa e correção) ficam em [`BUGS.md`](BUGS.md).
 
 ---
 
+## 28/11/2026 — Início do celular mais compacto e fácil de navegar
+
+- **O que mudou:** no celular, a página Início inteira rola com o dedo, como num app de streaming: o destaque fica menor e sai de cena ao rolar, os pôsteres ficam menores (~3,5 por fileira) e as fileiras ficam mais juntas (2 inteiras na tela). As fileiras não "pulam" mais sozinhas.
+- **Como:** ajustes em `css/mobile.css` e em três pontos da Home que rolavam as fileiras automaticamente (agora só fazem isso no celular quando se usa teclado).
+- **Precisa fazer:** nada. Recarregue no celular.
+- **Também chegou do Kiid:** botão "Voltar" maior no desktop e ajustes nos controles do player.
+- **Não testado:** em celular de verdade.
+
 ## 28/11/2026 — Site no celular (fase 2, primeira parte)
 
 - **O que mudou:** no celular (e tablet em pé) o menu virou uma barra de ícones embaixo; a tela Início mostra o destaque em cima com texto legível e fileiras com ~3 pôsteres que rolam com o dedo; a tela do filme ficou em uma coluna com botões do tamanho do dedo; a lista de fontes ocupa a largura toda; a tela de perfis mostra dois por linha.

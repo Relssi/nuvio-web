@@ -1,5 +1,10 @@
 import * as internals from "./homeScreenContext.js";
 
+// Set by assets/runtime/browser-viewport-scale.js on phones / standing tablets.
+function isPhoneLayout() {
+  return globalThis.document?.documentElement?.getAttribute?.("data-layout") === "mobile";
+}
+
 export function createHomeScreenMethods17() {
   const { MODERN_HOME_CONSTANTS } = internals;
 
@@ -137,6 +142,11 @@ export function createHomeScreenMethods17() {
       }
     },
     ensureMainVerticalVisibility(target, direction = null, current = null, layoutAdjustment = 0) {
+      // Phone layout (css/mobile.css): the page scrolls by finger. Only move
+      // it for arrow-key navigation, never for initial focus or a tap.
+      if (!direction && isPhoneLayout()) {
+        return;
+      }
       if (this.layoutMode === "modern") {
         if (this._mainVertRaf) {
           cancelAnimationFrame(this._mainVertRaf);
@@ -219,6 +229,9 @@ export function createHomeScreenMethods17() {
       }
     },
     ensureTrackHorizontalVisibility(target, direction = null, layoutAdjustment = 0) {
+      if (!direction && isPhoneLayout()) {
+        return;
+      }
       if (this.layoutMode === "modern") {
         if (this._trackHorizRaf) {
           cancelAnimationFrame(this._trackHorizRaf);
@@ -275,7 +288,9 @@ export function createHomeScreenMethods17() {
           track.scrollLeft = Math.max(0, Math.round(targetLeft - metrics.leftPadding));
           return;
         }
-        this.animateScroll(track, "x", targetLeft - metrics.leftPadding, this.getScrollDuration(160));
+        this.animateScroll(track, "x", targetLeft - metrics.leftPadding, this.getScrollDuration(160), {
+          allowOnPhone: true
+        });
         return;
       }
       if (targetRight > visibleRight) {
@@ -285,7 +300,9 @@ export function createHomeScreenMethods17() {
           track.scrollLeft = Math.max(0, Math.min(maxScrollLeft, Math.round(targetRight - track.clientWidth + metrics.safeRightPadding)));
           return;
         }
-        this.animateScroll(track, "x", targetRight - track.clientWidth + metrics.safeRightPadding, this.getScrollDuration(160));
+        this.animateScroll(track, "x", targetRight - track.clientWidth + metrics.safeRightPadding, this.getScrollDuration(160), {
+          allowOnPhone: true
+        });
         return;
       }
       if (this.layoutMode !== "modern" && !direction) {
@@ -297,7 +314,9 @@ export function createHomeScreenMethods17() {
           track.scrollLeft = Math.max(0, Math.min(maxScrollLeft, Math.round(centeredLeft)));
           return;
         }
-        this.animateScroll(track, "x", centeredLeft, this.getScrollDuration(160));
+        this.animateScroll(track, "x", centeredLeft, this.getScrollDuration(160), {
+          allowOnPhone: true
+        });
       }
     }
   };

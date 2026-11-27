@@ -11,6 +11,31 @@ function clearCameraScrollActive(container) {
   container?.classList?.remove?.("is-camera-scrolling");
 }
 
+// Set by assets/runtime/browser-viewport-scale.js on phones / standing tablets.
+function isPhoneLayout() {
+  return globalThis.document?.documentElement?.getAttribute?.("data-layout") === "mobile";
+}
+
+// On phones, rows only scroll by themselves right after an arrow key (a
+// tablet or phone with a keyboard); touch scrolling stays with the finger.
+const PHONE_KEY_SCROLL_WINDOW_MS = 800;
+let lastArrowKeyAt = 0;
+if (typeof document !== "undefined" && document?.addEventListener) {
+  document.addEventListener(
+    "keydown",
+    (event) => {
+      if (/^Arrow/.test(String(event?.key || ""))) {
+        lastArrowKeyAt = Date.now();
+      }
+    },
+    true
+  );
+}
+
+function isPhoneTouchScroll() {
+  return isPhoneLayout() && Date.now() - lastArrowKeyAt > PHONE_KEY_SCROLL_WINDOW_MS;
+}
+
 function getContainerMaxScroll(container, axis) {
   return axis === "y"
     ? Math.max(0, Number(container.scrollHeight || 0) - Number(container.clientHeight || 0))
@@ -188,6 +213,12 @@ export function createHomeScreenMethods02() {
     },
     animateScroll(container, axis, targetValue, duration = 150, options = {}) {
       if (!container) {
+        return;
+      }
+      // Phone layout: rows are scrolled by the finger. Automatic horizontal
+      // moves (camera follow, trailer expansion) would shift the row on their
+      // own (BUGS.md B20); arrow-key navigation is still allowed.
+      if (axis === "x" && !options?.allowOnPhone && isPhoneTouchScroll()) {
         return;
       }
       if (options?.mode === "spring") {

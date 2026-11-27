@@ -80,26 +80,28 @@ html[data-layout="mobile"] .home-main {
 }
 
 /* ------------------------------------------------------------------ */
-/* Home (modern layout): hero on top, rows below, small posters        */
+/* Home (modern layout): the whole page scrolls like a streaming app.  */
+/* A compact hero on top scrolls away; rows of small posters below.    */
 /* ------------------------------------------------------------------ */
 
 html[data-layout="mobile"] .home-screen-shell.home-layout-modern {
   --home-content-start: 16px;
   --modern-hero-copy-right: 16px;
   --modern-hero-copy-top-safe: 16px;
-  --modern-hero-copy-bottom-gap: 28px;
+  --modern-hero-copy-bottom-gap: 12px;
   --modern-hero-copy-max-width: 100%;
   --modern-hero-copy-gap: 8px;
   --modern-hero-media-width: 100%;
-  --modern-rows-viewport-height: 50%;
+  /* Rows no longer sit in a fixed window under the hero. */
+  --modern-rows-viewport-height: 0px;
   --modern-hero-description-size: 14px;
   --modern-hero-description-line-height: 20px;
-  --modern-hero-logo-max-height: 72px;
+  --modern-hero-logo-max-height: 64px;
   --modern-hero-logo-max-width: 62%;
   --modern-hero-meta-size: 13px;
   --modern-hero-secondary-size: 13px;
-  --modern-hero-title-size: 28px;
-  --modern-hero-title-line-height: 34px;
+  --modern-hero-title-size: 26px;
+  --modern-hero-title-line-height: 32px;
   --home-track-gap: 10px;
   --modern-track-peek-extension: 16px;
   --home-track-end: 16px;
@@ -109,21 +111,48 @@ html[data-layout="mobile"] .home-screen-shell.home-layout-modern {
 /* The poster sizes from Layout settings are written inline on the shell, so
    they are overridden on an inner element. */
 html[data-layout="mobile"] .home-screen-shell .home-main {
-  --home-poster-width: 112px;
-  --home-poster-height: 168px;
-  --home-modern-portrait-poster-width: 112px;
-  --home-modern-portrait-poster-height: 168px;
-  --home-modern-portrait-expanded-width: 112px;
-  --home-poster-expanded-width: 112px;
-  --home-landscape-poster-width: 200px;
-  --home-landscape-poster-height: 112px;
-  --home-poster-radius: 14px;
-  --home-continue-width: 220px;
+  --home-poster-width: 100px;
+  --home-poster-height: 150px;
+  --home-modern-portrait-poster-width: 100px;
+  --home-modern-portrait-poster-height: 150px;
+  --home-modern-portrait-expanded-width: 100px;
+  --home-poster-expanded-width: 100px;
+  --home-landscape-poster-width: 180px;
+  --home-landscape-poster-height: 101px;
+  --home-poster-radius: 12px;
+  --home-continue-width: 200px;
+}
+
+html[data-layout="mobile"] .home-screen-shell.home-layout-modern .home-main {
+  height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 0 0 calc(var(--mobile-nav-height) + 16px + env(safe-area-inset-bottom, 0px));
+}
+
+html[data-layout="mobile"] .home-screen-shell.home-layout-modern .home-route-content {
+  height: auto;
+  min-height: 0;
+}
+
+html[data-layout="mobile"] .home-screen-shell.home-layout-modern .home-modern-stage {
+  position: relative;
+  display: block;
+  height: auto;
+}
+
+html[data-layout="mobile"] .home-screen-shell.home-layout-modern .home-hero-modern {
+  position: relative;
+  height: 44vh;
+  min-height: 280px;
+  max-height: 420px;
 }
 
 html[data-layout="mobile"] .home-screen-shell.home-layout-modern .home-modern-hero-media {
   right: 0;
   left: 0;
+  height: 100%;
 }
 
 html[data-layout="mobile"] .home-screen-shell.home-layout-modern .home-modern-hero-media::before {
@@ -140,23 +169,42 @@ html[data-layout="mobile"] .home-screen-shell.home-layout-modern .home-modern-he
   justify-content: flex-end;
 }
 
-html[data-layout="mobile"] .home-screen-shell.home-layout-modern .home-modern-rows-viewport {
-  bottom: calc(var(--mobile-nav-height) + env(safe-area-inset-bottom, 0px));
-  height: calc(var(--modern-rows-viewport-height) - var(--mobile-nav-height));
-  padding-top: 6px;
+html[data-layout="mobile"]
+  .home-screen-shell.home-layout-modern
+  .home-modern-hero-copy
+  .home-hero-description {
+  -webkit-line-clamp: 3;
+  max-height: 60px;
 }
 
-html[data-layout="mobile"] .home-screen-shell .home-row-title {
-  font-size: 17px;
+html[data-layout="mobile"] .home-screen-shell.home-layout-modern .home-modern-rows-viewport {
+  position: relative;
+  bottom: auto;
+  height: auto;
+  overflow: visible;
+  padding-top: 20px;
+}
+
+html[data-layout="mobile"] .home-screen-shell.home-layout-modern .home-modern-catalogs {
+  gap: 6px;
+}
+
+html[data-layout="mobile"] .home-screen-shell.home-layout-modern .home-row {
+  margin-bottom: 14px;
 }
 
 html[data-layout="mobile"] .home-screen-shell.home-layout-modern .home-row-head {
-  margin-bottom: 10px;
+  margin-bottom: 8px;
 }
 
-html[data-layout="mobile"] .home-screen-shell .home-hero-description {
-  -webkit-line-clamp: 3;
-  max-height: 60px;
+html[data-layout="mobile"] .home-screen-shell.home-layout-modern .home-track {
+  padding: 0 16px;
+  margin-left: 0;
+  scroll-padding-left: 16px;
+}
+
+html[data-layout="mobile"] .home-screen-shell .home-row-title {
+  font-size: 16px;
 }
 
 /* ------------------------------------------------------------------ */
