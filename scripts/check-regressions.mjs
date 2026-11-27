@@ -444,9 +444,32 @@ async function main() {
     }
   );
 
+  await check(
+    "B22",
+    "player notices silent Dolby/DTS audio in the browser and switches source",
+    async () => {
+      const problems = [];
+      const helper = await source("js/core/player/browserAudioCompatibility.js");
+      if (!helper.includes("webkitAudioDecodedByteCount"))
+        problems.push("silent-audio verdict no longer reads the decoder");
+      const player = await source(
+        "js/ui/screens/player/playerScreenMethods-64-move-sources-focus.js"
+      );
+      if (!player.includes("handleSilentBrowserAudio"))
+        problems.push("silent-audio source switch missing");
+      const start = await source(
+        "js/ui/screens/player/playerScreenMethods-30-schedule-buffering-spinner-refresh.js"
+      );
+      if (!start.includes("startBrowserSilentAudioWatch"))
+        problems.push("silent-audio watch no longer starts on the first frame");
+      return problems.length ? problems.join("; ") : true;
+    }
+  );
+
   // ---- Unit tests --------------------------------------------------------
   const tests = await run(process.execPath, [
     "--test",
+    "js/core/player/browserAudioCompatibility.test.mjs",
     "scripts/test-profile-scoped-store-cache.mjs",
     "scripts/test-general-settings-store.mjs",
     "scripts/test-supports-root-dedupe.mjs",

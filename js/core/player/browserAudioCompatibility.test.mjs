@@ -12,7 +12,8 @@ const {
   chooseBrowserAudibleStream,
   pickPlayableBrowserStream,
   browserAudioScoreAdjustment,
-  probeBrowserAudioCapabilities
+  probeBrowserAudioCapabilities,
+  browserAudioDecodeVerdict
 } = await import("./browserAudioCompatibility.js");
 
 const chrome = probeBrowserAudioCapabilities();
@@ -90,4 +91,28 @@ test("playback starts on the audible source when the requested one would be sile
   });
   assert.equal(unlabeled.notice, "");
   assert.equal(unlabeled.candidate.id, "raw");
+});
+
+test("browserAudioDecodeVerdict waits for playback, then reads the decoder", () => {
+  assert.equal(browserAudioDecodeVerdict(null), "unknown");
+  assert.equal(
+    browserAudioDecodeVerdict({ currentTime: 1, webkitAudioDecodedByteCount: 0 }, 0),
+    "pending"
+  );
+  assert.equal(
+    browserAudioDecodeVerdict({ currentTime: 14, webkitAudioDecodedByteCount: 0 }, 10),
+    "silent"
+  );
+  assert.equal(
+    browserAudioDecodeVerdict({ currentTime: 14, webkitAudioDecodedByteCount: 4096 }, 10),
+    "audible"
+  );
+  // Muted elements still decode, so mute does not change the verdict.
+  assert.equal(
+    browserAudioDecodeVerdict({ currentTime: 5, muted: true, webkitAudioDecodedByteCount: 0 }, 0),
+    "silent"
+  );
+  assert.equal(browserAudioDecodeVerdict({ currentTime: 5, mozHasAudio: false }, 0), "silent");
+  assert.equal(browserAudioDecodeVerdict({ currentTime: 5, mozHasAudio: true }, 0), "audible");
+  assert.equal(browserAudioDecodeVerdict({ currentTime: 5 }, 0), "unknown");
 });

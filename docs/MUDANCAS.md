@@ -8,6 +8,16 @@ Detalhes de bugs (causa e correção) ficam em [`BUGS.md`](BUGS.md).
 
 ---
 
+## 28/11/2026 — Player sem som: troca automática de fonte
+
+- **O que mudou:** quando um filme toca sem som no navegador, o player percebe isso sozinho em cerca de 3 segundos e troca para uma fonte com áudio compatível (AAC), continuando do mesmo ponto. Se não houver fonte assim, aparece um aviso pedindo para escolher outra fonte, de preferência com "AAC" no nome.
+- **Por que acontecia:** a maioria dos arquivos de torrent/debrid vem com áudio Dolby (AC-3/E-AC-3) ou DTS, que nenhum navegador consegue tocar: a imagem aparece e o som some, sem erro.
+- **Como:** o player pergunta ao navegador se ele decodificou algum áudio desde o início do vídeo (`js/core/player/browserAudioCompatibility.js` e `playerScreenMethods-64`). Detalhes em BUGS.md (B22).
+- **Também chegou do Kiid:** vídeo ocupando a tela inteira no desktop; controle de volume e botão de mudo funcionando; rolagem e cliques nas legendas com o mouse; controles do player somem e voltam ao mexer o mouse; janelas de áudio e legendas menores; o player já escolhe uma fonte com som quando o nome da fonte diz o codec, e avisa quando não dá.
+- **Precisa fazer:** nada. Recarregue a página.
+- **Limite:** um filme que só tem fontes com áudio Dolby/DTS continua sem som no navegador. Para esses, o jeito é escolher outra fonte.
+- **Não testado:** com um filme de verdade do TorBox (testado com arquivos de teste AC-3 e AAC no navegador).
+
 ## 28/11/2026 — Início do celular no estilo do CineRotten
 
 - **O que mudou:** no celular, a Início ficou parecida com a do CineRotten: barra de baixo com o nome de cada aba e a aba ativa em vermelho; destaque em um cartão arredondado com "Em destaque", descrição e botão vermelho "Ver detalhes" (tocar no cartão abre o filme); pôsteres maiores (118 px) com o título escrito no pôster; cores do CineRotten.

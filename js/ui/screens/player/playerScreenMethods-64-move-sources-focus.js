@@ -1,5 +1,10 @@
 /* eslint-disable no-unused-vars */
-import { classifyBrowserStreamAudio, probeBrowserAudioCapabilities } from "../../../core/player/browserAudioCompatibility.js";
+import {
+  browserAudioDecodeVerdict,
+  classifyBrowserStreamAudio,
+  pickPlayableBrowserStream,
+  probeBrowserAudioCapabilities
+} from "../../../core/player/browserAudioCompatibility.js";
 import * as internals from "./playerScreenContext.js";
 
 export function createPlayerScreenMethods64() {
@@ -146,6 +151,59 @@ export function createPlayerScreenMethods64() {
       if (kind === "playable") {
         this.browserAudioNotice = "";
       }
+    },
+    // Browser only: once the picture is moving, check that audio is really
+    // being decoded. A Dolby/DTS file the label did not name plays silent; in
+    // that case switch once to a source labelled with browser audio (AAC/Opus)
+    // or tell the viewer to pick another source.
+    startBrowserSilentAudioWatch() {
+      this.stopBrowserSilentAudioWatch();
+      if (!Environment.isBrowser()) {
+        return;
+      }
+      const video = PlayerController?.video;
+      if (!video || PlayerController?.isUsingAvPlay?.()) {
+        return;
+      }
+      const streamAtStart = this.getCurrentStreamCandidate?.() || null;
+      const startSeconds = Number(video.currentTime) || 0;
+      let checks = 0;
+      this.browserSilentAudioTimer = setInterval(() => {
+        checks += 1;
+        if (this.getCurrentStreamCandidate?.() !== streamAtStart) {
+          this.stopBrowserSilentAudioWatch();
+          return;
+        }
+        const verdict = browserAudioDecodeVerdict(PlayerController?.video, startSeconds);
+        if (verdict === "pending" && checks < 30) {
+          return;
+        }
+        this.stopBrowserSilentAudioWatch();
+        if (verdict === "silent") {
+          this.handleSilentBrowserAudio(streamAtStart);
+        }
+      }, 1000);
+    },
+    stopBrowserSilentAudioWatch() {
+      if (this.browserSilentAudioTimer) {
+        clearInterval(this.browserSilentAudioTimer);
+        this.browserSilentAudioTimer = null;
+      }
+    },
+    async handleSilentBrowserAudio(silentStream = null) {
+      const alreadySwitched = Boolean(this.browserSilentAudioSwitched);
+      const replacement = alreadySwitched
+        ? null
+        : pickPlayableBrowserStream(this.streamCandidates, probeBrowserAudioCapabilities(PlayerController?.video), silentStream);
+      if (!replacement) {
+        this.browserAudioNotice = "silent";
+        this.showBrowserAudioNotice();
+        return;
+      }
+      this.browserSilentAudioSwitched = true;
+      this.browserAudioNotice = "swapped";
+      this.showBrowserAudioNotice();
+      await this.playStreamCandidate(replacement, { preservePlaybackState: true });
     },
     showBrowserAudioNotice() {
       if (this.browserAudioNotice !== "swapped" && this.browserAudioNotice !== "silent") {

@@ -211,3 +211,21 @@ export function pickPlayableBrowserStream(
   });
   return best;
 }
+
+// Stream labels often leave the audio codec out, so the label check above
+// cannot catch every silent file. Once the picture has run for a few seconds,
+// the media element itself says whether any audio was decoded: Chromium
+// counts decoded audio bytes, Firefox reports mozHasAudio.
+// A muted element still decodes its audio, so mute does not hide the result.
+// Returns "pending" (keep watching), "audible", "silent" or "unknown".
+export const SILENT_AUDIO_MIN_PLAYED_SECONDS = 3;
+
+export function browserAudioDecodeVerdict(video = null, startSeconds = 0) {
+  if (!video) return "unknown";
+  const played = Number(video.currentTime) - Number(startSeconds || 0);
+  if (!Number.isFinite(played) || played < SILENT_AUDIO_MIN_PLAYED_SECONDS) return "pending";
+  const decodedBytes = video.webkitAudioDecodedByteCount;
+  if (typeof decodedBytes === "number") return decodedBytes > 0 ? "audible" : "silent";
+  if (typeof video.mozHasAudio === "boolean") return video.mozHasAudio ? "audible" : "silent";
+  return "unknown";
+}

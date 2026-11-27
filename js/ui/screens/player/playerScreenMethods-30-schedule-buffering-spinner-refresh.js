@@ -132,6 +132,7 @@ export function createPlayerScreenMethods30() {
       // engineFs defers the playing handler until its first verified frame.
       if (this.currentEngineFsStream && TrackingScrobbleService.isEnabled()) TrackingScrobbleService.start(this.buildScrobbleContext());
       this.beginPlaybackEngineValidation();
+      this.startBrowserSilentAudioWatch?.();
       this.warmBitmapSubtitleSharedResources();
       if (!this.startupTrackPreferenceReady) {
         // Some P2P / engineFs startups expose tracks before the first real frame
