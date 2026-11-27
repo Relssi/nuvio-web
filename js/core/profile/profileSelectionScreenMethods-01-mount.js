@@ -6,6 +6,7 @@ export function createProfileSelectionScreenMethods01() {
     MAX_PROFILES,
     ProfileManager,
     ProfileSyncService,
+    ProfileSettingsSyncService,
     AvatarRepository,
     MemberAccessRepository,
     ProfileBackgroundRepository,
@@ -79,6 +80,7 @@ export function createProfileSelectionScreenMethods01() {
       if (!this.isMounted || this.mountToken !== mountToken) return;
       this.lastProfileFocusKey = `profile:${this.activeProfileId || "1"}`;
       this.render();
+      void this.syncVisibleProfileThemes(mountToken);
 
       // Display local profiles immediately, but keep profile actions behind the
       // same initial profile/lock refresh that previously blocked the screen.
@@ -90,6 +92,7 @@ export function createProfileSelectionScreenMethods01() {
             this.profiles = profiles;
             this.profilePinEnabled = pinStates;
             this.render();
+            void this.syncVisibleProfileThemes(mountToken);
           });
       this.memberAccessUnsubscribe = MemberAccessRepository.subscribe((access) => {
         this.memberAccess = access;
@@ -113,6 +116,23 @@ export function createProfileSelectionScreenMethods01() {
           this.updateProfileBackground(initialProfile);
         }
       });
+    },
+    async syncVisibleProfileThemes(mountToken = this.mountToken) {
+      if (typeof ProfileSettingsSyncService?.pull !== "function") {
+        return;
+      }
+      const profiles = this.getVisibleProfiles();
+      if (!profiles.length) {
+        return;
+      }
+      await Promise.allSettled(profiles.map((profile) => ProfileSettingsSyncService.pull(profile.id).catch(() => false)));
+      if (!this.isMounted || this.mountToken !== mountToken) {
+        return;
+      }
+      const focusedProfile = this.getFocusedProfile();
+      if (focusedProfile) {
+        this.updateBackgroundForProfile(focusedProfile);
+      }
     },
     async loadAvatarCatalog(hasMemberAccess = this.hasProfileAvatarAccess) {
       const mountToken = this.mountToken;

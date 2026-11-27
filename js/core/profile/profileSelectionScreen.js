@@ -1,6 +1,7 @@
 import { Router } from "../../ui/navigation/routerState.js";
 import { MAX_PROFILES, ProfileManager } from "../../core/profile/profileManager.js";
 import { ProfileSyncService } from "../../core/profile/profileSyncService.js";
+import { ProfileSettingsSyncService } from "../../core/profile/profileSettingsSyncService.js";
 import { StartupSyncService } from "../../core/profile/startupSyncService.js";
 import { ScreenUtils } from "../../ui/navigation/screen.js";
 import { AvatarRepository } from "../../data/remote/supabase/avatarRepository.js";
@@ -36,6 +37,7 @@ export {
   MAX_PROFILES,
   ProfileManager,
   ProfileSyncService,
+  ProfileSettingsSyncService,
   StartupSyncService,
   ScreenUtils,
   AvatarRepository,
