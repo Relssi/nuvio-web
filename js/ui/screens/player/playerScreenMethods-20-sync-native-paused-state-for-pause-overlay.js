@@ -164,7 +164,13 @@ export function createPlayerScreenMethods20() {
       const meta = this.pauseOverlayMeta || this.buildPauseOverlayMeta();
       const castItems = Array.isArray(meta.cast) ? meta.cast.slice(0, MAX_PAUSE_OVERLAY_CAST) : [];
       overlay.innerHTML = `
-          ${!this.isLivePlayback() ? `<div class="player-pause-overlay-top"><div class="player-pause-overlay-clock">${escapeHtml(clockText)}</div></div>` : ""}
+          <div class="player-pause-overlay-top">
+            <div class="player-pause-overlay-actions">
+              <button type="button" class="player-top-btn" data-player-pointer-action="back" aria-label="Voltar">&#8592; Voltar</button>
+              <button type="button" class="player-top-btn" data-player-pointer-action="resumePause" aria-label="Continuar">&#9654; Continuar</button>
+            </div>
+            ${!this.isLivePlayback() ? `<div class="player-pause-overlay-clock">${escapeHtml(clockText)}</div>` : ""}
+          </div>
           <div class="player-pause-overlay-shade"></div>
           <div class="player-pause-overlay-content">
             <div class="player-pause-kicker">${escapeHtml(t("pause_you_are_watching", {}, "You're watching"))}</div>

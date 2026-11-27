@@ -125,6 +125,26 @@
   outline: none;
   margin-top: 8px;
   cursor: pointer;
+  pointer-events: auto;
+}
+
+.player-pause-overlay-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.player-pause-overlay-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  pointer-events: auto;
+}
+
+.tizen-tv .player-pause-overlay-actions,
+.webos-tv .player-pause-overlay-actions {
+  display: none;
 }
 
 .player-progress-track {

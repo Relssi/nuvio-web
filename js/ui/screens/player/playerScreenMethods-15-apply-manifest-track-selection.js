@@ -217,6 +217,27 @@ export function createPlayerScreenMethods15() {
 
       this.container.appendChild(root);
       this.cachePlayerUiRefs(root);
+      const progressShellEl = root.querySelector("#playerProgressShell");
+      if (progressShellEl) {
+        let draggingProgress = false;
+        const seekFromPointerEvent = (ev) => {
+          this.seekProgressFromPointer(ev, progressShellEl);
+        };
+        progressShellEl.addEventListener("mousedown", (ev) => {
+          if (ev.button !== 0) return;
+          draggingProgress = true;
+          seekFromPointerEvent(ev);
+        });
+        const onWindowMouseMove = (ev) => {
+          if (!draggingProgress) return;
+          seekFromPointerEvent(ev);
+        };
+        const onWindowMouseUp = () => {
+          draggingProgress = false;
+        };
+        window.addEventListener("mousemove", onWindowMouseMove);
+        window.addEventListener("mouseup", onWindowMouseUp);
+      }
       this.syncPlayerOverlayLayoutState();
       this.bindLoadingLogoFallback();
       if (!this.isExternalFrameMode()) {

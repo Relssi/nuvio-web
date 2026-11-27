@@ -212,7 +212,17 @@ export function createPlayerScreenMethods69() {
       if (interactive) {
         return false;
       }
-      // Tap toggles the controls, like phone video players.
+      // On desktop, clicking the video surface toggles Play/Pause.
+      // On phones (data-layout="mobile"), tap toggles the controls (B28).
+      const isPhoneLayout = globalThis?.document?.documentElement?.getAttribute("data-layout") === "mobile";
+      if (!isPhoneLayout) {
+        this.dismissPauseOverlay?.({ revealControls: false, focus: false });
+        this.togglePause();
+        this.renderControlButtons();
+        this.setControlsVisible(true, { focus: false });
+        this.resetControlsAutoHide();
+        return true;
+      }
       if (this.controlsVisible) {
         this.setControlsVisible(false, { focus: false });
         return true;

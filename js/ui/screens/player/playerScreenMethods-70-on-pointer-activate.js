@@ -32,6 +32,15 @@ export function createPlayerScreenMethods70() {
         return false;
       }
 
+      if (target.closest?.("[data-player-pointer-action='resumePause']")) {
+        this.dismissPauseOverlay?.({ revealControls: false, focus: false });
+        if (this.paused) {
+          this.togglePause();
+          this.renderControlButtons();
+        }
+        return true;
+      }
+
       if (target.closest?.("[data-player-pointer-action='back']")) {
         if (!this.navigateBackToStreamScreen()) {
           Router.back();
@@ -134,7 +143,10 @@ export function createPlayerScreenMethods70() {
       const audioNode = target.closest?.("[data-audio-column]");
       if (audioNode && this.audioDialogVisible) {
         if (this.audioFocusedColumn === "tracks") {
-          this.applyAudioTrack(this.audioDialogIndex, { rememberSelection: true });
+          const trackIndex = Number(audioNode.dataset.audioIndex);
+          this.applyAudioTrack(Number.isFinite(trackIndex) ? trackIndex : this.audioDialogIndex, {
+            rememberSelection: true
+          });
         } else {
           this.activateAudioControl(this.audioMixFocusIndex === 0 ? 1 : 0);
         }

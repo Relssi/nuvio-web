@@ -344,9 +344,12 @@
 
 .desktop-web .player-dialog-item,
 .desktop-web .player-subtitle-language-rail .player-dialog-item,
-.desktop-web .player-subtitle-options-rail .player-dialog-item {
+.desktop-web .player-subtitle-options-rail .player-dialog-item,
+.desktop-web .player-audio-track-list .player-dialog-item {
   padding: 10px 14px;
   border-radius: 10px;
+  cursor: pointer;
+  pointer-events: auto;
 }
 
 .player-controls-top {
