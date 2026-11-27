@@ -595,10 +595,25 @@
 }
 
 .desktop-web .home-screen-shell.home-layout-modern .home-hero-modern {
-  position: relative;
-  height: 54vh;
-  min-height: 420px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 50vh;
+  min-height: 380px;
+  z-index: 5;
   overflow: hidden;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(-14px);
+  transition:
+    opacity 220ms ease,
+    transform 220ms ease;
+}
+
+.desktop-web .home-screen-shell.home-layout-modern.is-hover-hero-visible .home-hero-modern {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .desktop-web .home-screen-shell.home-layout-modern .home-modern-hero-card {
@@ -612,7 +627,7 @@
   top: 0;
   bottom: 0;
   justify-content: flex-end;
-  padding-bottom: 88px;
+  padding-bottom: 48px;
 }
 
 .desktop-web .home-screen-shell.home-layout-modern .home-modern-rows-viewport {
@@ -621,7 +636,8 @@
   right: auto;
   bottom: auto;
   height: auto;
-  margin-top: -72px;
+  margin-top: 0;
+  padding-top: 32px;
   overflow: visible;
   z-index: 3;
 }
@@ -677,4 +693,98 @@
 .desktop-web .home-screen-shell.home-layout-modern .home-poster-subtitle {
   font-size: 14px;
   line-height: 18px;
+}
+
+.home-continue-remove-btn {
+  display: none;
+}
+
+.desktop-web .home-continue-remove-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 6;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: rgba(12, 12, 16, 0.78);
+  color: #fff;
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0;
+  transition:
+    opacity 140ms ease,
+    background-color 140ms ease,
+    transform 140ms ease;
+}
+
+.desktop-web .home-continue-card:hover .home-continue-remove-btn {
+  opacity: 0.92;
+}
+
+.desktop-web .home-continue-remove-btn:hover {
+  opacity: 1;
+  background: rgba(220, 38, 38, 0.9);
+  transform: scale(1.08);
+}
+
+.nuvio-cw-confirm-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(0, 0, 0, 0.72);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.nuvio-cw-confirm-modal {
+  width: min(420px, 100%);
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: #16161d;
+  color: #f5f5f7;
+  padding: 22px 24px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.75);
+}
+
+.nuvio-cw-confirm-title {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.nuvio-cw-confirm-message {
+  font-size: 14px;
+  line-height: 1.5;
+  color: rgba(245, 245, 247, 0.8);
+  margin-bottom: 20px;
+}
+
+.nuvio-cw-confirm-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.nuvio-cw-confirm-btn {
+  padding: 9px 18px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.nuvio-cw-confirm-btn.is-danger {
+  border-color: rgba(239, 68, 68, 0.6);
+  background: #dc2626;
 }

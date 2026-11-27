@@ -9,6 +9,10 @@ function isPhoneLayout() {
   return globalThis.document?.documentElement?.getAttribute?.("data-layout") === "mobile";
 }
 
+function isDesktopWebLayout() {
+  return !isPhoneLayout() && Boolean(globalThis.document?.body?.classList?.contains("desktop-web"));
+}
+
 export function createHomeScreenMethods19() {
   const {
     getLegacySidebarSelectedNode,
@@ -205,6 +209,13 @@ export function createHomeScreenMethods19() {
             event.stopPropagation?.();
             return;
           }
+          const removeBtn = event?.target?.closest?.('[data-action="removeContinueWatching"]');
+          if (removeBtn && this.container?.contains(removeBtn)) {
+            event.preventDefault?.();
+            event.stopPropagation?.();
+            this.confirmRemoveContinueWatchingFromCard?.(removeBtn.closest(".home-continue-card"));
+            return;
+          }
           const target = event?.target?.closest?.(".home-main .focusable");
           if (!target || !this.container?.contains(target)) {
             return;
@@ -253,6 +264,20 @@ export function createHomeScreenMethods19() {
       if (!this.boundHomeMouseOutHandler) {
         this.boundHomeMouseOutHandler = (event) => {
           const card = event?.target?.closest?.(".home-main .focusable");
+          if (isDesktopWebLayout()) {
+            const contentCard = event?.target?.closest?.(".home-main .home-content-card.focusable");
+            const related = event?.relatedTarget;
+            if (contentCard && (!related || !contentCard.contains(related))) {
+              contentCard.classList.remove("focused");
+              if (this.getCurrentFocusedNode?.() === contentCard) {
+                this.setCurrentFocusedNode?.(null);
+              }
+              this.syncFocusedCollectionCardState?.();
+              if (!related?.closest?.(".home-main .home-content-card.focusable")) {
+                this.setHoverHeroActive?.(false);
+              }
+            }
+          }
           if (!this.pointerHoldStartedAt || !card || card.contains(event.relatedTarget)) {
             return;
           }
@@ -276,7 +301,13 @@ export function createHomeScreenMethods19() {
             return;
           }
           const target = event?.target?.closest?.(".home-main .home-content-card.focusable");
-          if (!target || !this.container?.contains(target) || target.classList.contains("focused")) {
+          if (!target || !this.container?.contains(target)) {
+            return;
+          }
+          if (isDesktopWebLayout() && !this.sidebarExpanded && !this.isSidebarFocusActive()) {
+            this.setHoverHeroActive?.(true);
+          }
+          if (target.classList.contains("focused")) {
             return;
           }
           // Row scrolling and card expansion shift content under a resting Magic
@@ -353,6 +384,15 @@ export function createHomeScreenMethods19() {
       this.container.addEventListener("mouseover", this.boundHomeMouseOverHandler);
       this.container.addEventListener("wheel", this.boundHomeWheelHandler, { passive: false });
       this.boundHomeEventContainer = this.container;
+    },
+    setHoverHeroActive(active) {
+      if (!isDesktopWebLayout()) {
+        return;
+      }
+      const shell = this.container?.querySelector?.(".home-screen-shell.home-layout-modern");
+      if (shell) {
+        shell.classList.toggle("is-hover-hero-visible", Boolean(active));
+      }
     },
     // Swiping the hero on a phone shows the next / previous title of the
     // focused row: the hero always follows the focused card (B29).

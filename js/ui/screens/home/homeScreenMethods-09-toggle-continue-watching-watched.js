@@ -110,6 +110,56 @@ export function createHomeScreenMethods09() {
       this.pruneContinueWatchingItem({ ...normalized, videoId: null });
       return true;
     },
+    confirmRemoveContinueWatchingFromCard(card) {
+      if (!card) {
+        return false;
+      }
+      const cwIndex = Number(card.dataset.cwIndex);
+      const itemId = String(card.dataset.itemId || "");
+      const item =
+        (Number.isFinite(cwIndex) ? this.continueWatching?.[cwIndex] : null) ||
+        (this.continueWatching || []).find((entry) => String(entry?.contentId || entry?.id || "") === itemId) ||
+        null;
+      if (!item) {
+        return false;
+      }
+      const title = String(item.title || card.dataset.itemTitle || "este título");
+      const existing = document.getElementById("nuvioCwConfirmBackdrop");
+      if (existing) {
+        existing.remove();
+      }
+      const backdrop = document.createElement("div");
+      backdrop.id = "nuvioCwConfirmBackdrop";
+      backdrop.className = "nuvio-cw-confirm-backdrop";
+      backdrop.innerHTML = `
+        <div class="nuvio-cw-confirm-modal" role="dialog" aria-modal="true" aria-label="Confirmar remoção">
+          <div class="nuvio-cw-confirm-title">Remover de Continuar assistindo?</div>
+          <div class="nuvio-cw-confirm-message">Deseja remover <strong></strong> da lista?</div>
+          <div class="nuvio-cw-confirm-actions">
+            <button type="button" class="nuvio-cw-confirm-btn is-cancel">Cancelar</button>
+            <button type="button" class="nuvio-cw-confirm-btn is-danger">Remover</button>
+          </div>
+        </div>
+      `;
+      const strongEl = backdrop.querySelector(".nuvio-cw-confirm-message strong");
+      if (strongEl) {
+        strongEl.textContent = title;
+      }
+      const closeModal = () => backdrop.remove();
+      backdrop.addEventListener("click", (event) => {
+        if (event.target === backdrop) {
+          closeModal();
+        }
+      });
+      backdrop.querySelector(".is-cancel")?.addEventListener("click", closeModal);
+      backdrop.querySelector(".is-danger")?.addEventListener("click", async () => {
+        closeModal();
+        await this.removeContinueWatchingItem(item);
+        this.render();
+      });
+      document.body.appendChild(backdrop);
+      return true;
+    },
     async activateContinueWatchingMenuOption() {
       const item = this.getContinueWatchingMenuItem();
       const options = this.getContinueWatchingMenuOptions();
