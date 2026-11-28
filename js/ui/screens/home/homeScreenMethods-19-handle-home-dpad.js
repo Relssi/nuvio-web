@@ -265,8 +265,12 @@ export function createHomeScreenMethods19() {
         this.boundHomeMouseOutHandler = (event) => {
           const card = event?.target?.closest?.(".home-main .focusable");
           if (isDesktopWebLayout()) {
-            const contentCard = event?.target?.closest?.(".home-main .home-content-card.focusable");
+            const sidebarEl = event?.target?.closest?.(".home-sidebar, .modern-sidebar-panel");
             const related = event?.relatedTarget;
+            if (sidebarEl && (!related || !sidebarEl.contains(related)) && (this.sidebarExpanded || this.isSidebarFocusActive?.())) {
+              this.scheduleSidebarAutoClose?.();
+            }
+            const contentCard = event?.target?.closest?.(".home-main .home-content-card.focusable");
             if (contentCard && (!related || !contentCard.contains(related))) {
               contentCard.classList.remove("focused");
               if (globalThis.document?.activeElement === contentCard) {
@@ -302,6 +306,10 @@ export function createHomeScreenMethods19() {
           // focus on hover would scroll the row under the finger (BUGS.md B20).
           // A tap opens the title directly, so hover focus is not needed.
           if (isPhoneLayout()) {
+            return;
+          }
+          if (isDesktopWebLayout() && event?.target?.closest?.(".home-sidebar, .modern-sidebar-panel, .modern-sidebar-pill")) {
+            this.clearSidebarAutoCloseTimer?.();
             return;
           }
           const target = event?.target?.closest?.(".home-main .home-content-card.focusable");
@@ -388,6 +396,24 @@ export function createHomeScreenMethods19() {
       this.container.addEventListener("mouseover", this.boundHomeMouseOverHandler);
       this.container.addEventListener("wheel", this.boundHomeWheelHandler, { passive: false });
       this.boundHomeEventContainer = this.container;
+    },
+    clearSidebarAutoCloseTimer() {
+      if (this.sidebarAutoCloseTimer) {
+        clearTimeout(this.sidebarAutoCloseTimer);
+        this.sidebarAutoCloseTimer = null;
+      }
+    },
+    scheduleSidebarAutoClose() {
+      if (!isDesktopWebLayout()) {
+        return;
+      }
+      this.clearSidebarAutoCloseTimer();
+      this.sidebarAutoCloseTimer = setTimeout(() => {
+        this.sidebarAutoCloseTimer = null;
+        if (this.sidebarExpanded || this.isSidebarFocusActive?.()) {
+          this.closeSidebarToContent?.();
+        }
+      }, 600);
     },
     clearHoverHeroTimer() {
       if (this.hoverHeroTimer) {
