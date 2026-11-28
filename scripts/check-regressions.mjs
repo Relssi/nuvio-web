@@ -555,24 +555,27 @@ async function main() {
     return true;
   });
 
-  await check("B34", "browser asks for the audio before a TorBox movie when unsure", async () => {
-    const resolver = await source("js/core/debrid/directDebridResolver.js");
-    if (!resolver.includes("decideTorboxAudio(")) return "resolver no longer decides when to ask";
-    if (!resolver.includes("askTorboxAudio(")) return "resolver no longer asks the viewer";
-    const app = await source("js/app.js");
-    if (!app.includes("installTorboxAudioChoice()"))
-      return "audio window not installed in the browser";
-    const player = await source(
-      "js/ui/screens/player/playerScreenMethods-35-play-stream-candidate.js"
+  await check("B35", "dubbed sources first and confirmed in the background", async () => {
+    const ordering = await source("js/core/streams/streamOrdering.js");
+    if (!ordering.includes("export function preferDubbedStreams"))
+      return "dubbed-first ordering missing";
+    if (/[\u0000-\u0008]/.test(ordering)) return "control character in streamOrdering.js";
+    const helpers = await source(
+      "js/ui/screens/stream/streamScreenHelpers-03-render-image-badge-chip.js"
     );
-    if (!player.includes('result.status === "cancelled"'))
-      return "choosing another source does not go back";
+    if (!helpers.includes("preferDubbedStreams(")) return "source list is not dubbed-first";
+    const loader = await source("js/ui/screens/stream/streamScreenMethods-04-load-streams.js");
+    if (!loader.includes("checkDubbedSourcesInBackground("))
+      return "background dub check not started";
+    const resolver = await source("js/core/debrid/directDebridResolver.js");
+    if (!resolver.includes("probePreferredAudio(")) return "TorBox audio probe missing";
     return true;
   });
 
   // ---- Unit tests --------------------------------------------------------
   const tests = await run(process.execPath, [
     "--test",
+    "js/core/streams/dubbedStreamOrdering.test.mjs",
     "js/core/debrid/torboxAudioChoice.test.mjs",
     "js/core/debrid/torboxWebStream.test.mjs",
     "scripts/test-profile-scoped-store-cache.mjs",

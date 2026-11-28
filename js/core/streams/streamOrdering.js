@@ -1,4 +1,6 @@
 import { sizeBytesFromStreamText, sizeBytesFromText } from "../debrid/streamTextSizeParser.js";
+import { getDubProbe } from "../debrid/torboxDubProbeStore.js";
+import { PlayerSettingsStore } from "../../data/local/playerSettingsStore.js";
 
 const UNKNOWN_SOURCE_RANK = Number.MAX_SAFE_INTEGER;
 
@@ -354,4 +356,63 @@ export function isStreamPtBrAvailable(stream = {}) {
     .join(" ");
 
   return PT_BR_TEXT_PATTERN.test(searchable);
+}
+
+// Dubbed sources first (B35). Only when the preferred audio language is
+// Portuguese (the default). Order, keeping the existing order inside each
+// group: 0 TorBox confirmed Portuguese audio, 1 name says PT-BR / dubbed /
+// 🇧🇷 / Nacional, 2 name says only "Dual", 3 nothing said, 4 TorBox confirmed
+// there is no Portuguese audio.
+const PT_BR_STRONG_PATTERN =
+  /(?:🇧🇷|\b(?:pt[\s._-]*br|pob|brazil(?:ian)?|portugu[eê]s(?:a|es)?|dublado|dublagem|nacional)\b)/i;
+
+function streamSearchText(stream = {}) {
+  return [
+    stream.title,
+    stream.name,
+    stream.description,
+    stream.label,
+    stream.filename,
+    stream.behaviorHints?.filename,
+    stream.raw?.title,
+    stream.raw?.name,
+    stream.raw?.description
+  ]
+    .map((value) => String(value || ""))
+    .join(" ");
+}
+
+export function dubRank(stream = {}) {
+  const probe = getDubProbe(stream);
+  if (probe === true) return 0;
+  if (probe === false) return 4;
+  const text = streamSearchText(stream);
+  if (PT_BR_STRONG_PATTERN.test(text)) return 1;
+  if (isStreamPtBrAvailable(stream)) return 2;
+  return 3;
+}
+
+export function prefersPortugueseAudio(settings = null) {
+  try {
+    const value = String((settings || PlayerSettingsStore.get())?.preferredAudioLanguage || "")
+      .trim()
+      .toLowerCase();
+    if (value === "system" || value === "device") {
+      return /^pt\b/i.test(String(globalThis.navigator?.language || ""));
+    }
+    return value === "pt" || value === "pt-br";
+  } catch (_) {
+    return false;
+  }
+}
+
+export function preferDubbedStreams(streams = [], { enabled = prefersPortugueseAudio() } = {}) {
+  const list = (Array.isArray(streams) ? streams : []).filter(Boolean);
+  if (!enabled || list.length <= 1) {
+    return list;
+  }
+  return list
+    .map((stream, index) => ({ stream, index, rank: dubRank(stream) }))
+    .sort((left, right) => left.rank - right.rank || left.index - right.index)
+    .map((entry) => entry.stream);
 }

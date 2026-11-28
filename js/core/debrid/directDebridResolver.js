@@ -11,10 +11,10 @@ import { Environment } from "../../platform/environment.js";
 import { PlayerSettingsStore } from "../../data/local/playerSettingsStore.js";
 import {
   decideTorboxAudio,
-  describeTorboxAudioTrack,
+  pickTorboxAudioIndex,
   preferredAudioTargets
 } from "./torboxAudioChoice.js";
-import { askTorboxAudio } from "./torboxAudioPrompt.js";
+import { dubProbeKey, getDubProbe, setDubProbe } from "./torboxDubProbeStore.js";
 import { isStreamPtBrAvailable } from "../streams/streamOrdering.js";
 
 const HLS_MIME_TYPE = "application/vnd.apple.mpegurl";
@@ -31,12 +31,7 @@ export async function requestTorboxWebStream(
   apiKey,
   torrentId,
   fileId,
-  {
-    enabled = Environment.isBrowser(),
-    audioTargets = null,
-    preferSecondaryForDual = false,
-    fileName = ""
-  } = {}
+  { enabled = Environment.isBrowser(), audioTargets = null, preferSecondaryForDual = false } = {}
 ) {
   const useDualFallback = Boolean(preferSecondaryForDual || pendingPreferSecondaryForDual);
   pendingPreferSecondaryForDual = false;
@@ -55,26 +50,11 @@ export async function requestTorboxWebStream(
   const audios = Array.isArray(data?.metadata?.audios) ? data.metadata.audios : [];
   // The first answer lists the audio tracks. Browsers only play the first one,
   // so when the preferred language is another track, ask for that one (B26).
-  // When the site cannot tell which track is the preferred language, or the
-  // file has none, the viewer chooses before the movie starts (B34).
+  // Fully automatic (B35): the best guess plays; the player's audio menu can
+  // still switch tracks.
   const targets = audioTargets || preferredAudioTargets(PlayerSettingsStore.get(), browserLocale());
   const decision = decideTorboxAudio(audios, targets, { preferSecondaryForDual: useDualFallback });
-  let audioIndex = decision.index;
-  if (decision.ask) {
-    const answer = await askTorboxAudio({
-      fileName,
-      reason: decision.reason,
-      suggested: decision.index,
-      tracks: audios.map((audio, position) => ({
-        index: position,
-        label: describeTorboxAudioTrack(audio, position)
-      }))
-    });
-    if (answer.cancelled) {
-      return { cancelled: true };
-    }
-    audioIndex = answer.index;
-  }
+  const audioIndex = decision.index;
   let selectedAudioIndex = 0;
   let resolvedHlsUrl = typeof data.hls_url === "string" ? data.hls_url.trim() : "";
   if (audioIndex > 0) {
@@ -369,13 +349,9 @@ async function resolveTorbox(
   }
   if (!preferDirectDownload) {
     pendingPreferSecondaryForDual = Boolean(preferSecondaryForDual);
-    const webStreamUrl = await requestTorboxWebStream(apiKey, torrentId, file.id, {
-      fileName: getDebridFileDisplayName(file)
-    }).catch(() => null);
-    // "Choose another source" in the audio window (B34).
-    if (webStreamUrl?.cancelled) {
-      return failure("cancelled");
-    }
+    const webStreamUrl = await requestTorboxWebStream(apiKey, torrentId, file.id, {}).catch(
+      () => null
+    );
     const torboxStreamMeta = torboxStreamMetaCache.get(`${torrentId}:${file.id}`) || null;
     if (webStreamUrl) {
       return {
@@ -752,6 +728,42 @@ export const DirectDebridResolver = {
       return { status: "unsupported_hls" };
     }
     return failure("unavailable");
+  },
+
+  // Background check (B35): ask TorBox for the real audio tracks of a source
+  // that is already ready on TorBox, and remember whether it has the
+  // preferred language. Never starts a download (cached sources only, and
+  // TorBox is told to add the torrent only if cached).
+  async probePreferredAudio(stream = {}, { season = null, episode = null } = {}) {
+    if (getDubProbe(stream) !== null || !dubProbeKey(stream)) {
+      return { status: "known" };
+    }
+    if (String(stream?.debridCacheStatus?.state || "").toUpperCase() !== "CACHED") {
+      return { status: "skipped" };
+    }
+    const settings = DebridSettingsStore.get();
+    if (!settings.enabled) return { status: "skipped" };
+    const resolve = getResolve(stream, season, episode, settings);
+    if (!resolve || resolve.service !== DEBRID_PROVIDER_IDS.TORBOX) return { status: "skipped" };
+    const apiKey = DebridProviders.apiKeyFor(settings, DEBRID_PROVIDER_IDS.TORBOX);
+    const magnet = buildMagnetUri(resolve);
+    if (!apiKey || !magnet) return { status: "skipped" };
+    const create = await DebridApi.torboxCreateTorrent(apiKey, magnet);
+    const torrentId = create.data?.data?.torrent_id ?? create.data?.data?.id;
+    if (!create.ok || !torrentId) return { status: "failed" };
+    const torrent = await DebridApi.torboxGetTorrent(apiKey, torrentId);
+    const files = torrent.data?.data?.files || [];
+    const file = Array.isArray(files)
+      ? selectDebridFile(files, resolve, { season, episode, kind: "torbox" })
+      : null;
+    if (!torrent.ok || !file) return { status: "failed" };
+    const response = await DebridApi.torboxCreateStream(apiKey, { id: torrentId, fileId: file.id });
+    const audios = response?.data?.data?.metadata?.audios;
+    if (!response?.ok || !Array.isArray(audios) || !audios.length) return { status: "failed" };
+    const targets = preferredAudioTargets(PlayerSettingsStore.get(), browserLocale());
+    const index = pickTorboxAudioIndex(audios, targets);
+    setDubProbe(stream, index >= 0, { tracks: audios.length });
+    return { status: "checked", hasPreferred: index >= 0 };
   },
 
   async switchTorboxAudioTrack(torboxStreamMeta = null, audioIndex = 0) {

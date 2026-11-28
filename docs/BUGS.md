@@ -224,13 +224,18 @@ O script cobre automaticamente os itens marcados com **[auto]**. Os itens **[man
 - **Correção:** tudo abaixo do topo da tela do filme/série (temporadas, episódios, abas Elenco/Avaliações/Trailer) fica em meia escala, substituindo os ajustes peça por peça de B27/B31. Descobrir e "Ver tudo" mostram 3 pôsteres por linha no celular, e os filtros quebram linha se precisar.
 - **Verificar:** checagens B31 e B33; no simulador nenhuma das três abas tem texto saindo da tela; Descobrir com cartões de 102px, 3 por linha.
 
-## B34 — Filmes que ainda não ficavam dublados: escolher o áudio antes [auto + manual]
+## B34 — Janela "Escolha o áudio" (removida em B35)
 
-- **Causas vistas:** (1) o arquivo não tem faixa em português, mesmo com "Dual"/"PT-BR" no nome; (2) a faixa em português existe mas está marcada como outro idioma ou "und", e a escolha automática erra.
-- **Teste real (conta do usuário, Divertida Mente 2, fonte Dual 4K):** o TorBox listou 1ª "PT-BR 5.1" (por) e 2ª "Inglês 5.1" (eng); o site pediu a faixa 0 e recebeu o HLS convertido — caminho correto.
-- **Correção:** `decideTorboxAudio` (`torboxAudioChoice.js`) decide: se um idioma/título indica a faixa preferida, toca direto; se há várias faixas e nenhuma é claramente a preferida, ou se todas são de outro idioma, pergunta. `requestTorboxWebStream` chama `askTorboxAudio` (`torboxAudioPrompt.js`), e no navegador a janela `js/ui/components/torboxAudioChoiceDialog.js` (instalada em `app.js`) mostra as faixas com a sugerida marcada e "← Escolher outra fonte". Escolher outra fonte faz o player voltar para a lista (`status: "cancelled"`, `playerScreenMethods-35`). TVs não mudam.
-- **Verificar:** checagem B34, `torboxAudioChoice.test.mjs` e `torboxWebStream.test.mjs`; janela vista no simulador 375px.
-- **Não testado:** clique na janela dentro de um filme real (o painel do navegador fechou durante o teste).
+- Uma janela pedia o idioma antes do filme quando o site não tinha certeza da faixa dublada. O usuário achou manual demais; substituída pelo fluxo automático de B35.
+
+## B35 — Fontes dubladas primeiro, confirmadas no TorBox, áudio automático [auto + manual]
+
+- **Pedido:** sem passos manuais; as fontes com dublagem brasileira devem ficar sempre em primeiro.
+- **Ordem (`preferDubbedStreams` em `streamOrdering.js`, só quando o áudio preferido é português):** 0 confirmada pelo TorBox com português → 1 nome diz 🇧🇷/PT-BR/Dublado/Nacional → 2 nome diz só "Dual" → 3 nada → 4 confirmada sem português. Dentro de cada grupo mantém a ordem anterior (tamanho). Vale na tela de fontes (Todas e aba 🇧🇷 PT-BR), painel de fontes e episódios do player e seletor da tela de detalhes.
+- **Pré-carregamento (`checkDubbedSourcesInBackground`, tela de fontes, só navegador):** quando a lista termina de carregar, o site pergunta ao TorBox (`DirectDebridResolver.probePreferredAudio`) as faixas reais das fontes prováveis, da melhor para a pior, até confirmar uma com português (no máximo 5). Só fontes já prontas no TorBox ("Ready"/cached; o TorBox só adiciona se estiver em cache), então nunca inicia download. Resultado guardado por 30 dias (`torboxDubProbeStore.js`, chave = infoHash + arquivo).
+- **Áudio automático:** sem janela; `decideTorboxAudio` usa a faixa que diz ser a preferida, senão o palpite (Dual: segunda faixa sem idioma depois de inglês), senão a primeira. O menu de áudio do player (Kiid) continua para trocar.
+- **Efeito colateral:** as fontes verificadas aparecem na lista de torrents da conta TorBox (como quando se assiste).
+- **Verificar:** checagem B35, `dubbedStreamOrdering.test.mjs`, `torboxAudioChoice.test.mjs`.
 
 ## Teste que já falhava
 

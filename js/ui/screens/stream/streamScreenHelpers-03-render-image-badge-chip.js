@@ -91,6 +91,7 @@ import {
 import { isStreamEmptyStateVisible } from "./streamEmptyState.js";
 
 import { escapeHtml, STREAM_BADGE_LIMIT, t, formatBytes } from "./streamScreenHelpers-01-stream-badge-limit.js";
+import { preferDubbedStreams } from "../../../core/streams/streamOrdering.js";
 
 export function renderImageBadgeChip(badge = {}) {
   const imageUrl = normalizeAddonLogoUrl(badge.imageURL);
@@ -197,12 +198,15 @@ export function getOrderedFilterNames(sourceChips = [], streams = []) {
   });
 }
 
+// Dubbed sources first when the preferred audio is Portuguese (B35).
 export function sortStreamsByAddonOrder(streams = [], sourceChips = []) {
-  return sortStreamsBySizeAscending(
-    groupStreamsByProvider(
-      orderStreamsByAddonOrder(streams, sourceChips, {
-        isDirectDebrid: (stream) => DebridStreamPresentation.isDirectDebrid(stream)
-      })
+  return preferDubbedStreams(
+    sortStreamsBySizeAscending(
+      groupStreamsByProvider(
+        orderStreamsByAddonOrder(streams, sourceChips, {
+          isDirectDebrid: (stream) => DebridStreamPresentation.isDirectDebrid(stream)
+        })
+      )
     )
   );
 }

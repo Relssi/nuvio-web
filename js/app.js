@@ -28,7 +28,6 @@ import { renderAddonRemotePage } from "./bootstrap/renderAddonRemotePage.js";
 import { warmStreamingLibs } from "./runtime/loadStreamingLibs.js";
 import { runAfterFirstHomePaint } from "./runtime/startupScheduler.js";
 import { Platform } from "./platform/index.js";
-import { installTorboxAudioChoice } from "./ui/components/torboxAudioChoiceDialog.js";
 import { TizenCapabilities } from "./platform/tizen/tizenCapabilities.js";
 import { PluginServiceClient } from "./platform/pluginServiceClient.js";
 import {
@@ -150,9 +149,6 @@ function preloadMaterialIconFont() {
   const root = document.documentElement;
   if (Platform.isBrowser()) {
     root.classList.add("desktop-web");
-    // Browser only: choose the audio before a TorBox movie starts when the
-    // site cannot tell which track is the dubbed one (B34).
-    installTorboxAudioChoice();
   }
   const markReady = () => root.classList.add("material-icons-ready");
   const timer = setTimeout(markReady, 3000);

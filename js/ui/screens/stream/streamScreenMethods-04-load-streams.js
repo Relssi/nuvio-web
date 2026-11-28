@@ -313,6 +313,7 @@ export function createStreamScreenMethods04() {
         this.scheduleErrorChipCleanup();
         this.maybeAutoResumeStream({ allLoaded: true });
         this.maybeAutoPlayStream({ allLoaded: true });
+        void this.checkDubbedSourcesInBackground(token);
       } catch (error) {
         if (token !== this.loadToken) {
           return;

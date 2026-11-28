@@ -1,6 +1,7 @@
 /* eslint-disable no-unused-vars */
 import * as internals from "./playerScreenContext.js";
 import { focusWithoutScroll } from "../../navigation/focusWithoutScroll.js";
+import { preferDubbedStreams } from "../../../core/streams/streamOrdering.js";
 
 export function createPlayerScreenMethods66() {
   const { streamRepository, sortStreamsBySizeAscending, isSelectKeyCode, t, clamp, normalizeItemType, streamMergeKey } = internals;
@@ -12,7 +13,7 @@ export function createPlayerScreenMethods66() {
         this.episodePanelStreamFilter === "all"
           ? streams
           : streams.filter((stream) => String(stream?.addonName || "") === this.episodePanelStreamFilter);
-      return sortStreamsBySizeAscending(filtered);
+      return preferDubbedStreams(sortStreamsBySizeAscending(filtered));
     },
     closeEpisodeStreamsView() {
       streamRepository.setLocalPluginSearchPaused(true);

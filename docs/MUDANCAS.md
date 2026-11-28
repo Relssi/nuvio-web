@@ -8,6 +8,13 @@ Detalhes de bugs (causa e correção) ficam em [`BUGS.md`](BUGS.md).
 
 ---
 
+## 29/11/2026 — Fontes dubladas sempre primeiro, sem janela de áudio
+
+- **O que mudou:** as fontes com dublagem brasileira aparecem primeiro em todas as listas. Enquanto você olha a lista, o site pergunta ao TorBox quais fontes têm mesmo áudio em português: as confirmadas sobem para o topo, as que não têm português vão para o fim (o resultado fica guardado, então na próxima vez é instantâneo). A janela "Escolha o áudio" saiu: o site escolhe a faixa PT-BR sozinho, e o menu de áudio do player continua lá para trocar.
+- **Como:** ordenação "dublado primeiro" e verificação em segundo plano só das fontes já prontas no TorBox. Detalhes em BUGS.md (B35).
+- **Precisa fazer:** nada. Recarregue a página. As fontes verificadas aparecem na lista de torrents do TorBox, como quando se assiste.
+- **Não testado:** com a lista real do TorBox depois do deploy.
+
 ## 29/11/2026 — Escolher o áudio antes do filme quando não há certeza
 
 - **O que mudou:** no navegador, quando o site não tem certeza de qual faixa é a dublada (ou o arquivo não tem português), aparece uma janela "Escolha o áudio" antes do filme começar, com as faixas do arquivo e a sugerida marcada. Dá para tocar, clicar ou usar as setas. "← Escolher outra fonte" volta para a lista. Quando o site tem certeza, o filme começa direto, como antes.

@@ -36,28 +36,20 @@ test("unlabelled Portuguese still counts for pt-br; missing language gives -1", 
   );
 });
 
-test("decideTorboxAudio plays straight when sure and asks when not", async () => {
+test("decideTorboxAudio: sure match, dual guess, else first track", async () => {
   const { decideTorboxAudio } = await import("./torboxAudioChoice.js");
   const ptFirst = [
     { language: "por", title: "PT-BR 5.1" },
     { language: "eng", title: "Inglês 5.1" }
   ];
-  assert.deepEqual(decideTorboxAudio(ptFirst, ["pt-br"]), {
-    index: 0,
-    ask: false,
-    reason: "match"
+  assert.deepEqual(decideTorboxAudio(ptFirst, ["pt-br"]), { index: 0, confident: true });
+  const enThenUntagged = [{ language: "eng" }, { language: "und" }];
+  assert.deepEqual(decideTorboxAudio(enThenUntagged, ["pt-br"], { preferSecondaryForDual: true }), {
+    index: 1,
+    confident: false
   });
-  // Two tracks, none labelled: ask, suggest the first.
-  const unlabelled = [{ language: "und" }, { language: "und" }];
-  const unsure = decideTorboxAudio(unlabelled, ["pt-br"]);
-  assert.equal(unsure.ask, true);
-  assert.equal(unsure.reason, "unsure");
-  // English only, several tracks: ask and say there is no Portuguese.
-  const englishOnly = [{ language: "eng" }, { language: "eng", title: "Commentary" }];
-  assert.equal(decideTorboxAudio(englishOnly, ["pt-br"]).reason, "no-preferred-language");
-  // One English track: ask (no Portuguese); one unknown track: just play.
-  assert.equal(decideTorboxAudio([{ language: "eng" }], ["pt-br"]).ask, true);
-  assert.equal(decideTorboxAudio([{ language: "und" }], ["pt-br"]).ask, false);
-  // No preferred language set: never ask.
-  assert.equal(decideTorboxAudio(unlabelled, []).ask, false);
+  assert.deepEqual(decideTorboxAudio([{ language: "eng" }], ["pt-br"]), {
+    index: 0,
+    confident: false
+  });
 });

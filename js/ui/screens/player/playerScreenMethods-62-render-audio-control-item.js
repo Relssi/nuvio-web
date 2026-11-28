@@ -1,5 +1,6 @@
 /* eslint-disable no-unused-vars */
 import * as internals from "./playerScreenContext.js";
+import { preferDubbedStreams } from "../../../core/streams/streamOrdering.js";
 
 export function createPlayerScreenMethods62() {
   const {
@@ -224,10 +225,13 @@ export function createPlayerScreenMethods62() {
       return ["all", ...addons];
     },
     getOrderedStreamCandidates() {
-      return sortStreamsBySizeAscending(
-        orderStreamsByAddonOrder(this.streamCandidates || [], [], {
-          isDirectDebrid: (stream) => DebridStreamPresentation.isDirectDebrid(stream)
-        })
+      // Dubbed sources first when the preferred audio is Portuguese (B35).
+      return preferDubbedStreams(
+        sortStreamsBySizeAscending(
+          orderStreamsByAddonOrder(this.streamCandidates || [], [], {
+            isDirectDebrid: (stream) => DebridStreamPresentation.isDirectDebrid(stream)
+          })
+        )
       );
     },
     getFilteredSources(orderedStreams = this.getOrderedStreamCandidates()) {

@@ -3,10 +3,15 @@ import { StreamLinkCacheStore, activeStreamLinkProfile } from "../../../data/loc
 import { cachedStreamLinkCandidate } from "../../../core/streams/streamLinkReuse.js";
 import {
   PT_BR_FILTER_ID,
+  dubRank,
   isFrostStream,
   isStreamPtBrAvailable,
+  preferDubbedStreams,
+  prefersPortugueseAudio,
   sortStreamsBySizeDescending
 } from "../../../core/streams/streamOrdering.js";
+import { getDubProbe, dubProbeKey } from "../../../core/debrid/torboxDubProbeStore.js";
+import { Environment } from "../../../platform/environment.js";
 /* eslint-disable no-unused-vars */
 import * as internals from "./streamScreen.js";
 
@@ -267,6 +272,34 @@ export function createStreamScreenMethods05() {
     getOrderedFilterNames() {
       return getOrderedFilterNames(this.sourceChips, this.streams);
     },
+    // Background check (B35): ask TorBox for the real audio tracks of the
+    // likely-dubbed sources (best first) until one is confirmed to have
+    // Portuguese audio; confirmed ones move to the top, sources without
+    // Portuguese to the bottom. Ready-on-TorBox sources only, at most 5 checks.
+    async checkDubbedSourcesInBackground(token = this.loadToken) {
+      if (!Environment.isBrowser() || !prefersPortugueseAudio()) {
+        return;
+      }
+      const season = this.params?.season ?? null;
+      const episode = this.params?.episode ?? null;
+      const seen = new Set();
+      const candidates = preferDubbedStreams(this.streams || [], { enabled: true }).filter((stream) => {
+        const key = dubProbeKey(stream);
+        if (!key || seen.has(key) || dubRank(stream) > 2 || getDubProbe(stream) !== null) return false;
+        seen.add(key);
+        return String(stream?.debridCacheStatus?.state || "").toUpperCase() === "CACHED";
+      });
+      for (const stream of candidates.slice(0, 5)) {
+        if (token !== this.loadToken) return;
+        const result = await DirectDebridResolver.probePreferredAudio(stream, { season, episode }).catch(() => null);
+        if (token !== this.loadToken) return;
+        if (result?.status === "checked") {
+          this._filteredStreamsCache = null;
+          this.requestRender();
+          if (result.hasPreferred) return;
+        }
+      }
+    },
     getFilteredStreams(filter = this.addonFilter) {
       // Cache the sorted/filtered result so focus navigation (which re-requests
       // this on every move via badge hydration) does not re-sort and re-parse
@@ -289,7 +322,9 @@ export function createStreamScreenMethods05() {
         filter === "all"
           ? orderedStreams
           : filter === PT_BR_FILTER_ID
-            ? sortStreamsBySizeDescending(orderedStreams.filter((stream) => isStreamPtBrAvailable(stream) && !isFrostStream(stream)))
+            ? preferDubbedStreams(
+                sortStreamsBySizeDescending(orderedStreams.filter((stream) => isStreamPtBrAvailable(stream) && !isFrostStream(stream)))
+              )
             : orderedStreams.filter((stream) => stream.addonName === filter);
       const result = shared ? [shared, ...filtered] : filtered;
       this._filteredStreamsCache = {

@@ -129,11 +129,6 @@ export function createPlayerScreenMethods35() {
           if (!this.isActiveMountToken(mountToken)) {
             return;
           }
-          // "Choose another source" in the audio window (B34).
-          if (result.status === "cancelled") {
-            this.navigateBackToStreamScreen();
-            return;
-          }
           if (result.status === "success" && result.stream?.url) {
             targetUrl = result.stream.url;
             Object.assign(streamCandidate, {
