@@ -639,6 +639,17 @@ async function main() {
     }
   );
 
+  await check("B43", "dub: a source with another film's duration is skipped", async () => {
+    const sync = await source("js/ui/screens/player/dubAudioSync.js");
+    if (!sync.includes("export function dubDurationMatches")) return "dub duration check missing";
+    if (!sync.includes("throw new DubDurationMismatch"))
+      return "engine no longer refuses another film";
+    const panel = await source("js/ui/screens/player/playerDubAudio.js");
+    if (!panel.includes("findDubSources(")) return "no longer tries the next dubbed source";
+    if (!panel.includes("rejected.add(")) return "refused sources are offered again";
+    return true;
+  });
+
   // ---- Unit tests --------------------------------------------------------
   const tests = await run(process.execPath, [
     "--test",

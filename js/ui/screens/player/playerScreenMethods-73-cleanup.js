@@ -15,6 +15,7 @@ export function createPlayerScreenMethods73() {
     },
     cleanup() {
       stopDubAudio(this);
+      this.dubRejected = null;
       this.closeStreamInfo({ restore: false });
       this.stopTrackingBeforeTeardown();
       try {

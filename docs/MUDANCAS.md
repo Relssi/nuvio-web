@@ -8,6 +8,13 @@ Detalhes de bugs (causa e correção) ficam em [`BUGS.md`](BUGS.md).
 
 ---
 
+## 29/11/2026 — Dub β confere a duração da dublagem
+
+- **O que mudou:** no Wicker, a "dublagem" vinha de um arquivo chamado "A Ladra Solitária", que é **outro filme** (96 min contra 106 min). Por isso não sincronizava de jeito nenhum. Agora o Dub β compara a duração: se a dublagem não bate com o filme, ele descarta a fonte e tenta a próxima. Se nenhuma bater, avisa que as dublagens da lista são de outra versão.
+- **Como:** checagem de duração (até 3 min de diferença, considerando 24/25 fps) e tentativa de até 4 fontes dubladas. Detalhes em BUGS.md (B43).
+- **Precisa fazer:** nada. Recarregue a página. No Wicker, o Dub β deve avisar que não há dublagem compatível.
+- **Não testado:** no site com a troca automática de fonte (testado com testes automáticos e com as durações medidas no site).
+
 ## 29/11/2026 — Dub β em versões diferentes do filme (ex.: Wicker)
 
 - **O que mudou:** quando a versão dublada tem duração diferente (créditos maiores, cena a mais), o Dub β não acelera mais o áudio por engano — era isso que deixava o Wicker cada vez mais fora. Se o atraso mudar no meio do filme, ele percebe e reencontra sozinho (pulando o som da dublagem uma vez, sem repetir cena do filme). Ele também passa a preferir a fonte dublada com o mesmo nome do filme (no Wicker, as primeiras dubladas da lista eram de "A Ladra Solitária"). Se não achar encaixe em 1 minuto, o painel avisa que as versões parecem diferentes.

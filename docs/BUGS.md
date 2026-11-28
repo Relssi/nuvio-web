@@ -289,6 +289,14 @@ O script cobre automaticamente os itens marcados com **[auto]**. Os itens **[man
 - **Teste:** filme 150 s + dublagem com 8 s a mais aos 50 s (158 s): velocidade ficou 1 (antes chutaria 1,053), sincronizou antes do corte (erro 0,01 s), depois do corte achou 8,00 s e ficou estável (erro 0,08 s). `dubOffsetEstimator.test.mjs`, `dubAudioSync.test.mjs`, `playerDubAudio.test.mjs`.
 - **Limite:** depois de uma mudança de corte leva ~30 s para reencontrar o atraso.
 
+## B43 — Dub β no Wicker usava o áudio de outro filme [auto + manual]
+
+- **Sintoma:** mesmo depois do B42, a dublagem do Wicker continuava muito fora e o painel mostrava "não achei o atraso".
+- **Causa (medida no site):** as únicas fontes "dubladas" do Wicker na lista eram "A.Ladra.Solitária.2026…DUAL" (TorBox). Esse arquivo tem 5765 s (96 min); o Wicker tem 6350 s (106 min). Pela duração e pelo nome, é outro filme (provavelmente _The Isolate Thief_, 95 min) listado errado pelo addon. Nenhum atraso sincroniza isso. O B42 só preferia o mesmo nome; quando nenhuma fonte tinha o nome, usava a primeira mesmo assim.
+- **Correção (ideia do João: comparar a duração):** `dubDurationMatches` (`dubAudioSync.js`) aceita a dublagem só se a duração, nas velocidades conhecidas (25/24/23,976 fps), ficar a até 3 min (ou 3%) do filme; senão `start` recusa (`DubDurationMismatch`). `toggleDubAudio` tenta até 4 fontes dubladas em ordem (`findDubSources`) e marca as recusadas, que não aparecem mais (o botão some se não sobrar nenhuma). Se todas forem de outra versão, avisa "As fontes dubladas da lista são de outra versão do filme".
+- **Teste:** `dubAudioSync.test.mjs` (6350 × 5765 recusado; créditos +2 min e PAL aceitos), `playerDubAudio.test.mjs` (lista e fontes recusadas).
+- **Limite:** a duração só é conhecida depois de pedir a fonte ao TorBox (alguns segundos por fonte). A lista de fontes ainda mostra "A Ladra Solitária" no topo como dublada.
+
 ## Teste que já falhava
 
 - `js/ui/screens/home/homeHeroBackdropBitmap.test.mjs` (2 testes de troca suave da imagem do destaque) falha também na versão do GitHub antes destas mudanças. Não investigado.

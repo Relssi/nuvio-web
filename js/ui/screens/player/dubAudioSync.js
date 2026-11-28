@@ -86,6 +86,27 @@ export function durationRatio(mainDuration, dubDuration) {
   return known || 1;
 }
 
+// Is the dub the same movie at all (B43)? Its duration, at one of the
+// known frame-rate speeds, must be within 3 min (or 3%) of the movie. An
+// addon can list another film under this title (Wicker: "A Ladra Solitaria",
+// 96 min against 106 min), and no offset can sync that.
+export function dubDurationMatches(mainDuration, dubDuration) {
+  const main = Number(mainDuration);
+  const dub = Number(dubDuration);
+  if (!(main > 0) || !(dub > 0) || !Number.isFinite(main) || !Number.isFinite(dub)) return true;
+  const tolerance = Math.max(180, main * 0.03);
+  return [1, ...COMMON_SPEED_RATIOS].some((ratio) => Math.abs(dub / ratio - main) <= tolerance);
+}
+
+export class DubDurationMismatch extends Error {
+  constructor(mainDuration, dubDuration) {
+    super("dub duration mismatch");
+    this.code = "duration-mismatch";
+    this.mainDuration = mainDuration;
+    this.dubDuration = dubDuration;
+  }
+}
+
 function waitFor(target, eventName, timeoutMs) {
   return new Promise((resolve, reject) => {
     const timer = setTimeout(() => {
@@ -259,6 +280,9 @@ export class DubAudioSync {
     };
     report({ percent: 35, etaSeconds: null });
     await waitFor(dub, "loadedmetadata", 45000);
+    if (!dubDurationMatches(main.duration, dub.duration)) {
+      throw new DubDurationMismatch(main.duration, dub.duration);
+    }
     this.ratio = durationRatio(main.duration, dub.duration);
     this.durationGuess = this.ratio;
     this.userRate = Number(main.playbackRate || 1);

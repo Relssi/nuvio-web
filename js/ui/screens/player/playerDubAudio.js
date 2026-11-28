@@ -12,6 +12,22 @@ import {
 } from "../../../core/streams/streamOrdering.js";
 import { DubAudioSync, getDubAudioContext } from "./dubAudioSync.js";
 
+const MAX_DUB_TRIES = 4;
+
+// Sources already found to be another film or cut (B43), per stream key.
+function streamKey(stream = {}) {
+  const hash = String(stream.infoHash || stream.clientResolve?.infoHash || "").toLowerCase();
+  return hash
+    ? `${hash}:${stream.fileIdx ?? ""}`
+    : String(stream.id || stream.url || stream.title || "");
+}
+
+function rejectedSet(screen) {
+  if (!screen) return new Set();
+  if (!(screen.dubRejected instanceof Set)) screen.dubRejected = new Set();
+  return screen.dubRejected;
+}
+
 const PANEL_ID = "nuvio-dub-audio-panel";
 
 function releaseFamily(stream = {}) {
@@ -68,14 +84,25 @@ function titleWords(title = "") {
 // the same title as the movie playing first (an addon can list another film
 // or edition), then the same kind of release (WEB-DL with WEB-DL...), then
 // the usual dubbed-first order.
-export function findDubSource(current = null, candidates = [], { title = "" } = {}) {
+export function findDubSource(current = null, candidates = [], options = {}) {
+  return findDubSources(current, candidates, options)[0] || null;
+}
+
+// All usable dubbed sources, best first (B43: tried in order until one has
+// the same duration as the movie).
+export function findDubSources(
+  current = null,
+  candidates = [],
+  { title = "", rejected = null } = {}
+) {
   const dubbed = preferDubbedStreams(candidates, { enabled: true }).filter(
     (stream) =>
       dubRank(stream) <= 2 &&
       !sameStream(stream, current) &&
-      DirectDebridResolver.canResolveStream(stream)
+      DirectDebridResolver.canResolveStream(stream) &&
+      !(rejected && rejected.has(streamKey(stream)))
   );
-  if (!dubbed.length) return null;
+  if (!dubbed.length) return [];
   const words = titleWords(title);
   const family = releaseFamily(current);
   const score = (stream) => {
@@ -85,7 +112,8 @@ export function findDubSource(current = null, candidates = [], { title = "" } = 
   };
   return dubbed
     .map((stream, index) => ({ stream, index, score: score(stream) }))
-    .sort((left, right) => right.score - left.score || left.index - right.index)[0].stream;
+    .sort((left, right) => right.score - left.score || left.index - right.index)
+    .map((entry) => entry.stream);
 }
 
 export function canOfferDubAudio(screen) {
@@ -95,7 +123,8 @@ export function canOfferDubAudio(screen) {
   if (!current || dubRank(current) <= 1) return false;
   return Boolean(
     findDubSource(current, screen?.streamCandidates || [], {
-      title: screen?.params?.playerTitle || ""
+      title: screen?.params?.playerTitle || "",
+      rejected: rejectedSet(screen)
     })
   );
 }
@@ -247,10 +276,12 @@ export async function toggleDubAudio(screen, video) {
     return;
   }
   const current = screen?.getCurrentStreamCandidate?.() || null;
-  const source = findDubSource(current, screen?.streamCandidates || [], {
-    title: screen?.params?.playerTitle || ""
-  });
-  if (!source || !video) {
+  const rejected = rejectedSet(screen);
+  const sources = findDubSources(current, screen?.streamCandidates || [], {
+    title: screen?.params?.playerTitle || "",
+    rejected
+  }).slice(0, MAX_DUB_TRIES);
+  if (!sources.length || !video) {
     screen?.showAspectToast?.("Nenhuma fonte dublada na lista", 2200);
     return;
   }
@@ -260,8 +291,40 @@ export async function toggleDubAudio(screen, video) {
   const token = {};
   screen.dubAudioLoading = token;
   const stillLoading = () => screen.dubAudioLoading === token;
-  showPanel(screen, String(source.title || source.name || ""));
+  showPanel(screen, String(sources[0].title || sources[0].name || ""));
   const progress = (percent, eta) => document.getElementById(PANEL_ID)?.__progress?.(percent, eta);
+  screen.renderControlButtons?.();
+  let mismatches = 0;
+  for (const source of sources) {
+    if (!stillLoading()) return;
+    const outcome = await tryDubSource(screen, video, source, { stillLoading, progress });
+    if (outcome === "done" || outcome === "cancelled") return;
+    if (outcome === "mismatch") {
+      // Another film or cut (B43): never offer it again, try the next one.
+      rejected.add(streamKey(source));
+      mismatches += 1;
+      if (stillLoading()) {
+        screen.showAspectToast?.(
+          "Essa dublagem é de outra versão do filme. Tentando outra fonte…",
+          2200
+        );
+      }
+    }
+  }
+  if (!stillLoading()) return;
+  screen.dubAudioLoading = null;
+  removePanel();
+  screen.renderControlButtons?.();
+  screen.showAspectToast?.(
+    mismatches
+      ? "As fontes dubladas da lista são de outra versão do filme (duração diferente)"
+      : "Não deu para carregar a dublagem",
+    3200
+  );
+}
+
+// One dubbed source: "done", "cancelled", "mismatch" (another film or cut) or "failed".
+async function tryDubSource(screen, video, source, { stillLoading, progress }) {
   // Asking TorBox has no progress of its own: creep from 5% to 30%.
   let askPercent = 5;
   progress(askPercent, null);
@@ -269,21 +332,14 @@ export async function toggleDubAudio(screen, video) {
     askPercent = Math.min(30, askPercent + 2);
     progress(askPercent, null);
   }, 500);
-  screen.renderControlButtons?.();
   const resolved = await DirectDebridResolver.resolveDubbedAudioSource(source, {
     season: screen?.params?.season ?? null,
     episode: screen?.params?.episode ?? null
   })
     .catch(() => null)
     .finally(() => clearInterval(creep));
-  if (!stillLoading()) return;
-  if (resolved?.status !== "success") {
-    screen.dubAudioLoading = null;
-    removePanel();
-    screen.renderControlButtons?.();
-    screen.showAspectToast?.("Não deu para carregar a dublagem desta fonte", 2600);
-    return;
-  }
+  if (!stillLoading()) return "cancelled";
+  if (resolved?.status !== "success") return "failed";
   const sync = new DubAudioSync(video);
   screen.dubAudio = sync;
   try {
@@ -296,28 +352,22 @@ export async function toggleDubAudio(screen, video) {
     if (!stillLoading()) {
       sync.stop();
       if (screen.dubAudio === sync) screen.dubAudio = null;
-      return;
+      return "cancelled";
     }
     screen.dubAudioLoading = null;
-    const durationGap = Math.abs(
-      Number(info.dubDuration || 0) / Number(info.ratio || 1) - Number(info.mainDuration || 0)
-    );
     document.getElementById(PANEL_ID)?.__update?.(sync.autoStatus, sync.offset);
     screen.showAspectToast?.(
-      durationGap > 8
-        ? "Dublagem ligada (β). As versões têm durações diferentes: pode sair de sincronia"
-        : info.auto
-          ? "Dublagem ligada (β). Ajustando o atraso sozinho…"
-          : "Dublagem ligada (β). Ajuste o atraso se precisar",
+      info.auto
+        ? "Dublagem ligada (β). Ajustando o atraso sozinho…"
+        : "Dublagem ligada (β). Ajuste o atraso se precisar",
       3200
     );
     screen.renderControlButtons?.();
-  } catch (_) {
+    return "done";
+  } catch (error) {
     sync.stop();
-    screen.dubAudio = null;
-    screen.dubAudioLoading = null;
-    removePanel();
-    screen.renderControlButtons?.();
-    screen.showAspectToast?.("Não deu para tocar a dublagem", 2600);
+    if (screen.dubAudio === sync) screen.dubAudio = null;
+    if (!stillLoading()) return "cancelled";
+    return error?.code === "duration-mismatch" ? "mismatch" : "failed";
   }
 }

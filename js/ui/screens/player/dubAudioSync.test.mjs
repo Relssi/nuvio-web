@@ -51,3 +51,12 @@ test("a different cut (other duration) is not read as a speed change", () => {
   assert.equal(durationRatio(7200, 7200 + 240), 1); // 4 more minutes of credits
   assert.ok(Math.abs(durationRatio(7200, 7200 * (25 / 23.976)) - 25 / 23.976) < 1e-9);
 });
+
+test("dubDurationMatches: another film is refused, cuts and frame rates are kept (B43)", async () => {
+  const { dubDurationMatches } = await import("./dubAudioSync.js");
+  // Wicker (6350 s) against "A Ladra Solitaria" (5765 s): another film.
+  assert.equal(dubDurationMatches(6350, 5765), false);
+  assert.equal(dubDurationMatches(6350, 6350 + 120), true); // longer credits
+  assert.equal(dubDurationMatches(6350, 6350 * (23.976 / 25)), true); // PAL dub
+  assert.equal(dubDurationMatches(6350, NaN), true); // unknown: give it a try
+});

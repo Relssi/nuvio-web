@@ -59,6 +59,7 @@ export function createPlayerScreenMethods35() {
       }
       // A new source has its own sound: turn the borrowed dub off (B37).
       stopDubAudio(this);
+      this.dubRejected = null;
       if (!streamCandidate) {
         return;
       }
