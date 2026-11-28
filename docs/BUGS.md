@@ -275,6 +275,12 @@ O script cobre automaticamente os itens marcados com **[auto]**. Os itens **[man
 - **Correção (`dubAudioSync.js`):** (1) só liga o som do filme ao motor se ele estiver realmente rodando (`ensureRunning`); senão usa ajuste manual; no iPhone/iPad sempre manual. (2) Qualquer toque, clique ou tecla reativa o motor (`installContextKeeper`). (3) Vigia no `tick`: motor suspenso → tenta reativar e o painel mostra "toque na tela para continuar".
 - **Verificar:** checagem B40; no player, suspender o motor com a dublagem ligada: o filme seguiu (2 s em 2,5 s); depois de desligar, suspender + um toque: voltou a andar.
 
+## B41 — Dub β: progresso do carregamento [auto + manual]
+
+- **Pedido:** mostrar % e tempo restante enquanto a dublagem carrega.
+- **Como (`playerDubAudio.js`, `dubAudioSync.js`):** o painel aparece assim que se aperta "Dub β" e fica visível durante o carregamento: 5→30% enquanto o TorBox prepara a fonte (sem progresso próprio, sobe devagar), 35% ao abrir, 40% com os dados do vídeo, 40→100% conforme carrega os ~15 s da dublagem (`preloadProgress`). O tempo restante (" · ~6s") vem da velocidade de carregamento medida, limitado aos 25 s máximos. Apertar "Dub β" ou "Desligar" durante o carregamento cancela ("Dublagem cancelada").
+- **Verificar:** checagem B41 e `dubAudioSync.test.mjs`; no player, com o TorBox simulado (2 s): 5%→13%→35%→40%→100%→"sincronizando…"; cancelar no meio não deixa dublagem nem vídeo extra.
+
 ## Teste que já falhava
 
 - `js/ui/screens/home/homeHeroBackdropBitmap.test.mjs` (2 testes de troca suave da imagem do destaque) falha também na versão do GitHub antes destas mudanças. Não investigado.

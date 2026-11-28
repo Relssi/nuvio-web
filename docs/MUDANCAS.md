@@ -8,6 +8,13 @@ Detalhes de bugs (causa e correção) ficam em [`BUGS.md`](BUGS.md).
 
 ---
 
+## 29/11/2026 — Dub β mostra o progresso do carregamento
+
+- **O que mudou:** ao apertar "Dub β", o painel aparece na hora mostrando "carregando 45% · ~6s" (porcentagem e tempo restante). Dá para cancelar no meio apertando "Dub β" de novo ou "Desligar".
+- **Como:** o carregamento foi dividido em etapas (pedir ao TorBox, abrir, carregar ~15 s da dublagem), e o tempo restante vem da velocidade de carregamento. Detalhes em BUGS.md (B41).
+- **Precisa fazer:** nada. Recarregue a página.
+- **Não testado:** com filme real do TorBox (testado com TorBox simulado).
+
 ## 29/11/2026 — Dub β não trava mais o filme
 
 - **O que mudou:** em alguns navegadores e celulares, ligar a dublagem podia congelar o filme (e o play não destravava). Agora o site só usa o ajuste automático quando o navegador permite; se o áudio do navegador "dormir", qualquer toque na tela destrava, e o painel avisa "toque na tela para continuar".

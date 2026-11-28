@@ -614,6 +614,15 @@ async function main() {
     return true;
   });
 
+  await check("B41", "dub loading shows percent and time left, and can be cancelled", async () => {
+    const sync = await source("js/ui/screens/player/dubAudioSync.js");
+    if (!sync.includes("export function preloadProgress")) return "loading progress missing";
+    const panel = await source("js/ui/screens/player/playerDubAudio.js");
+    if (!panel.includes("panel.__progress")) return "panel no longer shows the loading progress";
+    if (!panel.includes("dubAudioLoading")) return "loading can no longer be cancelled";
+    return true;
+  });
+
   // ---- Unit tests --------------------------------------------------------
   const tests = await run(process.execPath, [
     "--test",

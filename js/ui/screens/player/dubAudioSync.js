@@ -57,6 +57,20 @@ export function planDubCorrection({
     : { action: "none" };
 }
 
+// Loading progress (B41): 40% when the stream is open, 100% when ~15 s of
+// the dub is loaded. Time left = what is missing / loading speed (seconds of
+// dub per second), never beyond the 25 s limit; null while unknown.
+export function preloadProgress({ ahead = 0, speed = null, msLeft = PRELOAD_TIMEOUT_MS } = {}) {
+  const share = Math.max(0, Math.min(1, Number(ahead) / PRELOAD_AHEAD_S));
+  const percent = Math.round(40 + 60 * share);
+  const missing = Math.max(0, PRELOAD_AHEAD_S - Number(ahead));
+  const limit = Math.max(0, Number(msLeft) / 1000);
+  let etaSeconds = null;
+  if (missing <= 0) etaSeconds = 0;
+  else if (Number(speed) > 0.05) etaSeconds = Math.ceil(Math.min(limit, missing / Number(speed)));
+  return { percent, etaSeconds };
+}
+
 export function durationRatio(mainDuration, dubDuration) {
   const main = Number(mainDuration);
   const dub = Number(dubDuration);
@@ -204,7 +218,7 @@ export class DubAudioSync {
     this.onStatus = null;
   }
 
-  async start(url, { onStatus = null } = {}) {
+  async start(url, { onStatus = null, onProgress = null } = {}) {
     this.stop();
     this.onStatus = onStatus;
     const main = this.main;
@@ -231,20 +245,43 @@ export class DubAudioSync {
     } else {
       throw new Error("hls unsupported");
     }
+    const report = (progress) => {
+      try {
+        onProgress?.(progress);
+      } catch (_) {
+        // The panel may be gone.
+      }
+    };
+    report({ percent: 35, etaSeconds: null });
     await waitFor(dub, "loadedmetadata", 45000);
     this.ratio = durationRatio(main.duration, dub.duration);
     this.durationGuess = this.ratio;
     this.userRate = Number(main.playbackRate || 1);
+    report({ percent: 40, etaSeconds: null });
 
-    // Load ~15 s of the dub while the original sound keeps playing.
+    // Load ~15 s of the dub while the original sound keeps playing, and tell
+    // the panel how far it got and about how long is left (B41).
     const deadline = Date.now() + PRELOAD_TIMEOUT_MS;
     dub.currentTime = Math.max(0, Number(main.currentTime || 0) * this.ratio + this.offset);
+    let lastAhead = 0;
+    let lastAt = Date.now();
+    let speed = null;
     while (Date.now() < deadline && bufferedAhead(dub) < PRELOAD_AHEAD_S) {
       await new Promise((resolve) => setTimeout(resolve, 300));
       const target = Number(main.currentTime || 0) * this.ratio + this.offset;
-      if (Math.abs(Number(dub.currentTime || 0) - target) > 3)
+      if (Math.abs(Number(dub.currentTime || 0) - target) > 3) {
         dub.currentTime = Math.max(0, target);
+        lastAhead = 0;
+      }
+      const ahead = bufferedAhead(dub);
+      const now = Date.now();
+      const sample = Math.max(0, ahead - lastAhead) / Math.max(0.05, (now - lastAt) / 1000);
+      speed = speed == null ? sample : speed * 0.7 + sample * 0.3;
+      lastAhead = ahead;
+      lastAt = now;
+      report(preloadProgress({ ahead, speed, msLeft: deadline - now }));
     }
+    report({ percent: 100, etaSeconds: 0 });
 
     this.mainWasMuted = main.muted;
     await this.setupGraph();

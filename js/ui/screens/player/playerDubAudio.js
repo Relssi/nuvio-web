@@ -54,14 +54,14 @@ export function findDubSource(current = null, candidates = []) {
 
 export function canOfferDubAudio(screen) {
   if (!Environment.isBrowser() || !prefersPortugueseAudio()) return false;
-  if (screen?.dubAudio?.active) return true;
+  if (screen?.dubAudio?.active || screen?.dubAudioLoading) return true;
   const current = screen?.getCurrentStreamCandidate?.() || null;
   if (!current || dubRank(current) <= 1) return false;
   return Boolean(findDubSource(current, screen?.streamCandidates || []));
 }
 
 export function isDubAudioActive(screen) {
-  return Boolean(screen?.dubAudio?.active);
+  return Boolean(screen?.dubAudio?.active || screen?.dubAudioLoading);
 }
 
 function removePanel() {
@@ -134,30 +134,47 @@ function showPanel(screen, sourceLabel) {
     "manual-only": "ajuste manual",
     tap: "toque na tela para continuar"
   };
+  const minus = makeButton("−0,5s", () => nudge(-0.5), "Atrasar a dublagem");
+  const plus = makeButton("+0,5s", () => nudge(0.5), "Adiantar a dublagem");
+  const setLoading = (loading) => {
+    panel.__loading = loading;
+    for (const node of [minus, offset, plus]) node.style.display = loading ? "none" : "";
+    panel.__sync?.();
+  };
   panel.__update = (state, value) => {
+    setLoading(false);
     status.textContent = STATUS_TEXT[state] || "";
     offset.textContent = formatOffset(Number(value) || 0);
     autoButton.style.display = state === "manual" ? "" : "none";
   };
+  // Loading progress (B41): "carregando 45% · ~6s".
+  panel.__progress = (percent, etaSeconds) => {
+    setLoading(true);
+    autoButton.style.display = "none";
+    const eta = Number.isFinite(etaSeconds) && etaSeconds > 0 ? ` · ~${etaSeconds}s` : "";
+    status.textContent = `carregando ${Math.max(0, Math.min(100, Math.round(percent)))}%${eta}`;
+  };
   panel.append(
     label,
     status,
-    makeButton("−0,5s", () => nudge(-0.5), "Atrasar a dublagem"),
+    minus,
     offset,
-    makeButton("+0,5s", () => nudge(0.5), "Adiantar a dublagem"),
+    plus,
     autoButton,
     makeButton("Desligar", () => stopDubAudio(screen, { notify: true }), "Voltar ao áudio original")
   );
-  panel.__update(screen.dubAudio?.autoStatus || "loading", screen.dubAudio?.offset ?? 0);
+  panel.__progress(0, null);
   for (const type of ["click", "pointerdown", "mousedown", "pointermove", "mousemove"]) {
     panel.addEventListener(type, (event) => event.stopPropagation());
   }
   document.body.appendChild(panel);
-  // Show the panel only together with the player controls.
+  // Show the panel together with the player controls (always while loading).
   const root = document.getElementById("playerUiRoot");
   const sync = () => {
-    panel.style.display = !root || root.classList.contains("controls-visible") ? "flex" : "none";
+    panel.style.display =
+      panel.__loading || !root || root.classList.contains("controls-visible") ? "flex" : "none";
   };
+  panel.__sync = sync;
   sync();
   if (root && typeof MutationObserver === "function") {
     const observer = new MutationObserver(sync);
@@ -170,6 +187,11 @@ export function stopDubAudio(screen, { notify = false } = {}) {
   const panel = document.getElementById(PANEL_ID);
   panel?.__observer?.disconnect?.();
   removePanel();
+  if (screen?.dubAudioLoading) {
+    // "Desligar" while loading cancels it (B41).
+    screen.dubAudioLoading = null;
+    if (notify) screen.showAspectToast?.("Dublagem cancelada", 1800);
+  }
   if (screen?.dubAudio) {
     screen.dubAudio.stop();
     screen.dubAudio = null;
@@ -179,7 +201,7 @@ export function stopDubAudio(screen, { notify = false } = {}) {
 }
 
 export async function toggleDubAudio(screen, video) {
-  if (screen?.dubAudio?.active) {
+  if (screen?.dubAudio?.active || screen?.dubAudioLoading) {
     stopDubAudio(screen, { notify: true });
     return;
   }
@@ -191,12 +213,31 @@ export async function toggleDubAudio(screen, video) {
   }
   // The tap on "Dub β" is what lets the browser start the audio engine.
   void getDubAudioContext()?.resume?.();
-  screen.showAspectToast?.("Carregando a dublagem…", 4000);
+  // The panel shows up at once with the loading progress (B41).
+  const token = {};
+  screen.dubAudioLoading = token;
+  const stillLoading = () => screen.dubAudioLoading === token;
+  showPanel(screen, String(source.title || source.name || ""));
+  const progress = (percent, eta) => document.getElementById(PANEL_ID)?.__progress?.(percent, eta);
+  // Asking TorBox has no progress of its own: creep from 5% to 30%.
+  let askPercent = 5;
+  progress(askPercent, null);
+  const creep = setInterval(() => {
+    askPercent = Math.min(30, askPercent + 2);
+    progress(askPercent, null);
+  }, 500);
+  screen.renderControlButtons?.();
   const resolved = await DirectDebridResolver.resolveDubbedAudioSource(source, {
     season: screen?.params?.season ?? null,
     episode: screen?.params?.episode ?? null
-  }).catch(() => null);
+  })
+    .catch(() => null)
+    .finally(() => clearInterval(creep));
+  if (!stillLoading()) return;
   if (resolved?.status !== "success") {
+    screen.dubAudioLoading = null;
+    removePanel();
+    screen.renderControlButtons?.();
     screen.showAspectToast?.("Não deu para carregar a dublagem desta fonte", 2600);
     return;
   }
@@ -204,12 +245,21 @@ export async function toggleDubAudio(screen, video) {
   screen.dubAudio = sync;
   try {
     const info = await sync.start(resolved.url, {
-      onStatus: (state, value) => document.getElementById(PANEL_ID)?.__update?.(state, value)
+      onStatus: (state, value) => document.getElementById(PANEL_ID)?.__update?.(state, value),
+      onProgress: ({ percent, etaSeconds }) => {
+        if (stillLoading()) progress(percent, etaSeconds);
+      }
     });
+    if (!stillLoading()) {
+      sync.stop();
+      if (screen.dubAudio === sync) screen.dubAudio = null;
+      return;
+    }
+    screen.dubAudioLoading = null;
     const durationGap = Math.abs(
       Number(info.dubDuration || 0) / Number(info.ratio || 1) - Number(info.mainDuration || 0)
     );
-    showPanel(screen, String(source.title || source.name || ""));
+    document.getElementById(PANEL_ID)?.__update?.(sync.autoStatus, sync.offset);
     screen.showAspectToast?.(
       durationGap > 8
         ? "Dublagem ligada (β). As versões têm durações diferentes: pode sair de sincronia"
@@ -222,6 +272,9 @@ export async function toggleDubAudio(screen, video) {
   } catch (_) {
     sync.stop();
     screen.dubAudio = null;
+    screen.dubAudioLoading = null;
+    removePanel();
+    screen.renderControlButtons?.();
     screen.showAspectToast?.("Não deu para tocar a dublagem", 2600);
   }
 }

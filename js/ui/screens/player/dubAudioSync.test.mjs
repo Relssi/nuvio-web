@@ -32,3 +32,16 @@ test("planDubCorrection moves the picture gently and never the sound", () => {
   // Far off (a stall): jump.
   assert.deepEqual(planDubCorrection({ drift: 1.4 }), { action: "jump" });
 });
+
+test("preloadProgress: percent from loaded seconds, time left from loading speed", async () => {
+  const { preloadProgress } = await import("./dubAudioSync.js");
+  assert.deepEqual(preloadProgress({ ahead: 0, speed: null }), { percent: 40, etaSeconds: null });
+  // 6 of 15 s loaded at 1.5 s of dub per second: 64%, ~6 s left.
+  assert.deepEqual(preloadProgress({ ahead: 6, speed: 1.5, msLeft: 20000 }), {
+    percent: 64,
+    etaSeconds: 6
+  });
+  // Never more than the time limit left.
+  assert.equal(preloadProgress({ ahead: 1, speed: 0.1, msLeft: 4000 }).etaSeconds, 4);
+  assert.deepEqual(preloadProgress({ ahead: 20, speed: 2 }), { percent: 100, etaSeconds: 0 });
+});
