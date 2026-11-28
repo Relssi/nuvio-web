@@ -6,6 +6,7 @@ import { findSourceRefreshCandidate, hasLikelyExpiringPlaybackCredentials } from
 import { isSourceFallbackActive, nextSourceFallbackCandidate, sourceFallbackKey } from "../../../core/player/sourceFallback.js";
 /* eslint-disable no-unused-vars */
 import * as internals from "./playerScreenContext.js";
+import { stopDubAudio } from "./playerDubAudio.js";
 
 const EXPIRED_LINK_REFRESH_TIMEOUT_MS = 15000;
 // Android polls the joined source search 30 times, 500 ms apart.
@@ -56,6 +57,8 @@ export function createPlayerScreenMethods35() {
       if (!this.isActiveMountToken(mountToken)) {
         return;
       }
+      // A new source has its own sound: turn the borrowed dub off (B37).
+      stopDubAudio(this);
       if (!streamCandidate) {
         return;
       }

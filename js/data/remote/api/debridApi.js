@@ -186,13 +186,21 @@ export const DebridApi = {
   // TorBox web streaming (Pro plan): converts the file to an HLS playlist that
   // every browser and iPhone can play (Dolby/DTS audio included). Subtitle and
   // resolution stay at their defaults (none / original).
-  async torboxCreateStream(apiKey, { id, fileId, type = "torrent", audioIndex = 0 } = {}) {
+  async torboxCreateStream(
+    apiKey,
+    { id, fileId, type = "torrent", audioIndex = 0, resolutionIndex = null } = {}
+  ) {
     const query = new URLSearchParams({
       id: String(id),
       file_id: String(fileId),
       type: String(type),
       chosen_audio_index: String(audioIndex)
     });
+    // 0 = 144p ... 7 = 2160p; left out = original resolution (B37 uses 0 to
+    // fetch a dubbed source mostly for its audio).
+    if (Number.isInteger(resolutionIndex) && resolutionIndex >= 0) {
+      query.set("chosen_resolution_index", String(resolutionIndex));
+    }
     return requestJson(TORBOX_BASE_URL, `v1/api/stream/createstream?${query.toString()}`, {
       headers: authHeaders(apiKey)
     });

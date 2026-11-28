@@ -579,9 +579,25 @@ async function main() {
     return true;
   });
 
+  await check("B37", "beta: dubbed audio from another source plays in sync", async () => {
+    const controls = await source(
+      "js/ui/screens/player/playerScreenMethods-28-unbind-video-events.js"
+    );
+    if (!controls.includes('action: "dubAudio"')) return "Dub β button missing";
+    const actions = await source("js/ui/screens/player/playerScreenMethods-68-load-subtitles.js");
+    if (!actions.includes("toggleDubAudio(")) return "Dub β action missing";
+    const cleanup = await source("js/ui/screens/player/playerScreenMethods-73-cleanup.js");
+    if (!cleanup.includes("stopDubAudio(this)"))
+      return "dub audio not stopped when leaving the player";
+    const resolver = await source("js/core/debrid/directDebridResolver.js");
+    if (!resolver.includes("resolveDubbedAudioSource(")) return "dub source resolve missing";
+    return true;
+  });
+
   // ---- Unit tests --------------------------------------------------------
   const tests = await run(process.execPath, [
     "--test",
+    "js/ui/screens/player/dubAudioSync.test.mjs",
     "js/core/streams/dubbedStreamOrdering.test.mjs",
     "js/core/debrid/torboxAudioChoice.test.mjs",
     "js/core/debrid/torboxWebStream.test.mjs",

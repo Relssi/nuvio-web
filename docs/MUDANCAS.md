@@ -8,6 +8,13 @@ Detalhes de bugs (causa e correção) ficam em [`BUGS.md`](BUGS.md).
 
 ---
 
+## 29/11/2026 — Beta: áudio dublado de outra fonte
+
+- **O que mudou:** no navegador, quando o filme tocando não é dublado e existe uma fonte dublada na lista, aparece o botão **"Dub β"** no player. Ele toca o som dublado daquela outra fonte junto com a imagem da fonte boa, acertando o tempo sozinho (inclusive a diferença de velocidade comum das dublagens). Um painel pequeno no canto deixa adiantar/atrasar 0,5 s e desligar.
+- **Como:** a fonte dublada é pedida ao TorBox em 144p (pouca internet) e só o áudio dela é usado. Detalhes e limites em BUGS.md (B37).
+- **Precisa fazer:** nada. É beta: funciona melhor quando as duas fontes são do mesmo tipo (WEB-DL com WEB-DL). Se ficar fora de sincronia, use os botões de atraso ou desligue.
+- **Não testado:** com filme real do TorBox (testado com vídeos de teste).
+
 ## 29/11/2026 — Fontes: português primeiro, depois a maior resolução
 
 - **O que mudou:** nas listas de fontes, primeiro vêm as dubladas e, dentro delas, a maior resolução primeiro (4K, depois 1080p, 720p...). O topo da lista é a fonte em português de melhor qualidade.

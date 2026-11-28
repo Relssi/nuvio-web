@@ -243,6 +243,13 @@ O script cobre automaticamente os itens marcados com **[auto]**. Os itens **[man
 - **Correção:** `preferDubbedStreams` (`streamOrdering.js`) ordena por grupo de idioma (B35), depois por `streamResolutionScore` (2160/4K/UHD, 1440/QHD, 1080/FHD, 720/HD, 576, 480/SD; sem resolução = 0, por último), depois pela ordem anterior (tamanho).
 - **Verificar:** checagem B36 e `dubbedStreamOrdering.test.mjs` (dublado 4K → 1080p → 720p → sem resolução → inglês).
 
+## B37 — Beta: imagem de uma fonte com o áudio dublado de outra [auto + manual]
+
+- **Pedido:** tocar a fonte de melhor qualidade (mesmo sem dublagem) com o áudio dublado de outra fonte.
+- **Como funciona:** botão "Dub β" no player (só navegador, quando a fonte tocando não é dublada e há fonte dublada na lista). `findDubSource` (`playerDubAudio.js`) escolhe a fonte dublada, preferindo o mesmo tipo de lançamento (WEB-DL com WEB-DL). `DirectDebridResolver.resolveDubbedAudioSource` pede ao TorBox essa fonte em 144p (`chosen_resolution_index=0`) com a faixa PT-BR. `DubAudioSync` (`dubAudioSync.js`) toca o som dela num segundo `<video>` escondido, com o vídeo principal mudo, e a cada 250 ms acerta: tempo_dub = tempo_principal × razão + atraso. A razão corrige 25 × 23,976 fps (durações 0,4%–6% diferentes); o atraso é ajustado no painel (−0,5s / +0,5s, Desligar), que aparece junto com os controles. Diferenças pequenas são corrigidas mudando a velocidade; grandes (pulo, travada), pulando.
+- **Teste:** filme de teste 23,976 fps + dublagem HLS 25 fps: razão 0,959 detectada, diferença caiu de 0,17 s para ~0,005 s em 8 s; pausa/volta, atraso +1 s e desligar funcionaram. `dubAudioSync.test.mjs`.
+- **Limites (beta):** só funciona bem quando as duas versões têm o mesmo corte (ex.: WEB-DL do mesmo serviço); versões com cenas diferentes saem de sincronia. Gasta a internet de duas transmissões (a dublada em 144p). Pode não funcionar no iPhone (dois áudios ao mesmo tempo). O botão de mudo age sobre a dublagem enquanto ela está ligada. Não testado com TorBox de verdade (qualidade do áudio em 144p ainda a medir).
+
 ## Teste que já falhava
 
 - `js/ui/screens/home/homeHeroBackdropBitmap.test.mjs` (2 testes de troca suave da imagem do destaque) falha também na versão do GitHub antes destas mudanças. Não investigado.

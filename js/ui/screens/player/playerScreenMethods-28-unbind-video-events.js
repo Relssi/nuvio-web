@@ -3,6 +3,7 @@ import * as internals from "./playerScreenContext.js";
 
 import { PartyRepository } from "../../../core/party/partyRepository.js";
 import { Environment } from "../../../platform/environment.js";
+import { canOfferDubAudio, isDubAudioActive } from "./playerDubAudio.js";
 
 export function createPlayerScreenMethods28() {
   const { PlayerController, t, clamp, escapeHtml } = internals;
@@ -119,6 +120,16 @@ export function createPlayerScreenMethods28() {
           : '<svg class="player-control-svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm12 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>',
         title: t("player_more_actions_title", {}, "More Actions")
       });
+
+      // Dubbed audio from another source (B37, beta).
+      if (!this.moreActionsVisible && canOfferDubAudio(this)) {
+        base.push({
+          action: "dubAudio",
+          label: isDubAudioActive(this) ? "Dub β ✓" : "Dub β",
+          className: isDubAudioActive(this) ? "is-dub-audio-active" : "",
+          title: isDubAudioActive(this) ? "Desligar o áudio dublado" : "Usar o áudio dublado de outra fonte (beta)"
+        });
+      }
 
       if (Environment.isBrowser() && !this.moreActionsVisible) {
         base.push({

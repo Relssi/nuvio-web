@@ -1,6 +1,7 @@
 /* eslint-disable no-unused-vars */
 import * as internals from "./playerScreenContext.js";
 import { toggleBrowserFullscreen } from "./browserFullscreen.js";
+import { toggleDubAudio } from "./playerDubAudio.js";
 
 export function createPlayerScreenMethods68() {
   const {
@@ -229,7 +230,18 @@ export function createPlayerScreenMethods68() {
         return;
       }
 
+      if (action === "dubAudio") {
+        void toggleDubAudio(this, PlayerController?.video || null);
+        return;
+      }
+
       if (action === "muteToggle") {
+        // While the dubbed sound plays (B37), mute acts on it.
+        if (this.dubAudio?.active) {
+          this.dubAudio.toggleMute();
+          this.renderControlButtons();
+          return;
+        }
         const video = PlayerController?.video || null;
         if (video) {
           if (video.muted || Number(video.volume ?? 1) === 0) {

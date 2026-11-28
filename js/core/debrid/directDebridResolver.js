@@ -766,6 +766,53 @@ export const DirectDebridResolver = {
     return { status: "checked", hasPreferred: index >= 0 };
   },
 
+  // Dubbed audio from another source (B37, beta): the dubbed source is
+  // converted by TorBox at the lowest resolution (144p, little data) with its
+  // Portuguese track; the player plays only its sound next to the better video.
+  async resolveDubbedAudioSource(stream = {}, { season = null, episode = null } = {}) {
+    const settings = DebridSettingsStore.get();
+    if (!settings.enabled) return failure("disabled");
+    const resolve = getResolve(stream, season, episode, settings);
+    if (!resolve || resolve.service !== DEBRID_PROVIDER_IDS.TORBOX) return failure("unavailable");
+    const apiKey = DebridProviders.apiKeyFor(settings, DEBRID_PROVIDER_IDS.TORBOX);
+    const magnet = buildMagnetUri(resolve);
+    if (!apiKey || !magnet) return failure("missing_api_key");
+    const create = await DebridApi.torboxCreateTorrent(apiKey, magnet);
+    const torrentId = create.data?.data?.torrent_id ?? create.data?.data?.id;
+    if (!create.ok || !torrentId) return failure(create.status === 409 ? "not_cached" : "error");
+    const torrent = await DebridApi.torboxGetTorrent(apiKey, torrentId);
+    const files = torrent.data?.data?.files || [];
+    const file = Array.isArray(files)
+      ? selectDebridFile(files, resolve, { season, episode, kind: "torbox" })
+      : null;
+    if (!torrent.ok || !file) return failure("stale");
+    const first = await DebridApi.torboxCreateStream(apiKey, {
+      id: torrentId,
+      fileId: file.id,
+      resolutionIndex: 0
+    });
+    const audios = first?.data?.data?.metadata?.audios;
+    if (!first?.ok) return failure("error");
+    const targets = preferredAudioTargets(PlayerSettingsStore.get(), browserLocale());
+    const decision = decideTorboxAudio(Array.isArray(audios) ? audios : [], targets, {
+      preferSecondaryForDual: true
+    });
+    let url = typeof first?.data?.data?.hls_url === "string" ? first.data.data.hls_url.trim() : "";
+    if (decision.index > 0) {
+      const chosen = await DebridApi.torboxCreateStream(apiKey, {
+        id: torrentId,
+        fileId: file.id,
+        audioIndex: decision.index,
+        resolutionIndex: 0
+      });
+      const chosenUrl =
+        typeof chosen?.data?.data?.hls_url === "string" ? chosen.data.data.hls_url.trim() : "";
+      if (chosen?.ok && chosenUrl) url = chosenUrl;
+    }
+    if (!url) return failure("error");
+    return { status: "success", url, mimeType: HLS_MIME_TYPE, confident: decision.confident };
+  },
+
   async switchTorboxAudioTrack(torboxStreamMeta = null, audioIndex = 0) {
     const torrentId = torboxStreamMeta?.torrentId;
     const fileId = torboxStreamMeta?.fileId;
