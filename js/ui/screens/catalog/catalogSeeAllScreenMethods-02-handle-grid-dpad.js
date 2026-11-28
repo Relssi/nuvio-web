@@ -1,6 +1,7 @@
 import { customPosterForItem, posterFallbackAttributes } from "../../../core/poster/customPoster.js";
 /* eslint-disable no-unused-vars */
 import * as internals from "./catalogSeeAllScreen.js";
+import { renderRtPosterBadge } from "../../../core/rt/rtScores.js";
 
 export function createCatalogSeeAllScreenMethods02() {
   const {
@@ -257,7 +258,7 @@ export function createCatalogSeeAllScreenMethods02() {
                       ? `<img class="seeall-card-poster-image"${posterFallbackAttributes(item)} src="${escapeHtml(item.poster)}" alt="" loading="lazy" decoding="async" />`
                       : `<div class="seeall-card-poster placeholder"></div>`
                   }
-                  ${isTitleItemWatched(item, this.watchedTitleIds) ? renderTitleWatchedBadge() : ""}
+                  ${isTitleItemWatched(item, this.watchedTitleIds) ? renderTitleWatchedBadge() : ""}${renderRtPosterBadge(item)}
                 </div>
                 ${
                   this.layoutPrefs?.posterLabelsEnabled !== false

@@ -1,5 +1,6 @@
 import { hasWatchProgressStarted, isWatchProgressCompleted } from "../../../domain/model/watchProgress.js";
 import { detailShuffleSettings } from "./detailEpisodeShuffle.js";
+import { renderRtDetailBadges } from "../../../core/rt/rtScores.js";
 /* eslint-disable no-unused-vars */
 import * as internals from "./metaDetailsScreenContext.js";
 
@@ -325,7 +326,8 @@ export function createMetaDetailsScreenMethods07() {
         yearText ? `<span>${escapeHtml(yearText)}</span>` : "",
         imdbText && showStandardDetailRatings(LayoutPreferences.get().homeImdbRatingsVisibility, hasExternalRatings)
           ? renderImdbBadge(imdbText)
-          : ""
+          : "",
+        renderRtDetailBadges(meta)
       ].filter(Boolean);
       const secondaryParts = [];
       if (ageRating && status) {

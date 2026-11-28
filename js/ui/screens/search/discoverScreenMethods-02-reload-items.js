@@ -1,10 +1,65 @@
 /* eslint-disable no-unused-vars */
 import * as internals from "./discoverScreen.js";
+import {
+  RT_FILTER_DEFAULTS,
+  RT_FILTER_OPTIONS,
+  RT_FILTER_TITLES,
+  countActiveRtFilters,
+  hasRtScoreFilter,
+  normalizeRtFilters,
+  rtFilterLabel
+} from "../../../core/rt/rtFilters.js";
+import { isRtScoresLoaded, loadRtScores } from "../../../core/rt/rtScores.js";
 
 export function createDiscoverScreenMethods02() {
-  const { Router, ScreenUtils, catalogRepository, focusWithoutAutoScroll, formatAddonTypeLabel, formatGenreLabel, t } = internals;
+  const { Router, ScreenUtils, catalogRepository, focusWithoutAutoScroll, formatAddonTypeLabel, formatGenreLabel, t, RT_PICKER_KEYS } =
+    internals;
+  // With a score filter on, keep fetching catalog pages until enough titles
+  // pass (or this many pages were read for the current filter set).
+  const RT_FILL_MIN_VISIBLE = 24;
+  const RT_FILL_MAX_PAGES = 8;
 
   return {
+    getRtFilters() {
+      this.rtFilters = normalizeRtFilters(this.rtFilters || RT_FILTER_DEFAULTS);
+      return this.rtFilters;
+    },
+    getActiveRtFilterCount() {
+      return countActiveRtFilters(this.getRtFilters());
+    },
+    getRtPickerTitle(kind) {
+      return RT_FILTER_TITLES[RT_PICKER_KEYS[kind]] || "";
+    },
+    getRtPickerValueLabel(kind) {
+      const key = RT_PICKER_KEYS[kind];
+      return rtFilterLabel(key, this.getRtFilters()[key]);
+    },
+    clearRtFilters() {
+      this.rtFilters = { ...RT_FILTER_DEFAULTS };
+      this.openPicker = null;
+      this.lastFocusedAction = "discoverFilterRtCritics";
+      this.onRtFiltersChanged();
+    },
+    onRtFiltersChanged() {
+      this.rtFillPages = 0;
+      this.lastFocusedKey = null;
+      this.lastFocusedDiscoverItemId = "";
+      this.savedScrollTop = 0;
+      if (!isRtScoresLoaded()) {
+        void loadRtScores().then(() => this.requestRender());
+      }
+      this.visibleItems = this.getVisibleDiscoverItems();
+      this.requestRender();
+      this.maybeFillRtFilteredItems();
+    },
+    maybeFillRtFilteredItems() {
+      if (!hasRtScoreFilter(this.getRtFilters()) || this.loading || !this.hasMore) return;
+      if ((this.rtFillPages || 0) >= RT_FILL_MAX_PAGES) return;
+      const visible = Array.isArray(this.visibleItems) ? this.visibleItems.length : 0;
+      if (visible >= RT_FILL_MIN_VISIBLE) return;
+      this.rtFillPages = (this.rtFillPages || 0) + 1;
+      void this.loadNextPage({ restoreFocusToGrid: false, preserveViewport: true, suppressLoadingRender: true });
+    },
     async reloadItems({ suppressLoadingRender = false, preserveExistingItems = false, partialRender = false } = {}) {
       const selectedCatalog = this.getSelectedCatalog();
       // Like Android cancelling discoverJob on reset: a filter change must
@@ -152,12 +207,17 @@ export function createDiscoverScreenMethods02() {
       } else {
         this.requestRender();
       }
+      if (hasRtScoreFilter(this.getRtFilters())) {
+        this.visibleItems = this.getVisibleDiscoverItems();
+        this.maybeFillRtFilteredItems();
+      }
     },
     shouldAutoLoadMore(index) {
       if (this.loading || !this.hasMore) {
         return false;
       }
-      const remaining = this.items.length - 1 - Number(index || 0);
+      const list = Array.isArray(this.visibleItems) ? this.visibleItems : this.items;
+      const remaining = list.length - 1 - Number(index || 0);
       return remaining <= 10;
     },
     shouldAutoLoadMoreFromScroll(scroller) {
@@ -186,15 +246,28 @@ export function createDiscoverScreenMethods02() {
           label: formatGenreLabel(value)
         }));
       }
+      const rtKey = RT_PICKER_KEYS[kind];
+      if (rtKey) {
+        return RT_FILTER_OPTIONS[rtKey].map((value) => ({ value, label: rtFilterLabel(rtKey, value) }));
+      }
       return [];
     },
     getCurrentPickerValue(kind) {
       if (kind === "type") return this.selectedType;
       if (kind === "catalog") return this.selectedCatalogKey;
       if (kind === "genre") return this.selectedGenre || "Default";
+      if (RT_PICKER_KEYS[kind]) return this.getRtFilters()[RT_PICKER_KEYS[kind]];
       return "";
     },
     setPickerValue(kind, value) {
+      const rtKey = RT_PICKER_KEYS[kind];
+      if (rtKey) {
+        const current = this.getRtFilters();
+        if (current[rtKey] === value) return;
+        this.rtFilters = normalizeRtFilters({ ...current, [rtKey]: value });
+        this.onRtFiltersChanged();
+        return;
+      }
       if (kind === "type") {
         if (!value || value === this.selectedType) return;
         this.selectedType = value;
@@ -234,6 +307,9 @@ export function createDiscoverScreenMethods02() {
         catalog: this.getSelectedCatalog()?.catalogName || t("discover_select_catalog", {}, "Select"),
         genre: formatGenreLabel(this.selectedGenre || "Default")
       };
+      Object.keys(RT_PICKER_KEYS).forEach((kind) => {
+        valueByKind[kind] = this.getRtPickerValueLabel(kind);
+      });
       Object.entries(valueByKind).forEach(([kind, value]) => {
         const node = this.container?.querySelector(`.library-picker-anchor[data-picker="${kind}"] .library-picker-value`);
         if (node instanceof HTMLElement) {

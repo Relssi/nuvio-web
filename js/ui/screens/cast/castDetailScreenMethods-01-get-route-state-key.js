@@ -14,6 +14,7 @@ import { LayoutPreferences } from "../../../data/local/layoutPreferences.js";
 import { watchedItemsRepository } from "../../../data/repository/watchedItemsRepository.js";
 import { watchedTitleStateRepository } from "../../../data/repository/watchedTitleStateRepository.js";
 import { buildWatchedTitleIdSet, isTitleItemWatched, renderTitleWatchedBadge } from "../../components/watchedTitleBadge.js";
+import { renderRtPosterBadge } from "../../../core/rt/rtScores.js";
 
 const CJK_LANGUAGE_PREFIXES = ["ja", "ko", "zh"];
 const FILTER_LABELS = {
@@ -391,7 +392,7 @@ export function createCastDetailScreenMethods01() {
                   ? `<img class="cast-film-card-image" ${posterFallbackAttributes(item, landscape)} src="${escapeAttribute(image)}" alt="" loading="lazy" decoding="async" onerror="this.hidden=true" />`
                   : ""
               }
-              ${watched ? renderTitleWatchedBadge() : ""}
+              ${watched ? renderTitleWatchedBadge() : ""}${renderRtPosterBadge(item)}
             </div>
             <div class="cast-film-card-title" dir="auto">${escapeHtml(item.name)}</div>
           </article>

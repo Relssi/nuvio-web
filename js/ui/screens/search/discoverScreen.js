@@ -89,6 +89,9 @@ export {
   groupNodesByOffsetTop,
   extractReleaseYear,
   actionForPickerKind,
+  pickerKindFromAction,
+  DISCOVER_PICKER_KINDS,
+  RT_PICKER_KEYS,
   isKey,
   isUpKey,
   isDownKey,
@@ -172,11 +175,23 @@ function extractReleaseYear(item = {}) {
   return "";
 }
 
+// Rotten Tomatoes pickers (CineRotten scores) follow the addon pickers.
+const RT_PICKER_KEYS = {
+  rtCritics: "minCritics",
+  rtReviews: "minReviews",
+  rtAudience: "minAudience",
+  rtDecade: "decade",
+  rtSort: "sort"
+};
+const DISCOVER_PICKER_KINDS = ["type", "catalog", "genre", ...Object.keys(RT_PICKER_KEYS)];
+
 function actionForPickerKind(kind) {
-  if (kind === "type") return "discoverFilterType";
-  if (kind === "catalog") return "discoverFilterCatalog";
-  if (kind === "genre") return "discoverFilterGenre";
-  return "discoverFilterType";
+  if (!DISCOVER_PICKER_KINDS.includes(kind)) return "discoverFilterType";
+  return `discoverFilter${kind.charAt(0).toUpperCase()}${kind.slice(1)}`;
+}
+
+function pickerKindFromAction(action) {
+  return DISCOVER_PICKER_KINDS.find((kind) => actionForPickerKind(kind) === action) || null;
 }
 
 function isKey(event, code, aliases = []) {

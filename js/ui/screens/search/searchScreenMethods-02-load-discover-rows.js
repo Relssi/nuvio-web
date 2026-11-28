@@ -1,6 +1,7 @@
 import { customPosterForItem, posterFallbackAttributes } from "../../../core/poster/customPoster.js";
 /* eslint-disable no-unused-vars */
 import * as internals from "./searchScreen.js";
+import { renderRtPosterBadge } from "../../../core/rt/rtScores.js";
 
 export function createSearchScreenMethods02() {
   const {
@@ -291,7 +292,7 @@ export function createSearchScreenMethods02() {
                          data-row-key="${escapeHtml(rowKey)}">
                   <div class="search-result-poster-wrap">
                     ${item.poster ? `<img class="search-result-poster" ${posterFallbackAttributes(item)} src="${escapeHtml(item.poster)}" alt="" loading="lazy" decoding="async" />` : `<div class="search-result-poster placeholder"></div>`}
-                    ${isTitleItemWatched(item, this.watchedTitleIds) ? renderTitleWatchedBadge() : ""}
+                    ${isTitleItemWatched(item, this.watchedTitleIds) ? renderTitleWatchedBadge() : ""}${renderRtPosterBadge(item)}
                   </div>
                   <div class="search-result-name" dir="${contentTextDirection(item.name || "Untitled")}">${escapeHtml(item.name || "Untitled")}</div>
                   <div class="search-result-date">${escapeHtml(formatReleaseYear(item))}</div>

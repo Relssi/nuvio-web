@@ -18,7 +18,10 @@ export function createDiscoverScreenMethods05() {
     formatGenreLabel,
     t,
     escapeHtml,
-    scrollNodeIntoContainerView
+    scrollNodeIntoContainerView,
+    actionForPickerKind,
+    pickerKindFromAction,
+    RT_PICKER_KEYS
   } = internals;
 
   return {
@@ -107,10 +110,7 @@ export function createDiscoverScreenMethods05() {
       return this.focusSidebarNode();
     },
     getKindFromFilterAction(action) {
-      if (action === "discoverFilterType") return "type";
-      if (action === "discoverFilterCatalog") return "catalog";
-      if (action === "discoverFilterGenre") return "genre";
-      return null;
+      return pickerKindFromAction(action);
     },
     renderFilterPicker(kind, title, value) {
       const isOpen = this.openPicker === kind;
@@ -121,7 +121,7 @@ export function createDiscoverScreenMethods05() {
         0,
         options.findIndex((option) => option.value === currentValue)
       );
-      const anchorAction = kind === "type" ? "discoverFilterType" : kind === "catalog" ? "discoverFilterCatalog" : "discoverFilterGenre";
+      const anchorAction = actionForPickerKind(kind);
       return renderContentFilterPicker({
         variant: "discover",
         picker: kind,
@@ -138,16 +138,24 @@ export function createDiscoverScreenMethods05() {
       });
     },
     renderPickerRowMarkup() {
-      const selectedCatalog = this.getSelectedCatalog();
-      return [
-        this.renderFilterPicker("type", t("discover_filter_type", {}, "Type"), formatAddonTypeLabel(this.selectedType)),
-        this.renderFilterPicker(
-          "catalog",
-          t("discover_filter_catalog", {}, "Catalog"),
-          selectedCatalog?.catalogName || t("discover_select_catalog", {}, "Select")
-        ),
-        this.renderFilterPicker("genre", t("discover_filter_genre", {}, "Genre"), formatGenreLabel(this.selectedGenre || "Default"))
-      ].join("");
+      return (
+        ["type", "catalog", "genre", ...Object.keys(RT_PICKER_KEYS)].map((kind) => this.renderPickerMarkup(kind)).join("") +
+        this.renderRtClearMarkup()
+      );
+    },
+    renderRtClearMarkup() {
+      const count = this.getActiveRtFilterCount();
+      if (!count) return "";
+      return `
+        <div class="library-picker discover-filter-shell discover-rt-clear-shell">
+          <div class="library-picker-anchor library-primary discover-filter discover-rt-clear focusable"
+               data-action="discoverFilterRtClear" role="button" tabindex="-1">
+            <span class="library-picker-copy">
+              <span class="library-picker-title">${escapeHtml(count === 1 ? "1 filtro ativo" : `${count} filtros ativos`)}</span>
+              <span class="library-picker-value">Limpar</span>
+            </span>
+          </div>
+        </div>`;
     },
     renderPickerMarkup(kind) {
       if (kind === "type") {
@@ -162,6 +170,9 @@ export function createDiscoverScreenMethods05() {
       }
       if (kind === "genre") {
         return this.renderFilterPicker("genre", t("discover_filter_genre", {}, "Genre"), formatGenreLabel(this.selectedGenre || "Default"));
+      }
+      if (RT_PICKER_KEYS[kind]) {
+        return this.renderFilterPicker(kind, this.getRtPickerTitle(kind), this.getRtPickerValueLabel(kind));
       }
       return "";
     },

@@ -24,8 +24,7 @@ export function createDiscoverScreenMethods03() {
         options.findIndex((option) => option.value === currentValue)
       );
       this.pickerOptionIndex = currentIndex;
-      this.lastFocusedAction =
-        kind === "type" ? "discoverFilterType" : kind === "catalog" ? "discoverFilterCatalog" : "discoverFilterGenre";
+      this.lastFocusedAction = actionForPickerKind(kind);
       if (!this.updateRenderedPickerRow()) {
         this.requestRender();
       }
@@ -256,7 +255,10 @@ export function createDiscoverScreenMethods03() {
       this.lastFocusedAction = action;
     },
     moveFilterFocus(delta) {
-      const filters = ["discoverFilterType", "discoverFilterCatalog", "discoverFilterGenre"];
+      const filters = Array.from(this.container?.querySelectorAll(".discover-filter.focusable") || [])
+        .map((node) => String(node.dataset.action || ""))
+        .filter(Boolean);
+      if (!filters.length) return;
       const currentAction = this.lastFocusedAction || "discoverFilterType";
       const currentIndex = Math.max(0, filters.indexOf(currentAction));
       const nextIndex = Math.min(filters.length - 1, Math.max(0, currentIndex + delta));

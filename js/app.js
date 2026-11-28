@@ -1,6 +1,7 @@
 import "./ui/components/serverWatchedNotice.js";
 import { MediaServerSyncService } from "./core/profile/mediaServerSyncService.js";
 import { installCustomPosterFallback } from "./core/poster/customPoster.js";
+import { loadRtScores } from "./core/rt/rtScores.js";
 import { installWebOsImgurImageFallback } from "./core/media/imageProxy.js";
 import { startTvArtworkLazyLoader } from "./ui/images/tvArtworkLazyLoader.js";
 import { installFrameBudgetSampler } from "./core/diagnostics/frameBudget.js";
@@ -831,6 +832,8 @@ async function bootstrapApp() {
   PlayerController.init();
 
   installCustomPosterFallback();
+  // Rotten Tomatoes scores (CineRotten): cached copy renders at once, file refreshes daily.
+  void loadRtScores();
   preloadMaterialIconFont();
   installWebOsImgurImageFallback();
   MediaServerSyncService.start();

@@ -17,7 +17,8 @@ export function createDiscoverScreenMethods06() {
     isDownKey,
     isLeftKey,
     isRightKey,
-    isEnterKey
+    isEnterKey,
+    pickerKindFromAction
   } = internals;
 
   return {
@@ -86,9 +87,12 @@ export function createDiscoverScreenMethods06() {
           }
           const action = String(filterNode.dataset.action || "");
           this.focusFilter(action);
-          if (action === "discoverFilterType") this.openPickerMenu("type");
-          if (action === "discoverFilterCatalog") this.openPickerMenu("catalog");
-          if (action === "discoverFilterGenre") this.openPickerMenu("genre");
+          if (action === "discoverFilterRtClear") {
+            this.clearRtFilters();
+            return;
+          }
+          const clickedKind = pickerKindFromAction(action);
+          if (clickedKind) this.openPickerMenu(clickedKind);
           return;
         }
 
@@ -289,9 +293,12 @@ export function createDiscoverScreenMethods06() {
       const action = String(current.dataset.action || "");
       this.lastFocusedAction = action;
 
-      if (action === "discoverFilterType") this.openPickerMenu("type");
-      if (action === "discoverFilterCatalog") this.openPickerMenu("catalog");
-      if (action === "discoverFilterGenre") this.openPickerMenu("genre");
+      if (action === "discoverFilterRtClear") {
+        this.clearRtFilters();
+        return;
+      }
+      const enterKind = pickerKindFromAction(action);
+      if (enterKind) this.openPickerMenu(enterKind);
       if (action === "openDetail") {
         this.openDetailFromNode(current);
       }

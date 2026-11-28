@@ -1,0 +1,85 @@
+/* Rotten Tomatoes scores from CineRotten (js/core/rt/rtScores.js). */
+
+/* Poster badge: Popcornmeter, or the Tomatometer when there is no audience
+   score. Top-left, opposite the watched check (top-right). */
+.rt-poster-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 4;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px 3px 7px;
+  border-radius: 999px;
+  background: rgba(10, 10, 13, 0.82);
+  color: #fff;
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.25;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.rt-poster-badge.rt-bad {
+  color: #c9c9cf;
+}
+
+.rt-poster-icon {
+  font-size: 0.95em;
+  line-height: 1;
+}
+
+/* Title details: both scores with their review / rating counts. */
+.rt-detail-badges {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 18px;
+}
+
+.rt-detail-pill {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  font-size: var(--tv-secondary-text, 24px);
+  color: var(--detail-text-secondary, rgba(241, 247, 255, 0.8));
+  white-space: nowrap;
+}
+
+.rt-detail-icon {
+  align-self: center;
+}
+
+.rt-detail-value {
+  font-weight: 700;
+  color: #fff;
+}
+
+.rt-detail-pill.rt-bad .rt-detail-value {
+  color: #c9c9cf;
+}
+
+.rt-detail-count {
+  font-size: 0.82em;
+  opacity: 0.75;
+}
+
+/* Discover: addon pickers on the first line, Rotten Tomatoes pickers and
+   "Limpar" on the second. */
+.discover-picker-row {
+  flex-wrap: wrap;
+  row-gap: 14px;
+}
+
+.discover-picker-row > .library-picker:nth-child(-n + 3) {
+  flex: 1 1 30%;
+}
+
+.discover-picker-row > .library-picker:nth-child(n + 4) {
+  flex: 1 1 14%;
+}
+
+.discover-rt-clear .library-picker-value {
+  color: var(--secondary-color, #e50914);
+}

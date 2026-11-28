@@ -77,6 +77,7 @@ import { I18n } from "../../../i18n/index.js";
 import { localizedGenreLabel } from "../../../i18n/genreLabels.js";
 
 import { buildWatchedTitleIdSet, isTitleItemWatched, renderTitleWatchedBadge } from "../../components/watchedTitleBadge.js";
+import { renderRtPosterBadge } from "../../../core/rt/rtScores.js";
 
 import { buildModernRowKey, MODERN_HOME_CONSTANTS, renderModernHomeLayout } from "./modernHomeLayout.js";
 
@@ -375,6 +376,7 @@ export function createPosterCardMarkup(
         <div class="home-poster-trailer-layer"></div>
         <div class="home-poster-expanded-gradient"></div>
         ${watchedBadge}
+        ${isLoading ? "" : renderRtPosterBadge(normalized)}
         <div class="home-poster-expanded-brand">
           ${
             !isLoading && normalized.logo

@@ -1,6 +1,8 @@
 import { customPosterForItem, posterFallbackAttributes } from "../../../core/poster/customPoster.js";
 /* eslint-disable no-unused-vars */
 import * as internals from "./discoverScreen.js";
+import { applyRtFilters, countActiveRtFilters } from "../../../core/rt/rtFilters.js";
+import { onRtScoresReady, renderRtPosterBadge } from "../../../core/rt/rtScores.js";
 
 export function createDiscoverScreenMethods01() {
   const {
@@ -93,6 +95,7 @@ export function createDiscoverScreenMethods01() {
         catalogs: Array.isArray(this.catalogs) ? [...this.catalogs] : [],
         selectedCatalogKey: String(this.selectedCatalogKey || ""),
         selectedGenre: String(this.selectedGenre || "Default"),
+        rtFilters: { ...this.getRtFilters() },
         items: Array.isArray(this.items) ? [...this.items] : [],
         renderedItemsLimit: Number(this.renderedItemsLimit || DISCOVER_ITEM_WINDOW_SIZE),
         nextSkip: Number(this.nextSkip || 0),
@@ -118,6 +121,7 @@ export function createDiscoverScreenMethods01() {
       this.catalogs = Array.isArray(snapshot.catalogs) ? [...snapshot.catalogs] : [];
       this.selectedCatalogKey = String(snapshot.selectedCatalogKey || "");
       this.selectedGenre = String(snapshot.selectedGenre || "Default");
+      if (snapshot.rtFilters) this.rtFilters = { ...snapshot.rtFilters };
       this.items = Array.isArray(snapshot.items) ? [...snapshot.items] : [];
       const restoredItemsLimit = Number(snapshot.renderedItemsLimit);
       this.renderedItemsLimit = Number.isFinite(restoredItemsLimit)
@@ -161,6 +165,12 @@ export function createDiscoverScreenMethods01() {
       this.pillIconOnly = false;
       this.discoverRouteEnterPending = true;
       this.suppressInitialLoadingRenders = true;
+      this.rtFillPages = 0;
+      if (!this.unsubscribeRtScores) {
+        this.unsubscribeRtScores = onRtScoresReady(() => {
+          if (countActiveRtFilters(this.rtFilters)) this.requestRender();
+        });
+      }
       this.loadToken = (this.loadToken || 0) + 1;
 
       this.typeOptions = [];
@@ -314,11 +324,15 @@ export function createDiscoverScreenMethods01() {
         ? `${selectedCatalog.addonName || "Addon"} • ${formatAddonTypeLabel(selectedCatalog.type)}`
         : "Choose a catalog to start browsing";
     },
+    getVisibleDiscoverItems() {
+      return applyRtFilters(Array.isArray(this.items) ? this.items : [], this.rtFilters);
+    },
     renderDiscoverCards(selectedCatalog = null) {
       // Tizen fast path: paged catalogs accumulate hundreds of items across
       // loads. Render bounded windows and expand as focus or scrolling nears
       // the current end. Finite sets render fully.
-      const allItems = Array.isArray(this.items) ? this.items : [];
+      const allItems = applyRtFilters(Array.isArray(this.items) ? this.items : [], this.rtFilters);
+      this.visibleItems = allItems;
       const currentRenderLimit = Number(this.renderedItemsLimit);
       const renderLimit = Number.isFinite(currentRenderLimit)
         ? Math.max(DISCOVER_ITEM_WINDOW_SIZE, currentRenderLimit)
@@ -352,6 +366,7 @@ export function createDiscoverScreenMethods01() {
                            : `<div class="seeall-card-poster placeholder"></div>`
                        }
                        ${isTitleItemWatched(item, this.watchedTitleIds) ? renderTitleWatchedBadge() : ""}
+                       ${renderRtPosterBadge(item)}
                      </div>
                      ${
                        this.layoutPrefs?.posterLabelsEnabled !== false
@@ -365,13 +380,22 @@ export function createDiscoverScreenMethods01() {
                  `
             )
             .join("")
-        : `<div class="seeall-empty">${escapeHtml(t("catalog_see_all_empty_title", {}, "No items available"))}</div>`;
+        : `<div class="seeall-empty">${escapeHtml(this.getDiscoverEmptyText())}</div>`;
+    },
+    getDiscoverEmptyText() {
+      const total = Array.isArray(this.items) ? this.items.length : 0;
+      if (countActiveRtFilters(this.rtFilters) && total > 0) {
+        return this.loading || this.hasMore
+          ? "Procurando títulos que passam nos filtros..."
+          : "Nenhum título passa nesses filtros. Use Limpar.";
+      }
+      return t("catalog_see_all_empty_title", {}, "No items available");
     },
     maybeExpandRenderedItems(index) {
       if (!this.hasMore || !ScreenUtils.shouldSkipRouteEnter(this)) {
         return false;
       }
-      const allItems = Array.isArray(this.items) ? this.items : [];
+      const allItems = Array.isArray(this.visibleItems) ? this.visibleItems : Array.isArray(this.items) ? this.items : [];
       const rawLimit = Number(this.renderedItemsLimit);
       const currentLimit = Number.isFinite(rawLimit) ? Math.max(DISCOVER_ITEM_WINDOW_SIZE, rawLimit) : DISCOVER_ITEM_WINDOW_SIZE;
       const focusedIndex = Number(index);

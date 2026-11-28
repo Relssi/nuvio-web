@@ -1,6 +1,7 @@
 import { customPosterForItem, posterFallbackAttributes } from "../../../core/poster/customPoster.js";
 /* eslint-disable no-unused-vars */
 import * as internals from "./tmdbEntityBrowseScreen.js";
+import { renderRtPosterBadge } from "../../../core/rt/rtScores.js";
 
 export function createTmdbEntityBrowseScreenMethods01() {
   const {
@@ -274,7 +275,7 @@ export function createTmdbEntityBrowseScreenMethods01() {
                       : ""
                   }
                   <div class="tmdb-entity-card-placeholder"${poster ? " hidden" : ""}></div>
-                  ${isTitleItemWatched(item, this.watchedTitleIds) ? renderTitleWatchedBadge() : ""}
+                  ${isTitleItemWatched(item, this.watchedTitleIds) ? renderTitleWatchedBadge() : ""}${renderRtPosterBadge(item)}
                 </div>
                 ${
                   this.layoutPrefs?.posterLabelsEnabled !== false

@@ -1,6 +1,7 @@
 import { customPosterForItem, posterFallbackAttributes } from "../../../core/poster/customPoster.js";
 /* eslint-disable no-unused-vars */
 import * as internals from "./folderDetailScreen.js";
+import { renderRtPosterBadge } from "../../../core/rt/rtScores.js";
 
 export function createFolderDetailScreenMethods03() {
   const {
@@ -62,7 +63,7 @@ export function createFolderDetailScreenMethods03() {
                       ? `<img class="seeall-card-poster-image" ${posterFallbackAttributes(item)} src="${escapeHtml(item.poster)}" alt="" loading="${folderPosterLoadingMode()}" decoding="async" />`
                       : `<div class="seeall-card-poster placeholder"></div>`
                   }
-                  ${isTitleItemWatched(item, this.watchedTitleIds) ? renderTitleWatchedBadge() : ""}
+                  ${isTitleItemWatched(item, this.watchedTitleIds) ? renderTitleWatchedBadge() : ""}${renderRtPosterBadge(item)}
                 </div>
                 ${
                   this.layoutPrefs?.posterLabelsEnabled !== false
@@ -109,7 +110,7 @@ export function createFolderDetailScreenMethods03() {
                     ? `<img class="seeall-card-poster-image" ${posterFallbackAttributes(item)} src="${escapeHtml(item.poster)}" alt="" loading="${folderPosterLoadingMode()}" decoding="async" />`
                     : `<div class="seeall-card-poster placeholder"></div>`
                 }
-                ${isTitleItemWatched(item, this.watchedTitleIds) ? renderTitleWatchedBadge() : ""}
+                ${isTitleItemWatched(item, this.watchedTitleIds) ? renderTitleWatchedBadge() : ""}${renderRtPosterBadge(item)}
               </div>
               ${
                 this.layoutPrefs?.posterLabelsEnabled !== false

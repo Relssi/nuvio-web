@@ -8,6 +8,23 @@ Detalhes de bugs (causa e correção) ficam em [`BUGS.md`](BUGS.md).
 
 ---
 
+## 28/11/2026 — Notas do Rotten Tomatoes (CineRotten) nos pôsteres, nos detalhes e no Discover
+
+- **O que mudou:**
+  - **Pôsteres** (home, Discover, "ver tudo", busca, biblioteca) mostram a nota do público 🍿 (Popcornmeter). Quando não há nota do público, mostram a da crítica 🍅 (Tomatometer).
+  - **Detalhes do título:** ao lado do IMDb aparecem as duas notas, com o número de críticas e de notas do público (ex.: 🍅 77% · 62 críticas, 🍿 76% · 2.5k notas). Vale para filmes, séries, animes e doramas.
+  - **Discover:** novos filtros — crítica mínima (60/70/80/90), número mínimo de críticas (20/50/100/200/300), público mínimo, década e ordenar (crítica, público, mais novos, mais antigos, A–Z). Aparece "N filtros ativos · Limpar" quando há filtro ligado. Com um filtro de nota ligado, o Discover busca mais páginas do catálogo até achar títulos suficientes.
+- **Como:** as notas vêm dos dados do CineRotten (cerca de 10.800 títulos), copiados para um arquivo pequeno (`assets/data/rt-scores.json`, 233 KB) gerado por `scripts/buildRtScores.mjs`. O navegador guarda uma cópia e busca de novo uma vez por dia. Detalhes em BUGS.md (B45).
+- **Precisa fazer:** as notas **não se atualizam sozinhas** no site. O CineRotten atualiza os dados todo domingo às 4h; para levar as notas novas ao Nuvio, rode `node scripts/buildRtScores.mjs` e envie para o GitHub.
+- **Não testado:** no Safari de um iPhone de verdade (testado no tamanho do iPhone no navegador). O filtro "número de críticas" só conhece a contagem de cerca de 1.400 títulos; os outros ficam de fora quando esse filtro está ligado.
+
+## 29/11/2026 — Tela de perfis no iPhone
+
+- **O que mudou:** a tela "Quem está assistindo?" ficou certa no iPhone: círculos do mesmo tamanho (o escolhido não cobre mais o "Adicionar"), título e textos em tamanho de celular, e deitado o título não some.
+- **Como:** tamanhos próprios de celular para essa tela. Detalhes em BUGS.md (B46).
+- **Precisa fazer:** nada. Recarregue a página.
+- **Não testado:** no Safari de um iPhone de verdade (testado no tamanho do iPhone no navegador).
+
 ## 29/11/2026 — Interface do iPhone revisada (todas as telas e o player)
 
 - **O que mudou:** revisei todas as telas no tamanho do iPhone, em pé e deitado:

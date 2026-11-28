@@ -1340,3 +1340,170 @@ html[data-layout="mobile"] .series-detail-shell .series-episode-track {
     grid-template-columns: repeat(5, minmax(0, 1fr));
   }
 }
+
+/* Rotten Tomatoes scores (CineRotten). Home rows are drawn at real size, so
+   the poster badge is made small there; Discover and "See all" are drawn at
+   half size (zoom), so their badge is made a little bigger to read. */
+html[data-layout="mobile"] .home-poster-frame .rt-poster-badge {
+  top: 6px;
+  left: 6px;
+  padding: 2px 6px 2px 4px;
+  gap: 2px;
+  font-size: 11px;
+}
+
+html[data-layout="mobile"] .seeall-card .rt-poster-badge,
+html[data-layout="mobile"] .library-grid-poster .rt-poster-badge {
+  top: 8px;
+  left: 8px;
+  font-size: 22px;
+}
+
+/* Discover filters on a phone: three pickers per line (addon pickers, then
+   the Rotten Tomatoes ones and "Limpar"). */
+html[data-layout="mobile"] .discover-picker-row > .library-picker:nth-child(n) {
+  flex: 1 1 30%;
+  min-width: 0;
+}
+
+html[data-layout="mobile"] .discover-picker-row .library-picker-title,
+html[data-layout="mobile"] .discover-picker-row .library-picker-value {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+html[data-layout="mobile"] .rt-detail-badges {
+  gap: 12px;
+}
+
+/* Profile selection on a phone (B46). The compact look used to come from
+   the desktop rules, which no longer reach phones (B44); the TV sizes made
+   the chosen profile's circle 220px wide over "Add profile", the subtitle
+   bigger than the title, and the title went off the top when sideways. */
+html[data-layout="mobile"]:root .profile-main-layer {
+  justify-content: flex-start;
+  align-items: center;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: max(48px, env(safe-area-inset-top, 0px)) 16px
+    calc(32px + env(safe-area-inset-bottom, 0px));
+}
+
+html[data-layout="mobile"]:root .profile-title {
+  height: auto;
+  margin: 0;
+  font-size: 26px;
+  line-height: 32px;
+}
+
+html[data-layout="mobile"]:root .profile-subtitle {
+  height: auto;
+  margin: 6px 0 0;
+  font-size: 15px;
+  line-height: 21px;
+}
+
+html[data-layout="mobile"]:root .profile-grid,
+html[data-layout="mobile"]:root .profile-grid-compact {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 20px 16px;
+  width: 100%;
+  height: auto;
+  margin-top: 28px;
+}
+
+html[data-layout="mobile"]:root .profile-card,
+html[data-layout="mobile"]:root .profile-grid-compact .profile-card {
+  position: relative;
+  width: 120px;
+  height: auto;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transform: none;
+}
+
+html[data-layout="mobile"]:root .profile-avatar-ring,
+html[data-layout="mobile"]:root .profile-card.focused .profile-avatar-ring,
+html[data-layout="mobile"]:root .profile-grid-compact .profile-avatar-ring,
+html[data-layout="mobile"]:root .profile-grid-compact .profile-card.focused .profile-avatar-ring {
+  width: 104px;
+  height: 104px;
+  margin: 0 auto;
+  transform: none;
+}
+
+html[data-layout="mobile"]:root .profile-avatar,
+html[data-layout="mobile"]:root .profile-card.focused .profile-avatar,
+html[data-layout="mobile"]:root .profile-grid-compact .profile-avatar,
+html[data-layout="mobile"]:root .profile-grid-compact .profile-card.focused .profile-avatar {
+  width: 92px;
+  height: 92px;
+  font-size: 40px;
+  transform: none;
+}
+
+html[data-layout="mobile"]:root .profile-name,
+html[data-layout="mobile"]:root .profile-grid-compact .profile-name {
+  width: 100%;
+  height: auto;
+  margin-top: 10px;
+  font-size: 15px;
+  line-height: 20px;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+html[data-layout="mobile"]:root .profile-badge,
+html[data-layout="mobile"]:root .profile-badge-slot {
+  height: auto;
+  min-height: 0;
+  margin-top: 4px;
+  font-size: 11px;
+  line-height: 14px;
+}
+
+html[data-layout="mobile"]:root .profile-manage-btn {
+  top: 0;
+  right: 4px;
+  width: 30px;
+  height: 30px;
+}
+
+html[data-layout="mobile"]:root .profile-hint {
+  height: auto;
+  margin-top: 24px;
+  font-size: 13px;
+  line-height: 18px;
+}
+
+@media (orientation: landscape) and (max-height: 560px) {
+  html[data-layout="mobile"]:root .profile-main-layer {
+    padding-top: max(20px, env(safe-area-inset-top, 0px));
+  }
+
+  html[data-layout="mobile"]:root .profile-grid,
+  html[data-layout="mobile"]:root .profile-grid-compact {
+    margin-top: 18px;
+  }
+}
+
+/* Sideways the profiles are taller than the screen: the page scrolls
+   instead of squeezing the title and subtitle to zero height (B46). */
+html[data-layout="mobile"]:root .profile-main-layer > * {
+  flex-shrink: 0;
+}
+
+html[data-layout="mobile"]:root .profile-card .profile-primary-dot,
+html[data-layout="mobile"]:root .profile-grid-compact .profile-primary-dot {
+  width: 30px;
+  height: 30px;
+  font-size: 16px;
+}

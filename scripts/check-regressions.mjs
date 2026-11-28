@@ -359,6 +359,25 @@ async function main() {
     return problems.length ? problems.join("; ") : true;
   });
 
+  await check(
+    "B45",
+    "Rotten Tomatoes scores ship small and Discover keeps its RT filters",
+    async () => {
+      const raw = await source("assets/data/rt-scores.json");
+      if (raw.length > 600 * 1024)
+        return `rt-scores.json is ${Math.round(raw.length / 1024)} KB (keep it under 600 KB)`;
+      const payload = JSON.parse(raw);
+      const count = Object.keys(payload?.s || {}).length;
+      if (count < 1000) return `rt-scores.json has only ${count} titles`;
+      const discover = await source("js/ui/screens/search/discoverScreen.js");
+      for (const kind of ["rtCritics", "rtReviews", "rtAudience", "rtDecade", "rtSort"]) {
+        if (!discover.includes(kind)) return `Discover lost the ${kind} picker`;
+      }
+      const app = await source("js/app.js");
+      if (!app.includes("loadRtScores()")) return "js/app.js no longer loads the scores at start";
+    }
+  );
+
   await check("B18", "addon pull falls back to the RPC when the table read is denied", async () => {
     const text = await source("js/core/profile/librarySyncService.js");
     if (!/isTableAccessDeniedError\(addonsTableError\)[\s\S]{0,400}"sync_pull_addons"/.test(text)) {
@@ -677,6 +696,21 @@ async function main() {
       );
       if (!pointer.includes("data-player-dialog-close"))
         return "audio / speed menus cannot be closed on a phone";
+      return true;
+    }
+  );
+
+  await check(
+    "B46",
+    "iPhone profile screen: phone sizes, chosen profile does not cover the others",
+    async () => {
+      const css = await source("css/mobile.css");
+      if (!css.includes("Profile selection on a phone (B46)"))
+        return "phone rules for the profile screen missing";
+      if (!/profile-card\.focused \.profile-avatar-ring[^{]*\{\s*width: 104px/.test(css))
+        return "chosen profile circle back to TV size";
+      if (!css.includes(".profile-main-layer > * {"))
+        return "title squeezed away when the phone is sideways";
       return true;
     }
   );

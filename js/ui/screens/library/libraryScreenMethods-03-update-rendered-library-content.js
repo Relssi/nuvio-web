@@ -2,6 +2,7 @@ import { customPosterForItem, posterFallbackAttributes } from "../../../core/pos
 /* eslint-disable no-unused-vars */
 import * as internals from "./libraryScreen.js";
 import { calculateAdaptivePosterGridMetrics } from "./libraryPosterGridLayout.js";
+import { renderRtPosterBadge } from "../../../core/rt/rtScores.js";
 
 const LIBRARY_POSTER_GRID_COLUMN_GAP = 24;
 const LIBRARY_POSTER_GRID_ROW_GAP = 32;
@@ -153,7 +154,7 @@ export function createLibraryScreenMethods03() {
                            data-focus-key="${escapeHtml(focusKey)}">
                     <div class="library-grid-poster${item.poster ? "" : " placeholder"}">
                       ${item.poster ? `<img class="library-grid-poster-image" src="${escapeHtml(item.poster)}"${posterFallbackAttributes(item)} alt="" loading="lazy" decoding="async" />` : ""}
-                      ${isWatched ? renderTitleWatchedBadge({ className: "library-watched-badge", iconClassName: "library-watched-badge-svg" }) : ""}
+                      ${isWatched ? renderTitleWatchedBadge({ className: "library-watched-badge", iconClassName: "library-watched-badge-svg" }) : ""}${renderRtPosterBadge(item)}
                     </div>
                     <div class="library-grid-title">${escapeHtml(item.name || item.id || "Untitled")}</div>
                   </article>
