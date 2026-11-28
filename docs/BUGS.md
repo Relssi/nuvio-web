@@ -354,6 +354,15 @@ O script cobre automaticamente os itens marcados com **[auto]**. Os itens **[man
 - **Verificar:** checagem B49 e `silentAudioWatch.test.mjs`; no player, fonte com E-AC-3 + fonte com AAC: depois de ~6 s trocou sozinho para a com AAC, que tocou com som.
 - **Limite:** no Edge as fontes Dolby tocam com som e ficam (é o desejado). Uma fonte que realmente não tem áudio também seria trocada.
 
+## B50 — "Pular abertura" nunca aparecia no site; botões de pular e de próximo episódio minúsculos no celular [auto + manual]
+
+- **Pedido:** botão para tocar o próximo episódio e para pular a abertura ("acho que já tem addons pra isso").
+- **O que já existia:** o Nuvio já tem as duas coisas embutidas (não precisa de addon; addons do Stremio nem conseguem pôr botões no player). "Pular abertura/recap/créditos" usa os bancos IntroDB e AnimeSkip/AniSkip; o cartão "Próximo episódio" aparece quando começam os créditos (ou no último 1% se não houver dado de créditos).
+- **Causa:** no navegador, o IntroDB só libera o próprio site (`Access-Control-Allow-Origin: https://introdb.app`), então a busca era bloqueada (CORS), os tempos de abertura/créditos nunca chegavam e nem o "Pular abertura" nem o cartão nos créditos apareciam. No celular, botão e cartão estavam em tamanho de TV (texto de ~5–10px).
+- **Correção:** `skipIntroRepository.js` passa essas buscas pelo proxy do site (`fetchViaBrowserProxy`) quando existe (só no navegador; TV continua direto). `css/mobile.css`: botão de pular com ~44px de altura e texto de 15px, cartão de próximo episódio 1,6× maior, e o "Pular" sobe quando o cartão aparece.
+- **Verificar:** checagem B50; no player com Breaking Bad S1E2 chegaram os tempos reais (abertura 314,5–331 s, créditos 2843–2901 s); com abertura de teste o "Skip Intro" apareceu e o toque pulou para o fim dela; com créditos de teste num vídeo de 400 s apareceu "Next Episode S1E3 ▶ Play".
+- **Obs.:** tocar o próximo episódio **sozinho** é a opção "Autoplay next episode" nos ajustes do player (vem desligada).
+
 ## Teste que já falhava
 
 - `js/ui/screens/home/homeHeroBackdropBitmap.test.mjs` (2 testes de troca suave da imagem do destaque) falha também na versão do GitHub antes destas mudanças. Não investigado.

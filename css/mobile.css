@@ -1507,3 +1507,36 @@ html[data-layout="mobile"]:root .profile-grid-compact .profile-primary-dot {
   height: 30px;
   font-size: 16px;
 }
+
+/* "Skip Intro" / next episode buttons: finger-sized on a phone (B50; the
+   player is drawn at half size, so these are about 15px text / 44px tall). */
+html[data-layout="mobile"] #playerUiRoot .player-skip-intro-btn {
+  min-height: 88px;
+  padding: 0 40px;
+  border-radius: 44px;
+  font-size: 30px;
+}
+
+html[data-layout="mobile"] #playerUiRoot .player-skip-intro-icon,
+html[data-layout="mobile"] #playerUiRoot .player-skip-intro-icon svg {
+  width: 32px;
+  height: 32px;
+}
+
+html[data-layout="mobile"] #playerUiRoot .player-skip-intro-label,
+html[data-layout="mobile"] #playerUiRoot .player-skip-intro-content {
+  font-size: 30px;
+  line-height: 1.2;
+}
+
+/* "Next episode" card: TV-sized text was ~5px on a phone (B50). */
+html[data-layout="mobile"] #playerUiRoot .player-next-episode-card {
+  zoom: 1.6;
+}
+
+/* With the next-episode card up, "Skip Outro" moves above it (B50). */
+html[data-layout="mobile"]
+  #playerUiRoot:has(.player-next-episode-card:not(.hidden))
+  .player-skip-intro {
+  transform: translateY(-200px);
+}

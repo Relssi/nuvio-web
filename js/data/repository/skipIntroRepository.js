@@ -1,4 +1,5 @@
 import { ANIME_SKIP_API_URL, ANISKIP_API_URL, INTRODB_API_URL } from "../../config.js";
+import { fetchViaBrowserProxy, isBrowserProxyable } from "../../core/network/browserProxy.js";
 import { segmentCategory } from "../../core/player/skipIntervalRules.js";
 import { withRequestTimeout } from "../../core/network/requestTimeout.js";
 import { TmdbService } from "../../core/tmdb/tmdbService.js";
@@ -240,17 +241,22 @@ export function mergeSkipIntervalsByPriority(providerLists = []) {
 }
 
 async function fetchJson(url, options = {}) {
-  const timeoutMs = Platform.isTizen() || Platform.isWebOS() ? 8000 : 3500;
+  // In the browser IntroDB only allows its own site (CORS), so the skip
+  // times never arrived and "Skip intro" never showed: go through the site's
+  // proxy instead (B50). TV apps have no proxy and fetch directly.
+  const proxied = isBrowserProxyable(url);
+  const timeoutMs = Platform.isTizen() || Platform.isWebOS() || proxied ? 8000 : 3500;
   try {
     return await withRequestTimeout(async (signal) => {
-      const response = await fetch(url, {
+      const init = {
         method: options.method || "GET",
         headers: options.headers || undefined,
         body: options.body || undefined,
-        mode: "cors",
-        cache: "no-store",
         ...(signal ? { signal } : {})
-      });
+      };
+      const response = proxied
+        ? await fetchViaBrowserProxy(url, init)
+        : await fetch(url, { ...init, mode: "cors", cache: "no-store" });
       if (!response.ok) {
         return null;
       }

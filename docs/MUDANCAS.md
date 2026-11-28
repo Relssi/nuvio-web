@@ -8,6 +8,13 @@ Detalhes de bugs (causa e correção) ficam em [`BUGS.md`](BUGS.md).
 
 ---
 
+## 29/11/2026 — "Pular abertura" e "Próximo episódio" funcionando no site
+
+- **O que mudou:** o Nuvio já tinha esses botões (não precisa de addon), mas no site eles nunca apareciam: o banco de aberturas (IntroDB) bloqueava o navegador. Agora a busca passa pelo servidor do site. Nas séries aparece **"Skip Intro"** durante a abertura e, nos créditos, o cartão **"Next Episode ▶ Play"**. No celular os dois ficaram em tamanho de dedo.
+- **Precisa fazer:** nada. Para o próximo episódio começar **sozinho**, ligue "Autoplay next episode" nos ajustes do player.
+- **Obs.:** só funciona nos episódios que o IntroDB/AnimeSkip conhecem (a maioria das séries populares e animes).
+- **Não testado:** com uma série real tocando pelo TorBox (testado com os tempos reais de Breaking Bad e um vídeo de teste).
+
 ## 29/11/2026 — Fontes sem som trocam sozinhas (FrostStream)
 
 - **O que mudou:** quando uma fonte toca sem som no navegador (como as 4K/1080p do FrostStream, que têm áudio Dolby e o Chrome não toca), o player percebe em uns 6 segundos, avisa "Fonte sem som neste navegador (áudio Dolby). Trocando para outra…" e passa sozinho para a próxima fonte, no mesmo ponto do filme.

@@ -768,6 +768,22 @@ async function main() {
     }
   );
 
+  await check(
+    "B50",
+    "skip intro times reach the browser; skip / next-episode buttons sized for phones",
+    async () => {
+      const repo = await source("js/data/repository/skipIntroRepository.js");
+      if (!repo.includes("fetchViaBrowserProxy(url, init)"))
+        return "IntroDB / AnimeSkip fetched directly again (blocked by CORS in the browser)";
+      const css = await source("css/mobile.css");
+      if (!css.includes(".player-skip-intro-btn"))
+        return "Skip Intro button back to TV size on phones";
+      if (!css.includes(".player-next-episode-card {"))
+        return "next-episode card back to TV size on phones";
+      return true;
+    }
+  );
+
   // ---- Unit tests --------------------------------------------------------
   const tests = await run(process.execPath, [
     "--test",
