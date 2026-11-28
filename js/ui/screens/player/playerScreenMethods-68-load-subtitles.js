@@ -229,6 +229,22 @@ export function createPlayerScreenMethods68() {
         return;
       }
 
+      if (action === "muteToggle") {
+        const video = PlayerController?.video || null;
+        if (video) {
+          if (video.muted || Number(video.volume ?? 1) === 0) {
+            video.muted = false;
+            if (Number(video.volume || 0) === 0) {
+              video.volume = 0.8;
+            }
+          } else {
+            video.muted = true;
+          }
+          this.renderControlButtons();
+        }
+        return;
+      }
+
       if (action === "download") {
         void this.downloadCurrentStream();
         return;

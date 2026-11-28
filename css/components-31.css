@@ -231,8 +231,39 @@
     transform 120ms ease;
 }
 
+.desktop-web .player-control-buttons {
+  gap: 8px;
+}
+
+.desktop-web .player-control-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
 .desktop-web .player-control-btn:hover {
-  background: rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.22);
+  transform: scale(1.06);
+}
+
+.player-control-svg {
+  width: var(--player-control-icon);
+  height: var(--player-control-icon);
+  display: block;
+}
+
+.player-volume-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding-right: 6px;
+}
+
+.player-volume-slider {
+  width: 84px;
+  height: 5px;
+  cursor: pointer;
+  pointer-events: auto;
+  accent-color: var(--player-secondary, #a855f7);
 }
 
 .player-control-icon {
