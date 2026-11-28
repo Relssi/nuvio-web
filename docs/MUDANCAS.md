@@ -18,6 +18,11 @@ Detalhes de bugs (causa e correção) ficam em [`BUGS.md`](BUGS.md).
 - **Precisa fazer:** as notas **não se atualizam sozinhas** no site. O CineRotten atualiza os dados todo domingo às 4h; para levar as notas novas ao Nuvio, rode `node scripts/buildRtScores.mjs` e envie para o GitHub.
 - **Não testado:** no Safari de um iPhone de verdade (testado no tamanho do iPhone no navegador). O filtro "número de críticas" só conhece a contagem de cerca de 1.400 títulos; os outros ficam de fora quando esse filtro está ligado.
 
+## 29/11/2026 — Explicação do projeto (SOBRE.md)
+
+- **O que mudou:** novo arquivo `SOBRE.md` na raiz, em português: o que é esta versão web do Nuvio, como ela funciona (Render, Supabase, addons, TorBox, CineRotten), o que tem a mais que o app de TV, onde fica cada coisa, como rodar e as regras do projeto.
+- **Precisa fazer:** nada.
+
 ## 29/11/2026 — Dub β: ajuste manual funcionando
 
 - **O que mudou:** os botões −0,5s e +0,5s da dublagem não faziam nada: o toque era engolido antes de chegar neles. Agora funcionam. Os botões também não mudam mais de lugar enquanto você toca, e o painel fica na tela enquanto você ajusta.
