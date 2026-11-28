@@ -18,9 +18,41 @@ export function createPlayerScreenMethods60() {
       if (cachedEntries) {
         return cachedEntries;
       }
+      const candidate = this.getCurrentStreamCandidate?.() || {};
+      const torboxMeta = candidate?.torboxStreamMeta || candidate?.raw?.torboxStreamMeta || null;
+      const torboxAudios = Array.isArray(torboxMeta?.audios) ? torboxMeta.audios : [];
       const avplayAudioTracks = typeof PlayerController.getAvPlayAudioTracks === "function" ? PlayerController.getAvPlayAudioTracks() : [];
+      const dashAudioTracks = typeof PlayerController.getDashAudioTracks === "function" ? PlayerController.getDashAudioTracks() : [];
+      const hlsAudioTracks = typeof PlayerController.getHlsAudioTracks === "function" ? PlayerController.getHlsAudioTracks() : [];
       let entries = [];
-      if (avplayAudioTracks.length) {
+      if (torboxAudios.length > 1 && avplayAudioTracks.length <= 1 && dashAudioTracks.length <= 1 && hlsAudioTracks.length <= 1) {
+        const selectedIndex = Number(torboxMeta.selectedAudioIndex ?? 0);
+        entries = torboxAudios.map((audio, index) => {
+          const mappedTrack = {
+            language: audio?.language || audio?.language_full || "",
+            title: audio?.title || audio?.language_full || "",
+            codec: audio?.codec || "",
+            channelCount: audio?.channels || 0
+          };
+          const display = formatAudioTrackDisplay(mappedTrack, index);
+          return {
+            id: `audio-torbox-${index}`,
+            label: display.label,
+            secondary: display.secondary,
+            languageText: display.languageText,
+            metadata: display.metadata,
+            selected: index === selectedIndex,
+            supported: true,
+            canTryAudioConversion: false,
+            unsupportedReason: "",
+            torboxAudioIndex: index,
+            track: {
+              ...mappedTrack,
+              supported: true
+            }
+          };
+        });
+      } else if (avplayAudioTracks.length) {
         const selectedAvPlayAudioTrack =
           typeof PlayerController.getSelectedAvPlayAudioTrackIndex === "function"
             ? PlayerController.getSelectedAvPlayAudioTrackIndex()
@@ -59,7 +91,6 @@ export function createPlayerScreenMethods60() {
           };
         });
       } else {
-        const dashAudioTracks = typeof PlayerController.getDashAudioTracks === "function" ? PlayerController.getDashAudioTracks() : [];
         if (dashAudioTracks.length) {
           const selectedDashAudioTrack =
             typeof PlayerController.getSelectedDashAudioTrackIndex === "function" ? PlayerController.getSelectedDashAudioTrackIndex() : -1;
@@ -84,7 +115,6 @@ export function createPlayerScreenMethods60() {
             };
           });
         } else {
-          const hlsAudioTracks = typeof PlayerController.getHlsAudioTracks === "function" ? PlayerController.getHlsAudioTracks() : [];
           if (hlsAudioTracks.length) {
             const selectedHlsAudioTrack =
               typeof PlayerController.getSelectedHlsAudioTrackIndex === "function" ? PlayerController.getSelectedHlsAudioTrackIndex() : -1;
@@ -145,40 +175,8 @@ export function createPlayerScreenMethods60() {
                 };
               });
             } else {
-              const candidate = this.getCurrentStreamCandidate?.() || {};
-              const torboxMeta = candidate?.torboxStreamMeta || candidate?.raw?.torboxStreamMeta || null;
-              const torboxAudios = Array.isArray(torboxMeta?.audios) ? torboxMeta.audios : [];
-              if (torboxAudios.length > 1) {
-                const selectedIndex = Number(torboxMeta.selectedAudioIndex ?? 0);
-                entries = torboxAudios.map((audio, index) => {
-                  const mappedTrack = {
-                    language: audio?.language || audio?.language_full || "",
-                    title: audio?.title || audio?.language_full || "",
-                    codec: audio?.codec || "",
-                    channelCount: audio?.channels || 0
-                  };
-                  const display = formatAudioTrackDisplay(mappedTrack, index);
-                  return {
-                    id: `audio-torbox-${index}`,
-                    label: display.label,
-                    secondary: display.secondary,
-                    languageText: display.languageText,
-                    metadata: display.metadata,
-                    selected: index === selectedIndex,
-                    supported: true,
-                    canTryAudioConversion: false,
-                    unsupportedReason: "",
-                    torboxAudioIndex: index,
-                    track: {
-                      ...mappedTrack,
-                      supported: true
-                    }
-                  };
-                });
-              } else {
-                const implicitEntry = this.getImplicitAudioEntry();
-                entries = implicitEntry ? [implicitEntry] : [];
-              }
+              const implicitEntry = this.getImplicitAudioEntry();
+              entries = implicitEntry ? [implicitEntry] : [];
             }
           }
         }

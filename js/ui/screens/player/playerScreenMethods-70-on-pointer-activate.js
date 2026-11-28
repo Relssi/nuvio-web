@@ -168,9 +168,12 @@ export function createPlayerScreenMethods70() {
 
       const audioNode = target.closest?.("[data-audio-column]");
       if (audioNode && this.audioDialogVisible) {
-        if (this.audioFocusedColumn === "tracks") {
+        const column = audioNode.dataset.audioColumn || this.audioFocusedColumn;
+        this.audioFocusedColumn = column;
+        if (column === "tracks") {
           const trackIndex = Number(audioNode.dataset.audioIndex);
-          this.applyAudioTrack(Number.isFinite(trackIndex) ? trackIndex : this.audioDialogIndex, {
+          this.audioDialogIndex = Number.isFinite(trackIndex) ? trackIndex : this.audioDialogIndex;
+          this.applyAudioTrack(this.audioDialogIndex, {
             rememberSelection: true
           });
         } else {
