@@ -11,7 +11,8 @@ export const PlaybackSettings = {
         description: "Toggle automatic next episode",
         action: () => {
           PlayerSettingsStore.set({
-            autoplayNextEpisode: !PlayerSettingsStore.get().autoplayNextEpisode
+            autoplayNextEpisode: !PlayerSettingsStore.get().autoplayNextEpisode,
+            autoplayNextEpisodeChosen: true
           });
         }
       }

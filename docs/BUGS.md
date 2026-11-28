@@ -363,6 +363,12 @@ O script cobre automaticamente os itens marcados com **[auto]**. Os itens **[man
 - **Verificar:** checagem B50; no player com Breaking Bad S1E2 chegaram os tempos reais (abertura 314,5–331 s, créditos 2843–2901 s); com abertura de teste o "Skip Intro" apareceu e o toque pulou para o fim dela; com créditos de teste num vídeo de 400 s apareceu "Next Episode S1E3 ▶ Play".
 - **Obs.:** tocar o próximo episódio **sozinho** é a opção "Autoplay next episode" nos ajustes do player (vem desligada).
 
+## B51 — Próximo episódio toca sozinho para todos [auto + manual]
+
+- **Pedido:** ligar para todos o "tocar o próximo episódio sozinho".
+- **Como:** o padrão de `autoplayNextEpisode` passou a ser ligado. Os perfis já tinham "desligado" salvo (no aparelho e na nuvem), mas era o padrão antigo, não uma escolha. Por isso um valor só vale se vier marcado como escolha (`autoplayNextEpisodeChosen` / `stream_auto_play_next_episode_chosen`), o que acontece quando alguém muda a opção nos ajustes. Quem desligar na mão continua desligado, inclusive nos outros aparelhos.
+- **Verificar:** checagem B51 e `autoplayNextDefault.test.mjs`.
+
 ## Teste que já falhava
 
 - `js/ui/screens/home/homeHeroBackdropBitmap.test.mjs` (2 testes de troca suave da imagem do destaque) falha também na versão do GitHub antes destas mudanças. Não investigado.

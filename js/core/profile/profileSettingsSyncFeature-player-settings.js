@@ -125,6 +125,8 @@ export const player_settings = {
       auto_skip_segment_types: Array.isArray(settings.autoSkipSegmentTypes) ? settings.autoSkipSegmentTypes : [],
       skip_intro_enabled: Boolean(settings.skipIntroEnabled),
       stream_auto_play_next_episode_enabled: Boolean(settings.autoplayNextEpisode),
+      // B51: only a value someone picked is applied on other devices.
+      stream_auto_play_next_episode_chosen: settings.autoplayNextEpisodeChosen === true,
       stream_auto_play_prefer_bingegroup_next_episode: Boolean(settings.streamAutoPlayPreferBingeGroupForNextEpisode),
       stream_auto_play_reuse_binge_group: Boolean(settings.streamAutoPlayReuseBingeGroup),
       stream_reuse_last_link_enabled: Boolean(settings.streamReuseLastLinkEnabled),
@@ -173,6 +175,7 @@ export const player_settings = {
       "subtitle_hdr_dim_player_controls",
       "skip_intro_enabled",
       "stream_auto_play_next_episode_enabled",
+      "stream_auto_play_next_episode_chosen",
       "stream_auto_play_prefer_bingegroup_next_episode",
       "stream_auto_play_reuse_binge_group",
       "stream_reuse_last_link_enabled",
@@ -341,8 +344,9 @@ export const player_settings = {
       if (booleanOrNull(raw[key]) != null) partial[field] = Boolean(raw[key]);
     });
     if (Array.isArray(raw.auto_skip_segment_types)) partial.autoSkipSegmentTypes = raw.auto_skip_segment_types;
-    if (booleanOrNull(raw.stream_auto_play_next_episode_enabled) != null) {
+    if (raw.stream_auto_play_next_episode_chosen === true && booleanOrNull(raw.stream_auto_play_next_episode_enabled) != null) {
       partial.autoplayNextEpisode = Boolean(raw.stream_auto_play_next_episode_enabled);
+      partial.autoplayNextEpisodeChosen = true;
     }
     if (booleanOrNull(raw.stream_auto_play_prefer_bingegroup_next_episode) != null) {
       partial.streamAutoPlayPreferBingeGroupForNextEpisode = Boolean(raw.stream_auto_play_prefer_bingegroup_next_episode);

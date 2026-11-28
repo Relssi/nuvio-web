@@ -8,6 +8,11 @@ Detalhes de bugs (causa e correção) ficam em [`BUGS.md`](BUGS.md).
 
 ---
 
+## 29/11/2026 — Próximo episódio começa sozinho
+
+- **O que mudou:** nas séries, quando chegam os créditos, o próximo episódio começa sozinho (com contagem no cartão "Next Episode"), para todos os perfis.
+- **Precisa fazer:** nada. Quem não quiser pode desligar em Ajustes → Reprodução → "Autoplay next episode"; essa escolha fica salva.
+
 ## 29/11/2026 — "Pular abertura" e "Próximo episódio" funcionando no site
 
 - **O que mudou:** o Nuvio já tinha esses botões (não precisa de addon), mas no site eles nunca apareciam: o banco de aberturas (IntroDB) bloqueava o navegador. Agora a busca passa pelo servidor do site. Nas séries aparece **"Skip Intro"** durante a abertura e, nos créditos, o cartão **"Next Episode ▶ Play"**. No celular os dois ficaram em tamanho de dedo.

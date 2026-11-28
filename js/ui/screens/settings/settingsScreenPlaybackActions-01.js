@@ -40,7 +40,8 @@ export function registerPlaybackActionsPart01(model) {
 
   this.actionMap.set("playback:autoplay", () => {
     PlayerSettingsStore.set({
-      autoplayNextEpisode: !PlayerSettingsStore.get().autoplayNextEpisode
+      autoplayNextEpisode: !PlayerSettingsStore.get().autoplayNextEpisode,
+      autoplayNextEpisodeChosen: true
     });
   });
   this.actionMap.set("playback:postPlayRecommendations", () => {

@@ -39,7 +39,9 @@ export const MAX_POST_PLAY_MOVIE_THRESHOLD_PERCENT = 100;
 export const DEFAULT_POST_PLAY_MOVIE_THRESHOLD_PERCENT = 90;
 
 const DEFAULTS = {
-  autoplayNextEpisode: false,
+  // On for everyone (B51) until a profile turns it off itself
+  // (autoplayNextEpisodeChosen marks a choice made in the settings).
+  autoplayNextEpisode: true,
   postPlayRecommendationsEnabled: true,
   postPlayMovieThresholdPercent: DEFAULT_POST_PLAY_MOVIE_THRESHOLD_PERCENT,
   // Legacy Web-only switch. Subtitle startup is controlled by the preferred
@@ -350,6 +352,12 @@ export function normalizePlayerSettings(settings = {}) {
   return {
     ...DEFAULTS,
     ...persistentSettings,
+    // Values saved before B51 were the old "off" default, not a choice.
+    autoplayNextEpisode:
+      persistentSettings.autoplayNextEpisodeChosen === true
+        ? Boolean(persistentSettings.autoplayNextEpisode)
+        : DEFAULTS.autoplayNextEpisode,
+    autoplayNextEpisodeChosen: persistentSettings.autoplayNextEpisodeChosen === true,
     postPlayRecommendationsEnabled: Boolean(
       persistentSettings.postPlayRecommendationsEnabled ?? DEFAULTS.postPlayRecommendationsEnabled
     ),

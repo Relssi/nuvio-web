@@ -784,9 +784,26 @@ async function main() {
     }
   );
 
+  await check(
+    "B51",
+    "next episode plays by itself for everyone unless a profile turned it off",
+    async () => {
+      const store = await source("js/data/local/playerSettingsStore.js");
+      if (!store.includes("autoplayNextEpisode: true,"))
+        return "autoplay of the next episode is off by default again";
+      if (!store.includes("persistentSettings.autoplayNextEpisodeChosen === true"))
+        return "old saved 'off' values switch it off again";
+      const sync = await source("js/core/profile/profileSettingsSyncFeature-player-settings.js");
+      if (!sync.includes('"stream_auto_play_next_episode_chosen"'))
+        return "a profile's own choice no longer syncs";
+      return true;
+    }
+  );
+
   // ---- Unit tests --------------------------------------------------------
   const tests = await run(process.execPath, [
     "--test",
+    "js/data/local/autoplayNextDefault.test.mjs",
     "js/ui/screens/player/silentAudioWatch.test.mjs",
     "js/ui/screens/player/playerDubAudio.test.mjs",
     "js/ui/screens/player/dubOffsetEstimator.test.mjs",
