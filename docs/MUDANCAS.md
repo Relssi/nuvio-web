@@ -8,6 +8,13 @@ Detalhes de bugs (causa e correção) ficam em [`BUGS.md`](BUGS.md).
 
 ---
 
+## 29/11/2026 — Dub β automático e sem cortes
+
+- **O que mudou:** o "Dub β" agora acerta sozinho o atraso e a velocidade da dublagem, "ouvindo" os dois áudios (falas, música e efeitos caem nos mesmos momentos). Em uns 20–25 s ele mostra "auto ✓" no painel e continua conferindo durante o filme. O áudio dublado não é mais mexido: quem se ajusta é a imagem (até 3% mais rápida ou lenta, não dá para perceber), então o som não corta. Antes de trocar o som, ele carrega uns 15 s da dublagem com o áudio original ainda tocando. Os botões −0,5s/+0,5s continuam para ajuste fino; "Auto" volta ao automático.
+- **Como:** comparação do volume dos dois áudios em vários atrasos e velocidades. Detalhes em BUGS.md (B39).
+- **Precisa fazer:** nada. Recarregue a página.
+- **Não testado:** com filme real do TorBox (testado com vídeos de teste: achou o atraso de 1,2 s e a velocidade certa, erro final de 0,035 s).
+
 ## 29/11/2026 — Dub β sem picotar
 
 - **O que mudou:** com o "Dub β" ligado, o áudio dublado não deve mais ficar cortando. A sincronia agora é suave: só ajusta quando a diferença fica perceptível, devagar, e não pula o áudio por pouca coisa.

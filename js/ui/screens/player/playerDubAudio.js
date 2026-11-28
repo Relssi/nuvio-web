@@ -10,7 +10,7 @@ import {
   preferDubbedStreams,
   prefersPortugueseAudio
 } from "../../../core/streams/streamOrdering.js";
-import { DubAudioSync } from "./dubAudioSync.js";
+import { DubAudioSync, getDubAudioContext } from "./dubAudioSync.js";
 
 const PANEL_ID = "nuvio-dub-audio-panel";
 
@@ -97,9 +97,11 @@ function showPanel(screen, sourceLabel) {
   const label = document.createElement("span");
   label.textContent = "Dublado β";
   label.title = sourceLabel || "";
+  const status = document.createElement("span");
+  status.style.cssText = "color:#b9b9c4;font-weight:500";
   const offset = document.createElement("span");
   offset.style.cssText = "min-width:48px;text-align:center;color:#ff6b72";
-  offset.textContent = formatOffset(0);
+  offset.textContent = formatOffset(screen.dubAudio?.offset ?? 0);
   const makeButton = (text, onClick, title) => {
     const button = document.createElement("button");
     button.type = "button";
@@ -113,17 +115,39 @@ function showPanel(screen, sourceLabel) {
     });
     return button;
   };
+  const autoButton = makeButton(
+    "Auto",
+    () => {
+      screen.dubAudio?.enableAutoOffset();
+    },
+    "Voltar ao ajuste automático do atraso"
+  );
   const nudge = (seconds) => {
-    const value = screen.dubAudio?.nudgeOffset(seconds) ?? 0;
-    offset.textContent = formatOffset(value);
+    screen.dubAudio?.nudgeOffset(seconds);
+  };
+  // Automatic offset status (B39), updated by DubAudioSync.
+  const STATUS_TEXT = {
+    loading: "carregando…",
+    listening: "sincronizando…",
+    synced: "auto ✓",
+    manual: "manual",
+    "manual-only": "ajuste manual"
+  };
+  panel.__update = (state, value) => {
+    status.textContent = STATUS_TEXT[state] || "";
+    offset.textContent = formatOffset(Number(value) || 0);
+    autoButton.style.display = state === "manual" ? "" : "none";
   };
   panel.append(
     label,
+    status,
     makeButton("−0,5s", () => nudge(-0.5), "Atrasar a dublagem"),
     offset,
     makeButton("+0,5s", () => nudge(0.5), "Adiantar a dublagem"),
+    autoButton,
     makeButton("Desligar", () => stopDubAudio(screen, { notify: true }), "Voltar ao áudio original")
   );
+  panel.__update(screen.dubAudio?.autoStatus || "loading", screen.dubAudio?.offset ?? 0);
   for (const type of ["click", "pointerdown", "mousedown", "pointermove", "mousemove"]) {
     panel.addEventListener(type, (event) => event.stopPropagation());
   }
@@ -164,7 +188,9 @@ export async function toggleDubAudio(screen, video) {
     screen?.showAspectToast?.("Nenhuma fonte dublada na lista", 2200);
     return;
   }
-  screen.showAspectToast?.("Carregando a dublagem…", 2500);
+  // The tap on "Dub β" is what lets the browser start the audio engine.
+  void getDubAudioContext()?.resume?.();
+  screen.showAspectToast?.("Carregando a dublagem…", 4000);
   const resolved = await DirectDebridResolver.resolveDubbedAudioSource(source, {
     season: screen?.params?.season ?? null,
     episode: screen?.params?.episode ?? null
@@ -176,17 +202,18 @@ export async function toggleDubAudio(screen, video) {
   const sync = new DubAudioSync(video);
   screen.dubAudio = sync;
   try {
-    const info = await sync.start(resolved.url);
-    const speedFixed = info.ratio !== 1;
+    const info = await sync.start(resolved.url, {
+      onStatus: (state, value) => document.getElementById(PANEL_ID)?.__update?.(state, value)
+    });
     const durationGap = Math.abs(
       Number(info.dubDuration || 0) / Number(info.ratio || 1) - Number(info.mainDuration || 0)
     );
     showPanel(screen, String(source.title || source.name || ""));
     screen.showAspectToast?.(
       durationGap > 8
-        ? "Dublagem ligada (β). As versões têm durações diferentes: pode ficar fora de sincronia"
-        : speedFixed
-          ? "Dublagem ligada (β), velocidade ajustada"
+        ? "Dublagem ligada (β). As versões têm durações diferentes: pode sair de sincronia"
+        : info.auto
+          ? "Dublagem ligada (β). Ajustando o atraso sozinho…"
           : "Dublagem ligada (β). Ajuste o atraso se precisar",
       3200
     );

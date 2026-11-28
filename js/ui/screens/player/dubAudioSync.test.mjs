@@ -12,33 +12,23 @@ test("durationRatio corrects a 25 fps dub against a 23.976 fps movie", () => {
   assert.equal(durationRatio(NaN, 7200), 1);
 });
 
-test("planDubCorrection is gentle: ignore small drifts, nudge rarely, jump only far", () => {
-  // Small drift: leave the speed alone.
-  assert.deepEqual(planDubCorrection({ drift: 0.08, baseRate: 1, currentRate: 1 }), {
-    action: "none"
-  });
-  // Above 0.12 s: a small speed change toward the target.
-  const ahead = planDubCorrection({ drift: 0.2, baseRate: 1, currentRate: 1 });
+test("planDubCorrection moves the picture gently and never the sound", () => {
+  // Small drift: leave everything alone.
+  assert.deepEqual(planDubCorrection({ drift: 0.08 }), { action: "none" });
+  // Dub 0.2 s ahead: the picture speeds up a little (at most 3%).
+  const ahead = planDubCorrection({ drift: 0.2 });
   assert.equal(ahead.action, "rate");
-  assert.ok(ahead.rate < 1 && ahead.rate >= 0.97);
+  assert.ok(ahead.factor > 1 && ahead.factor <= 1.03);
+  // Dub behind: the picture slows down.
+  assert.ok(planDubCorrection({ drift: -0.5 }).factor < 1);
   // Not again within a second.
-  assert.deepEqual(
-    planDubCorrection({ drift: 0.2, baseRate: 1, currentRate: 1, msSinceRateChange: 300 }),
-    {
-      action: "none"
-    }
-  );
-  // Back near zero while nudging: return to the normal speed.
-  assert.deepEqual(
-    planDubCorrection({ drift: 0.02, baseRate: 0.959, currentRate: 0.95, nudging: true }),
-    {
-      action: "rate",
-      rate: 0.959,
-      nudging: false
-    }
-  );
-  // Far off (a seek): jump.
+  assert.deepEqual(planDubCorrection({ drift: 0.2, msSinceRateChange: 300 }), { action: "none" });
+  // Back near zero while nudging: normal speed.
+  assert.deepEqual(planDubCorrection({ drift: 0.02, currentFactor: 1.02, nudging: true }), {
+    action: "rate",
+    factor: 1,
+    nudging: false
+  });
+  // Far off (a stall): jump.
   assert.deepEqual(planDubCorrection({ drift: 1.4 }), { action: "jump" });
-  // 0.5 s off is corrected by speed, not by a jump (no audible cut).
-  assert.equal(planDubCorrection({ drift: -0.5, baseRate: 1, currentRate: 1 }).action, "rate");
 });

@@ -594,17 +594,21 @@ async function main() {
     return true;
   });
 
-  await check("B38", "dub sync corrects gently (no stuttering)", async () => {
+  await check("B39", "dub sync: automatic speed+offset, smooth sound, preload", async () => {
     const sync = await source("js/ui/screens/player/dubAudioSync.js");
-    if (!sync.includes("export function planDubCorrection"))
-      return "gentle correction plan missing";
-    if (!/const JUMP_THRESHOLD_S = 1;/.test(sync)) return "dub jumps on small drifts again";
+    if (!sync.includes("estimateDubAlignment(")) return "automatic offset finder not used";
+    if (!sync.includes("setPictureFactor(")) return "corrections no longer move the picture";
+    if (!sync.includes("PRELOAD_AHEAD_S")) return "dub is no longer preloaded";
+    if (!sync.includes("pictureSeekBroken")) return "no fallback when the picture cannot seek";
+    const estimator = await source("js/ui/screens/player/dubOffsetEstimator.js");
+    if (!estimator.includes("COMMON_SPEED_RATIOS")) return "speed candidates missing";
     return true;
   });
 
   // ---- Unit tests --------------------------------------------------------
   const tests = await run(process.execPath, [
     "--test",
+    "js/ui/screens/player/dubOffsetEstimator.test.mjs",
     "js/ui/screens/player/dubAudioSync.test.mjs",
     "js/core/streams/dubbedStreamOrdering.test.mjs",
     "js/core/debrid/torboxAudioChoice.test.mjs",

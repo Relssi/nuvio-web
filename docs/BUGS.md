@@ -258,6 +258,16 @@ O script cobre automaticamente os itens marcados com **[auto]**. Os itens **[man
 - **Teste:** 20 s de reprodução (23,976 × 25 fps): 4 mudanças de velocidade, 2 pulos só no início, diferença máxima 0,118 s, dublagem nunca parou. `dubAudioSync.test.mjs`.
 - **Não testado:** com TorBox real (onde a conversão em tempo real pode travar a dublagem).
 
+## B39 — Dub β: sincronia automática, som sem cortes e pré-carregamento [auto + manual]
+
+- **Pedido:** sincronia o mais automática possível e sem as "cortadinhas" restantes.
+- **Atraso e velocidade automáticos (`dubOffsetEstimator.js`):** o site "ouve" os dois áudios pelo motor de áudio do navegador (o som da imagem vai só para um analisador, não para o alto-falante), guarda o volume dos dois a cada 50 ms e, a cada 5 s, compara os aumentos de volume (falas, música, efeitos) em atrasos de −8 a +8 s e nas velocidades comuns (1; 25↔23,976; 25↔24; 24↔23,976; e o palpite pela duração). Só aceita quando o encaixe é claramente melhor que qualquer outro. Depois de sincronizado, continua conferindo (±2 s) para cortes diferentes no meio do filme. Os botões −/+ passam para ajuste manual; "Auto" volta ao automático.
+- **Som sem cortes (`dubAudioSync.js`):** a dublagem toca sempre na mesma velocidade; as correções mudam a velocidade da imagem (até 3%, imperceptível) ou movem a imagem — nunca o som. Se a imagem não conseguir pular (3 falhas em 15 s), passa a mover o som.
+- **Pré-carregamento:** antes de trocar o som, carrega ~15 s da dublagem (até 25 s de espera) com o áudio original tocando.
+- **Segurança:** só "ouve" a imagem quando o navegador permite (HLS do TorBox via hls.js, blob:); senão usa ajuste manual. Ao desligar, o som da imagem volta para o alto-falante. Volume e mudo continuam funcionando (testado: o volume do elemento é aplicado antes do motor de áudio).
+- **Teste:** filme de teste HLS 23,976 + dublagem 25 fps com 1,2 s de atraso e som diferente (outra "língua"); começou com palpite errado (0,969, 0 s), em ~25 s achou 0,959 e 1,20 s; erro real 0,035 s estável, sem pular o som. `dubOffsetEstimator.test.mjs`, `dubAudioSync.test.mjs`.
+- **Limites:** nos primeiros ~20–25 s ainda pode estar fora até achar o atraso; filmes com trechos muito silenciosos demoram mais; não testado com filme real do TorBox.
+
 ## Teste que já falhava
 
 - `js/ui/screens/home/homeHeroBackdropBitmap.test.mjs` (2 testes de troca suave da imagem do destaque) falha também na versão do GitHub antes destas mudanças. Não investigado.
