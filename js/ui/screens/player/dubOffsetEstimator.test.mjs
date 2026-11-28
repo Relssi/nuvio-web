@@ -68,3 +68,15 @@ test("estimateDubAlignment finds speed and offset when the duration guess is wro
   assert.ok(Math.abs(result.ratio - ratio) < 0.0005, `ratio ${result.ratio}`);
   assert.ok(Math.abs(result.offset - offset) <= 0.1, `offset ${result.offset}`);
 });
+
+test("the search is centred on the offset already in use", () => {
+  const offset = 8;
+  const main = sample(60, 90, (t) => loudness(t - 60, 21));
+  const dub = sample(60 + offset, 90 + offset, (t) => loudness(t - offset - 60, 21));
+  // A narrow ±2 s search around 0 cannot reach 8 s...
+  assert.notEqual(estimateDubOffset(main, dub, { maxLag: 2 }).offset, offset);
+  // ...but around the current offset it confirms it.
+  const result = estimateDubOffset(main, dub, { maxLag: 2, center: 7.9 });
+  assert.equal(result.confident, true);
+  assert.ok(Math.abs(result.offset - offset) <= 0.05, `got ${result.offset}`);
+});

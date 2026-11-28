@@ -8,6 +8,13 @@ Detalhes de bugs (causa e correção) ficam em [`BUGS.md`](BUGS.md).
 
 ---
 
+## 29/11/2026 — Dub β em versões diferentes do filme (ex.: Wicker)
+
+- **O que mudou:** quando a versão dublada tem duração diferente (créditos maiores, cena a mais), o Dub β não acelera mais o áudio por engano — era isso que deixava o Wicker cada vez mais fora. Se o atraso mudar no meio do filme, ele percebe e reencontra sozinho (pulando o som da dublagem uma vez, sem repetir cena do filme). Ele também passa a preferir a fonte dublada com o mesmo nome do filme (no Wicker, as primeiras dubladas da lista eram de "A Ladra Solitária"). Se não achar encaixe em 1 minuto, o painel avisa que as versões parecem diferentes.
+- **Como:** novas regras de velocidade, busca do atraso em volta do valor atual e escolha da fonte pelo nome. Detalhes em BUGS.md (B42).
+- **Precisa fazer:** nada. Recarregue a página e teste o Wicker de novo.
+- **Não testado:** com o Wicker real (testado com vídeos de teste com uma cena a mais).
+
 ## 29/11/2026 — Dub β mostra o progresso do carregamento
 
 - **O que mudou:** ao apertar "Dub β", o painel aparece na hora mostrando "carregando 45% · ~6s" (porcentagem e tempo restante). Dá para cancelar no meio apertando "Dub β" de novo ou "Desligar".

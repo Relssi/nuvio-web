@@ -281,6 +281,14 @@ O script cobre automaticamente os itens marcados com **[auto]**. Os itens **[man
 - **Como (`playerDubAudio.js`, `dubAudioSync.js`):** o painel aparece assim que se aperta "Dub β" e fica visível durante o carregamento: 5→30% enquanto o TorBox prepara a fonte (sem progresso próprio, sobe devagar), 35% ao abrir, 40% com os dados do vídeo, 40→100% conforme carrega os ~15 s da dublagem (`preloadProgress`). O tempo restante (" · ~6s") vem da velocidade de carregamento medida, limitado aos 25 s máximos. Apertar "Dub β" ou "Desligar" durante o carregamento cancela ("Dublagem cancelada").
 - **Verificar:** checagem B41 e `dubAudioSync.test.mjs`; no player, com o TorBox simulado (2 s): 5%→13%→35%→40%→100%→"sincronizando…"; cancelar no meio não deixa dublagem nem vídeo extra.
 
+## B42 — Dub β muito fora de sincronia em versões com durações diferentes (ex.: Wicker) [auto + manual]
+
+- **Sintoma:** em Wicker (2026) a dublagem ficava muito fora, piorando com o tempo.
+- **Causas:** (1) a velocidade era chutada pela diferença de duração entre as versões; uma diferença de corte (créditos, cena a mais) virava uma velocidade errada e o áudio se afastava cada vez mais. (2) A conferência depois de sincronizado procurava ±2 s em volta de **zero**, não do atraso em uso, então nunca confirmava um atraso grande e chegava a aceitar um falso. (3) Mudanças no meio do filme demoravam a ser vistas (comparava os últimos 45 s). (4) Na lista do Wicker as primeiras fontes dubladas eram "A Ladra Solitária" (outro título/edição) e seriam escolhidas.
+- **Correção:** `durationRatio` só aceita a diferença de duração quando bate com 25/24/23,976 fps (±0,15%); `estimateDubOffset` busca em volta do atraso atual (`center`); depois de sincronizado confere os últimos 20 s, e após 3 falhas faz busca larga (±20 s, todas as velocidades) nos últimos 30 s; mudança grande no meio do filme pula o som da dublagem (o filme não repete nem pula cena); sem encaixe por 1 min o painel avisa "versões diferentes?". `findDubSource` prefere fonte dublada com o mesmo nome do filme, depois o mesmo tipo de lançamento.
+- **Teste:** filme 150 s + dublagem com 8 s a mais aos 50 s (158 s): velocidade ficou 1 (antes chutaria 1,053), sincronizou antes do corte (erro 0,01 s), depois do corte achou 8,00 s e ficou estável (erro 0,08 s). `dubOffsetEstimator.test.mjs`, `dubAudioSync.test.mjs`, `playerDubAudio.test.mjs`.
+- **Limite:** depois de uma mudança de corte leva ~30 s para reencontrar o atraso.
+
 ## Teste que já falhava
 
 - `js/ui/screens/home/homeHeroBackdropBitmap.test.mjs` (2 testes de troca suave da imagem do destaque) falha também na versão do GitHub antes destas mudanças. Não investigado.

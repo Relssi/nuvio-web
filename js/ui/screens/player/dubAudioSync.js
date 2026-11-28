@@ -32,6 +32,8 @@ const STOP_NUDGE_S = 0.04;
 const MAX_NUDGE = 0.03;
 const RATE_CHANGE_GAP_MS = 1000;
 const SETTLE_AFTER_JUMP_MS = 2000;
+const WIDE_SEARCH_S = 20;
+const GIVE_UP_HINT_MS = 60000;
 const DRIFT_SMOOTHING = 0.3;
 
 // What to do about the (averaged) drift, seen from the dub (positive = the
@@ -71,14 +73,17 @@ export function preloadProgress({ ahead = 0, speed = null, msLeft = PRELOAD_TIME
   return { percent, etaSeconds };
 }
 
+// Speed guess from the two durations (B42): only when the difference is
+// exactly a known frame-rate change (25 / 24 / 23.976 fps, within 0.15%).
+// A different cut (longer credits, an extra scene) also changes the duration
+// and must not be read as a speed change.
 export function durationRatio(mainDuration, dubDuration) {
   const main = Number(mainDuration);
   const dub = Number(dubDuration);
   if (!(main > 0) || !(dub > 0) || !Number.isFinite(main) || !Number.isFinite(dub)) return 1;
   const ratio = dub / main;
-  if (Math.abs(ratio - 1) < 0.004) return 1;
-  if (ratio > 0.94 && ratio < 1.06) return ratio;
-  return 1;
+  const known = COMMON_SPEED_RATIOS.find((candidate) => Math.abs(ratio / candidate - 1) < 0.0015);
+  return known || 1;
 }
 
 function waitFor(target, eventName, timeoutMs) {
@@ -313,6 +318,8 @@ export class DubAudioSync {
     on("play", () => this.tick());
     this.jumpDubTo(Number(main.currentTime || 0) * this.ratio + this.offset);
     this.timer = setInterval(() => this.tick(), TICK_MS);
+    this.listeningSince = Date.now();
+    this.missedChecks = 0;
     if (this.graph) this.sampler = setInterval(() => this.sample(), SAMPLE_MS);
     this.setStatus(this.graph ? "listening" : "manual-only");
     return {
@@ -402,7 +409,7 @@ export class DubAudioSync {
     this.dubSamples.push({ t: Number(dub.currentTime), v: rms(graph.dubAnalyser, graph.buffer) });
     const keepFrom = Number(main.currentTime) - ANALYSIS_WINDOW_S;
     while (this.mainSamples.length && this.mainSamples[0].t < keepFrom) this.mainSamples.shift();
-    const keepDubFrom = Number(dub.currentTime) - ANALYSIS_WINDOW_S - 10;
+    const keepDubFrom = Number(dub.currentTime) - ANALYSIS_WINDOW_S - WIDE_SEARCH_S;
     while (this.dubSamples.length && this.dubSamples[0].t < keepDubFrom) this.dubSamples.shift();
     if (this.autoOffset && Date.now() - this.lastEstimateAt > ESTIMATE_EVERY_MS)
       this.refineOffset();
@@ -415,14 +422,35 @@ export class DubAudioSync {
     if (!first || !last || last.t - first.t < MIN_ANALYSIS_S) return;
     const quiet = this.mainSamples.every((entry) => entry.v < 1e-4);
     if (quiet) return;
-    // First pass: wide search, every common speed. Once synced: narrow
-    // search around the current speed (the cut may still shift later).
+    // Once synced: narrow search around the current speed. When that stops
+    // matching 3 times in a row (one version has an extra scene...), or before
+    // the first match: wide search, up to 20 s and every common speed (B42).
     const synced = this.autoStatus === "synced";
-    const result = estimateDubAlignment(this.mainSamples, this.dubSamples, {
-      maxLag: synced ? 2 : 8,
-      ratios: synced ? [this.ratio] : [this.durationGuess || 1, this.ratio, ...COMMON_SPEED_RATIOS]
+    const wide = !synced || this.missedChecks >= 3;
+    // Once synced, only recent audio counts, so a change in the cut shows
+    // within seconds instead of being outvoted by the older, still-matching
+    // part of the window.
+    const recentFrom = last.t - (!synced ? ANALYSIS_WINDOW_S : wide ? 30 : MIN_ANALYSIS_S);
+    const recentMain = this.mainSamples.filter((entry) => entry.t >= recentFrom);
+    const result = estimateDubAlignment(recentMain, this.dubSamples, {
+      maxLag: wide ? WIDE_SEARCH_S : 2,
+      // Around the offset in use (the first search starts from 0).
+      center: synced ? this.offset : 0,
+      ratios: wide ? [this.durationGuess || 1, this.ratio, ...COMMON_SPEED_RATIOS] : [this.ratio]
     });
-    if (!result.confident) return;
+    if (!result.confident) {
+      this.missedChecks = (this.missedChecks || 0) + 1;
+      // A minute without any match: most likely two different versions.
+      if (
+        !synced &&
+        Date.now() - this.listeningSince > GIVE_UP_HINT_MS &&
+        this.autoStatus !== "unsure"
+      ) {
+        this.setStatus("unsure");
+      }
+      return;
+    }
+    this.missedChecks = 0;
     if (
       Math.abs(result.ratio - this.ratio) > 0.0005 ||
       Math.abs(result.offset - this.offset) >= 0.06
@@ -432,16 +460,21 @@ export class DubAudioSync {
     if (this.autoStatus !== "synced") this.setStatus("synced");
   }
 
-  // New speed and/or offset: the dub keeps playing untouched; the picture is
-  // moved to the matching moment (no audible cut).
+  // New speed and/or offset. First match, or a small change: the picture is
+  // moved to the matching moment (no audible cut). A big change in the
+  // middle of the movie (one version has an extra scene) skips the dubbed
+  // sound once instead, so the movie itself is never replayed or skipped (B42).
   realign(ratio, offset) {
+    const wasSynced = this.autoStatus === "synced";
     this.ratio = ratio;
     this.offset = offset;
     if (this.dub) this.dub.playbackRate = this.userRate * this.ratio;
     if (this.main && this.dub) {
+      const mainTime = Number(this.main.currentTime || 0);
       const pictureTime = (Number(this.dub.currentTime || 0) - offset) / ratio;
-      if (Math.abs(pictureTime - Number(this.main.currentTime || 0)) >= 0.06)
-        this.seekPicture(pictureTime);
+      const gap = Math.abs(pictureTime - mainTime);
+      if (wasSynced && gap >= 1) this.jumpDubTo(mainTime * ratio + offset);
+      else if (gap >= 0.06) this.seekPicture(pictureTime);
     }
     this.setStatus(this.autoOffset ? "synced" : "manual");
   }

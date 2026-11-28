@@ -40,7 +40,35 @@ function sameStream(left, right) {
 // Best dubbed source to borrow the sound from: dubbed first, and among those
 // the same kind of release as the movie playing (WEB-DL with WEB-DL...), which
 // usually means the same cut and speed.
-export function findDubSource(current = null, candidates = []) {
+function streamText(stream = {}) {
+  return [
+    stream.title,
+    stream.name,
+    stream.description,
+    stream.behaviorHints?.filename,
+    stream.raw?.title
+  ]
+    .map((value) => String(value || ""))
+    .join(" ")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+}
+
+function titleWords(title = "") {
+  return String(title || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .split(/[^a-z0-9]+/)
+    .filter((word) => word.length >= 3 && !["the", "and", "for", "dos", "das"].includes(word));
+}
+
+// Best dubbed source to borrow the sound from (B42): sources whose name has
+// the same title as the movie playing first (an addon can list another film
+// or edition), then the same kind of release (WEB-DL with WEB-DL...), then
+// the usual dubbed-first order.
+export function findDubSource(current = null, candidates = [], { title = "" } = {}) {
   const dubbed = preferDubbedStreams(candidates, { enabled: true }).filter(
     (stream) =>
       dubRank(stream) <= 2 &&
@@ -48,8 +76,16 @@ export function findDubSource(current = null, candidates = []) {
       DirectDebridResolver.canResolveStream(stream)
   );
   if (!dubbed.length) return null;
+  const words = titleWords(title);
   const family = releaseFamily(current);
-  return (family && dubbed.find((stream) => releaseFamily(stream) === family)) || dubbed[0];
+  const score = (stream) => {
+    const text = streamText(stream);
+    const sameTitle = words.length > 0 && words.every((word) => text.includes(word));
+    return (sameTitle ? 2 : 0) + (family && releaseFamily(stream) === family ? 1 : 0);
+  };
+  return dubbed
+    .map((stream, index) => ({ stream, index, score: score(stream) }))
+    .sort((left, right) => right.score - left.score || left.index - right.index)[0].stream;
 }
 
 export function canOfferDubAudio(screen) {
@@ -57,7 +93,11 @@ export function canOfferDubAudio(screen) {
   if (screen?.dubAudio?.active || screen?.dubAudioLoading) return true;
   const current = screen?.getCurrentStreamCandidate?.() || null;
   if (!current || dubRank(current) <= 1) return false;
-  return Boolean(findDubSource(current, screen?.streamCandidates || []));
+  return Boolean(
+    findDubSource(current, screen?.streamCandidates || [], {
+      title: screen?.params?.playerTitle || ""
+    })
+  );
 }
 
 export function isDubAudioActive(screen) {
@@ -132,7 +172,8 @@ function showPanel(screen, sourceLabel) {
     synced: "auto ✓",
     manual: "manual",
     "manual-only": "ajuste manual",
-    tap: "toque na tela para continuar"
+    tap: "toque na tela para continuar",
+    unsure: "não achei o atraso: versões diferentes? Ajuste ou troque a fonte"
   };
   const minus = makeButton("−0,5s", () => nudge(-0.5), "Atrasar a dublagem");
   const plus = makeButton("+0,5s", () => nudge(0.5), "Adiantar a dublagem");
@@ -206,7 +247,9 @@ export async function toggleDubAudio(screen, video) {
     return;
   }
   const current = screen?.getCurrentStreamCandidate?.() || null;
-  const source = findDubSource(current, screen?.streamCandidates || []);
+  const source = findDubSource(current, screen?.streamCandidates || [], {
+    title: screen?.params?.playerTitle || ""
+  });
   if (!source || !video) {
     screen?.showAspectToast?.("Nenhuma fonte dublada na lista", 2200);
     return;

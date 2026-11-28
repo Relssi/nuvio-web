@@ -4,7 +4,8 @@
 // moments, and music and effects are the same. So the loudness "shape" of the
 // two soundtracks matches when they are aligned. Both are sampled while they
 // play (time in each one's own timeline + loudness). The rises in loudness
-// (onsets) are compared at every shift from -maxLag to +maxLag; the shift with
+// (onsets) are compared at every shift from center-maxLag to center+maxLag
+// (center = the offset already in use, B42); the shift with
 // the clearest match is the offset:
 //   dubTime = mainTime * ratio + offset
 // It is only trusted when the match is clearly better than any other shift.
@@ -53,7 +54,7 @@ function sortedByTime(samples = []) {
 export function estimateDubOffset(
   mainSamples = [],
   dubSamples = [],
-  { ratio = 1, maxLag = 3 } = {}
+  { ratio = 1, maxLag = 3, center = 0 } = {}
 ) {
   const main = sortedByTime(mainSamples);
   const dub = sortedByTime(dubSamples);
@@ -65,7 +66,9 @@ export function estimateDubOffset(
   const mainOn = onsets(resample(main, mainFrom, mainTo));
   const dubOn = onsets(resample(dub, dubFrom, dubTo));
   const scores = [];
-  for (let lag = -maxLag; lag <= maxLag + 1e-9; lag += STEP_S) {
+  const firstLag = Math.round((center - maxLag) / STEP_S) * STEP_S;
+  const lastLag = center + maxLag + 1e-9;
+  for (let lag = firstLag; lag <= lastLag; lag += STEP_S) {
     let n = 0;
     let sx = 0;
     let sy = 0;
@@ -126,7 +129,7 @@ export const COMMON_SPEED_RATIOS = [
 export function estimateDubAlignment(
   mainSamples = [],
   dubSamples = [],
-  { ratios = COMMON_SPEED_RATIOS, maxLag = 3 } = {}
+  { ratios = COMMON_SPEED_RATIOS, maxLag = 3, center = 0 } = {}
 ) {
   const unique = [];
   ratios.forEach((ratio) => {
@@ -139,7 +142,7 @@ export function estimateDubAlignment(
   });
   let best = { confident: false, score: -1 };
   for (const ratio of unique) {
-    const result = estimateDubOffset(mainSamples, dubSamples, { ratio, maxLag });
+    const result = estimateDubOffset(mainSamples, dubSamples, { ratio, maxLag, center });
     if (result.score > best.score) best = { ...result, ratio };
   }
   return best;

@@ -623,9 +623,26 @@ async function main() {
     return true;
   });
 
+  await check(
+    "B42",
+    "dub: different cuts are not read as speed; search follows the offset",
+    async () => {
+      const sync = await source("js/ui/screens/player/dubAudioSync.js");
+      if (!sync.includes("COMMON_SPEED_RATIOS.find("))
+        return "speed guessed from any duration difference again";
+      if (!sync.includes("center: synced ? this.offset : 0"))
+        return "offset search no longer centred on the current offset";
+      if (!sync.includes("WIDE_SEARCH_S")) return "no wide search when the match is lost";
+      const panel = await source("js/ui/screens/player/playerDubAudio.js");
+      if (!panel.includes("sameTitle")) return "dub source choice ignores the title";
+      return true;
+    }
+  );
+
   // ---- Unit tests --------------------------------------------------------
   const tests = await run(process.execPath, [
     "--test",
+    "js/ui/screens/player/playerDubAudio.test.mjs",
     "js/ui/screens/player/dubOffsetEstimator.test.mjs",
     "js/ui/screens/player/dubAudioSync.test.mjs",
     "js/core/streams/dubbedStreamOrdering.test.mjs",

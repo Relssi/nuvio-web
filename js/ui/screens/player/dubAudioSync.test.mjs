@@ -45,3 +45,9 @@ test("preloadProgress: percent from loaded seconds, time left from loading speed
   assert.equal(preloadProgress({ ahead: 1, speed: 0.1, msLeft: 4000 }).etaSeconds, 4);
   assert.deepEqual(preloadProgress({ ahead: 20, speed: 2 }), { percent: 100, etaSeconds: 0 });
 });
+
+test("a different cut (other duration) is not read as a speed change", () => {
+  assert.equal(durationRatio(7200, 7200 * 1.03), 1); // 3% longer: extra scenes
+  assert.equal(durationRatio(7200, 7200 + 240), 1); // 4 more minutes of credits
+  assert.ok(Math.abs(durationRatio(7200, 7200 * (25 / 23.976)) - 25 / 23.976) < 1e-9);
+});
