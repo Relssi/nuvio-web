@@ -8,6 +8,13 @@ Detalhes de bugs (causa e correção) ficam em [`BUGS.md`](BUGS.md).
 
 ---
 
+## 29/11/2026 — Fontes sem som trocam sozinhas (FrostStream)
+
+- **O que mudou:** quando uma fonte toca sem som no navegador (como as 4K/1080p do FrostStream, que têm áudio Dolby e o Chrome não toca), o player percebe em uns 6 segundos, avisa "Fonte sem som neste navegador (áudio Dolby). Trocando para outra…" e passa sozinho para a próxima fonte, no mesmo ponto do filme.
+- **Por que não dá para converter o som dessas fontes:** o FrostStream bloqueia servidores (Cloudflare), então o áudio não pode ser convertido nem passar pelo TorBox. No **Edge** essas fontes tocam com som normalmente.
+- **Precisa fazer:** nada. Recarregue a página.
+- **Não testado:** com o FrostStream de verdade no player (testado com vídeos com áudio Dolby e AAC).
+
 ## 28/11/2026 — Listas do Rotten Tomatoes na Home
 
 - **O que mudou:** a Home ganhou 10 fileiras com listas reais do Rotten Tomatoes, depois dos catálogos de sempre: **Populares nos cinemas**, **Populares no Rotten Tomatoes** (filmes e séries), **Certified Fresh · os mais populares** e listas por gênero (filmes: Ação, Comédia, Terror, Animação; séries: Drama, Crime). As outras 18 listas que o CineRotten tem (Drama, Suspense, Ficção, Romance, Guerra, Documentários, Reality…) ficam no **Discover** (Type → Catalog). Abrir um título dessas fileiras funciona como em qualquer catálogo.

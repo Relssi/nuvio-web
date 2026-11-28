@@ -1,6 +1,7 @@
 /* eslint-disable no-unused-vars */
 import * as internals from "./playerScreenContext.js";
 import { LastPlaybackStore } from "../../../data/local/lastPlaybackStore.js";
+import { startSilentAudioWatch } from "./silentAudioWatch.js";
 
 export function createPlayerScreenMethods34() {
   const {
@@ -230,6 +231,8 @@ export function createPlayerScreenMethods34() {
       this.trackDiscoveryDeadline = 0;
       const previousPlaybackUrl = this.activePlaybackUrl;
       this.activePlaybackUrl = streamUrl;
+      // Sources whose sound this browser cannot play move on by themselves (B49).
+      startSilentAudioWatch(this);
       if (!preservePresentedPlaybackFrame) {
         this.scheduleSourceStartupTimeout?.();
       }

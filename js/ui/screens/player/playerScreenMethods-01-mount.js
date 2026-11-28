@@ -7,6 +7,7 @@ import { suspendIdleArtworkWorkers, suspendIdleHomeArtworkWorkers } from "../../
 /* global __NUVIO_APP_VERSION__ */
 import * as internals from "./playerScreenContext.js";
 import { initializePlayerMountState } from "./playerMountStateInitialization.js";
+import { startSilentAudioWatch } from "./silentAudioWatch.js";
 
 export function createPlayerScreenMethods01() {
   const {
@@ -220,6 +221,8 @@ export function createPlayerScreenMethods01() {
       if (initialStreamUrl && !this.isExternalFrameMode()) {
         const sourceCandidate = this.getStreamCandidateByUrl(initialStreamUrl) || this.getCurrentStreamCandidate();
         this.activePlaybackUrl = initialStreamUrl;
+        // First source of the title: also watched for missing sound (B49).
+        startSilentAudioWatch(this);
         this.currentEngineFsStream = this.getEngineFsStateForStream(sourceCandidate);
         const prioritizeWebOsRemoteMkvPlayback =
           Environment.isWebOS() && !this.currentEngineFsStream && this.isCurrentSourceLikelyMkv(initialStreamUrl, sourceCandidate);

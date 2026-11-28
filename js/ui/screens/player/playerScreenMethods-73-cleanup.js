@@ -1,6 +1,7 @@
 /* eslint-disable no-unused-vars */
 import * as internals from "./playerScreenContext.js";
 import { stopDubAudio } from "./playerDubAudio.js";
+import { stopSilentAudioWatch } from "./silentAudioWatch.js";
 
 export function createPlayerScreenMethods73() {
   const { PlayerController, streamRepository, TrackingScrobbleService, ENGINEFS_NAVIGATION_CLEANUP_GRACE_MS } = internals;
@@ -16,6 +17,9 @@ export function createPlayerScreenMethods73() {
     cleanup() {
       stopDubAudio(this);
       this.dubRejected = null;
+      stopSilentAudioWatch(this);
+      this.silentSourceKeys = null;
+      this.silentSourceSwitches = 0;
       this.closeStreamInfo({ restore: false });
       this.stopTrackingBeforeTeardown();
       try {

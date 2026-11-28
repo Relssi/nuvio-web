@@ -346,6 +346,14 @@ O script cobre automaticamente os itens marcados com **[auto]**. Os itens **[man
   - 10 listas têm `showInHome`; as outras ficam só no Discover. Não é salvo na conta (não aparece em Addons).
 - **Verificar:** checagem B48; testes `js/core/rt/rtLists.test.mjs`. Manual: no iPhone, a Home mostra "RT · Certified Fresh · os mais populares" e as outras 9 fileiras com selos 🍿; abrir um título abre os detalhes normais.
 
+## B49 — Fontes sem som no navegador (FrostStream e outros links diretos com áudio Dolby) [auto + manual]
+
+- **Sintoma:** fontes do addon FrostStream tocavam a imagem sem som (ou nem abriam) no Chrome.
+- **Causa (testada):** o FrostStream entrega links diretos de arquivo (`notWebReady`). As versões 4K HDR / 1080p têm áudio Dolby (E-AC-3), que Chrome, Brave e Opera jogam fora: no teste, um vídeo com E-AC-3 tocou com **0 bytes de áudio decodificado**, enquanto um com AAC decodificou normalmente (mesmo no mudo). O site do FrostStream fica atrás do Cloudflare e recusa servidores (página "Just a moment…" para o proxy do Render), então não dá para converter o áudio no servidor nem mandar para o TorBox.
+- **Correção (`silentAudioWatch.js`):** em cada fonte, o player mede o áudio decodificado (`webkitAudioDecodedByteCount`, Chrome/Edge). Se o filme anda 6 s e nenhum byte de áudio foi decodificado, aparece "Fonte sem som neste navegador (áudio Dolby). Trocando para outra…" e o player passa para a próxima fonte da lista, no mesmo ponto do filme (até 4 trocas; fontes já sem som não voltam). Sem outra fonte, avisa para escolher outra, usar o Dub β ou abrir no Edge. Safari e Firefox não informam isso, então lá nada muda (o Safari toca Dolby). Com o Dub β ligado, não troca.
+- **Verificar:** checagem B49 e `silentAudioWatch.test.mjs`; no player, fonte com E-AC-3 + fonte com AAC: depois de ~6 s trocou sozinho para a com AAC, que tocou com som.
+- **Limite:** no Edge as fontes Dolby tocam com som e ficam (é o desejado). Uma fonte que realmente não tem áudio também seria trocada.
+
 ## Teste que já falhava
 
 - `js/ui/screens/home/homeHeroBackdropBitmap.test.mjs` (2 testes de troca suave da imagem do destaque) falha também na versão do GitHub antes destas mudanças. Não investigado.

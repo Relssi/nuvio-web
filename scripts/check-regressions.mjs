@@ -750,9 +750,28 @@ async function main() {
     return true;
   });
 
+  await check(
+    "B49",
+    "a source with no playable sound in this browser moves to the next one",
+    async () => {
+      const watch = await source("js/ui/screens/player/silentAudioWatch.js");
+      if (!watch.includes("webkitAudioDecodedByteCount"))
+        return "no longer measures the decoded sound";
+      const mount = await source("js/ui/screens/player/playerScreenMethods-01-mount.js");
+      if (!mount.includes("startSilentAudioWatch(this)"))
+        return "first source of a title not watched";
+      const play = await source(
+        "js/ui/screens/player/playerScreenMethods-34-play-stream-by-url.js"
+      );
+      if (!play.includes("startSilentAudioWatch(this)")) return "sources picked later not watched";
+      return true;
+    }
+  );
+
   // ---- Unit tests --------------------------------------------------------
   const tests = await run(process.execPath, [
     "--test",
+    "js/ui/screens/player/silentAudioWatch.test.mjs",
     "js/ui/screens/player/playerDubAudio.test.mjs",
     "js/ui/screens/player/dubOffsetEstimator.test.mjs",
     "js/ui/screens/player/dubAudioSync.test.mjs",
