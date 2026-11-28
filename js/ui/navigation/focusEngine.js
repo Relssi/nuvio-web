@@ -367,6 +367,12 @@ export const FocusEngine = {
     if (!isPointerNavigationEnabled()) {
       return;
     }
+    // Overlays with their own click handlers (the Dub β panel) opt out: the
+    // screens' onPointerActivate is async, so handing them the click always
+    // cancelled it and the panel's buttons never fired (B47).
+    if (event?.target?.closest?.("[data-native-click]")) {
+      return;
+    }
     const target = this.getPointerFocusable(event);
     const currentScreen = Router.getCurrentScreen();
     if (!target) {

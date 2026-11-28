@@ -18,6 +18,13 @@ Detalhes de bugs (causa e correção) ficam em [`BUGS.md`](BUGS.md).
 - **Precisa fazer:** as notas **não se atualizam sozinhas** no site. O CineRotten atualiza os dados todo domingo às 4h; para levar as notas novas ao Nuvio, rode `node scripts/buildRtScores.mjs` e envie para o GitHub.
 - **Não testado:** no Safari de um iPhone de verdade (testado no tamanho do iPhone no navegador). O filtro "número de críticas" só conhece a contagem de cerca de 1.400 títulos; os outros ficam de fora quando esse filtro está ligado.
 
+## 29/11/2026 — Dub β: ajuste manual funcionando
+
+- **O que mudou:** os botões −0,5s e +0,5s da dublagem não faziam nada: o toque era engolido antes de chegar neles. Agora funcionam. Os botões também não mudam mais de lugar enquanto você toca, e o painel fica na tela enquanto você ajusta.
+- **Por que importa:** quando o site não consegue ajustar sozinho (arquivo direto em vez de stream, ou iPhone), esses botões são o único jeito de acertar a dublagem; sem eles ela ficava fora, como no filme 1080p testado.
+- **Precisa fazer:** nada. Recarregue a página. Se a dublagem estiver atrasada, toque em +0,5s; se estiver adiantada, em −0,5s.
+- **Não testado:** com o filme 1080p real (testado com vídeos de teste e TorBox simulado).
+
 ## 29/11/2026 — Tela de perfis no iPhone
 
 - **O que mudou:** a tela "Quem está assistindo?" ficou certa no iPhone: círculos do mesmo tamanho (o escolhido não cobre mais o "Adicionar"), título e textos em tamanho de celular, e deitado o título não some.

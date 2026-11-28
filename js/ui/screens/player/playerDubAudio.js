@@ -146,9 +146,12 @@ function showPanel(screen, sourceLabel) {
   removePanel();
   const panel = document.createElement("div");
   panel.id = PANEL_ID;
+  // Its buttons handle their own clicks (FocusEngine leaves them alone, B47).
+  panel.setAttribute("data-native-click", "");
   panel.style.cssText = [
     "position:fixed",
-    "top:12px",
+    // Below the player's "Voltar / Início" and clock row (B47).
+    "top:calc(64px + env(safe-area-inset-top, 0px))",
     "right:12px",
     "z-index:2147483000",
     "display:flex",
@@ -167,7 +170,9 @@ function showPanel(screen, sourceLabel) {
   label.textContent = "Dublado β";
   label.title = sourceLabel || "";
   const status = document.createElement("span");
-  status.style.cssText = "color:#b9b9c4;font-weight:500";
+  // Fixed width so the buttons never move under the finger when the text
+  // changes ("sincronizando…" -> "manual"), B47.
+  status.style.cssText = "color:#b9b9c4;font-weight:500;width:9.5em;line-height:1.25";
   const offset = document.createElement("span");
   offset.style.cssText = "min-width:48px;text-align:center;color:#ff6b72";
   offset.textContent = formatOffset(screen.dubAudio?.offset ?? 0);
@@ -181,6 +186,18 @@ function showPanel(screen, sourceLabel) {
     button.addEventListener("click", (event) => {
       event.stopPropagation();
       onClick();
+      // A tap on the panel counts as activity: the controls (and the panel
+      // with them) stay up while the offset is being tuned (B47).
+      screen.resetControlsAutoHide?.();
+      // ...and the panel itself stays for 8 s after each tap even if the
+      // player hides its controls, so a series of taps is not cut short.
+      const host = button.closest?.(`#${PANEL_ID}`);
+      if (host) {
+        host.__pinnedUntil = Date.now() + 8000;
+        host.__sync?.();
+        clearTimeout(host.__pinTimer);
+        host.__pinTimer = setTimeout(() => host.__sync?.(), 8100);
+      }
     });
     return button;
   };
@@ -215,12 +232,12 @@ function showPanel(screen, sourceLabel) {
     setLoading(false);
     status.textContent = STATUS_TEXT[state] || "";
     offset.textContent = formatOffset(Number(value) || 0);
-    autoButton.style.display = state === "manual" ? "" : "none";
+    autoButton.style.visibility = state === "manual" ? "visible" : "hidden";
   };
   // Loading progress (B41): "carregando 45% · ~6s".
   panel.__progress = (percent, etaSeconds) => {
     setLoading(true);
-    autoButton.style.display = "none";
+    autoButton.style.visibility = "hidden";
     const eta = Number.isFinite(etaSeconds) && etaSeconds > 0 ? ` · ~${etaSeconds}s` : "";
     status.textContent = `carregando ${Math.max(0, Math.min(100, Math.round(percent)))}%${eta}`;
   };
@@ -242,7 +259,12 @@ function showPanel(screen, sourceLabel) {
   const root = document.getElementById("playerUiRoot");
   const sync = () => {
     panel.style.display =
-      panel.__loading || !root || root.classList.contains("controls-visible") ? "flex" : "none";
+      panel.__loading ||
+      !root ||
+      root.classList.contains("controls-visible") ||
+      Date.now() < (panel.__pinnedUntil || 0)
+        ? "flex"
+        : "none";
   };
   panel.__sync = sync;
   sync();
@@ -256,6 +278,7 @@ function showPanel(screen, sourceLabel) {
 export function stopDubAudio(screen, { notify = false } = {}) {
   const panel = document.getElementById(PANEL_ID);
   panel?.__observer?.disconnect?.();
+  if (panel) clearTimeout(panel.__pinTimer);
   removePanel();
   if (screen?.dubAudioLoading) {
     // "Desligar" while loading cancels it (B41).

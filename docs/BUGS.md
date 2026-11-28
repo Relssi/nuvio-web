@@ -329,6 +329,14 @@ O script cobre automaticamente os itens marcados com **[auto]**. Os itens **[man
 - **Correção (`css/mobile.css`):** tamanhos próprios de celular para título, subtítulo, círculos (104px, também no escolhido), nome, selo e botão de editar; perfis lado a lado quebrando linha; a página rola em vez de encolher (`flex-shrink: 0`).
 - **Verificar:** checagem B46; fotos 390×664 e 844×390.
 
+## B47 — Dub β: botões −0,5s / +0,5s não faziam nada [auto + manual]
+
+- **Sintoma:** o ajuste manual da dublagem não funcionava; num filme 1080p a dublagem ficou fora de sincronia.
+- **Causa (reproduzida no navegador):** o FocusEngine captura todo clique da página e entrega botões ao `onPointerActivate` da tela. No player esse método é `async`, então sempre devolve uma Promise e o FocusEngine cancela o clique, qualquer que seja a resposta. Os botões do painel (fora do player) nunca recebiam o toque. Sem os botões, quando o ajuste automático não é possível (arquivo direto em vez de HLS, iPhone), não havia como acertar o atraso, e a dublagem ficava fora.
+- **Também:** ao virar "manual" aparecia o botão "Auto" e os outros mudavam de lugar (o 2º toque caía no "Auto" e voltava ao automático); o painel sumia junto com os controles ~3 s depois e cobria "Voltar / Início" e o relógio.
+- **Correção:** o painel tem `data-native-click` e o FocusEngine deixa esses cliques passarem; o "Auto" só fica invisível (não muda o lugar dos outros) e o texto de estado tem largura fixa; cada toque mantém o painel por 8 s e reinicia o tempo dos controles; o painel fica abaixo da linha de cima do player.
+- **Verificar:** checagem B47; no player com TorBox simulado, 4 toques em "+0,5s" levaram o atraso a +2,0 s e a dublagem acompanhou (diferença medida 1,98 s).
+
 ## Teste que já falhava
 
 - `js/ui/screens/home/homeHeroBackdropBitmap.test.mjs` (2 testes de troca suave da imagem do destaque) falha também na versão do GitHub antes destas mudanças. Não investigado.

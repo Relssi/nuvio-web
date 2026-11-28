@@ -715,6 +715,20 @@ async function main() {
     }
   );
 
+  await check("B47", "Dub β panel buttons receive their taps and stay put", async () => {
+    const engine = await source("js/ui/navigation/focusEngine.js");
+    if (!engine.includes('closest?.("[data-native-click]")'))
+      return "FocusEngine swallows clicks on the Dub β panel again";
+    const panel = await source("js/ui/screens/player/playerDubAudio.js");
+    if (!panel.includes('setAttribute("data-native-click"'))
+      return "Dub β panel no longer opts out of FocusEngine clicks";
+    if (!panel.includes("autoButton.style.visibility"))
+      return "Auto button shifts the other buttons under the finger again";
+    if (!panel.includes("__pinnedUntil"))
+      return "panel hides in the middle of a series of taps again";
+    return true;
+  });
+
   // ---- Unit tests --------------------------------------------------------
   const tests = await run(process.execPath, [
     "--test",
