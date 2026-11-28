@@ -224,6 +224,14 @@ O script cobre automaticamente os itens marcados com **[auto]**. Os itens **[man
 - **Correção:** tudo abaixo do topo da tela do filme/série (temporadas, episódios, abas Elenco/Avaliações/Trailer) fica em meia escala, substituindo os ajustes peça por peça de B27/B31. Descobrir e "Ver tudo" mostram 3 pôsteres por linha no celular, e os filtros quebram linha se precisar.
 - **Verificar:** checagens B31 e B33; no simulador nenhuma das três abas tem texto saindo da tela; Descobrir com cartões de 102px, 3 por linha.
 
+## B34 — Filmes que ainda não ficavam dublados: escolher o áudio antes [auto + manual]
+
+- **Causas vistas:** (1) o arquivo não tem faixa em português, mesmo com "Dual"/"PT-BR" no nome; (2) a faixa em português existe mas está marcada como outro idioma ou "und", e a escolha automática erra.
+- **Teste real (conta do usuário, Divertida Mente 2, fonte Dual 4K):** o TorBox listou 1ª "PT-BR 5.1" (por) e 2ª "Inglês 5.1" (eng); o site pediu a faixa 0 e recebeu o HLS convertido — caminho correto.
+- **Correção:** `decideTorboxAudio` (`torboxAudioChoice.js`) decide: se um idioma/título indica a faixa preferida, toca direto; se há várias faixas e nenhuma é claramente a preferida, ou se todas são de outro idioma, pergunta. `requestTorboxWebStream` chama `askTorboxAudio` (`torboxAudioPrompt.js`), e no navegador a janela `js/ui/components/torboxAudioChoiceDialog.js` (instalada em `app.js`) mostra as faixas com a sugerida marcada e "← Escolher outra fonte". Escolher outra fonte faz o player voltar para a lista (`status: "cancelled"`, `playerScreenMethods-35`). TVs não mudam.
+- **Verificar:** checagem B34, `torboxAudioChoice.test.mjs` e `torboxWebStream.test.mjs`; janela vista no simulador 375px.
+- **Não testado:** clique na janela dentro de um filme real (o painel do navegador fechou durante o teste).
+
 ## Teste que já falhava
 
 - `js/ui/screens/home/homeHeroBackdropBitmap.test.mjs` (2 testes de troca suave da imagem do destaque) falha também na versão do GitHub antes destas mudanças. Não investigado.

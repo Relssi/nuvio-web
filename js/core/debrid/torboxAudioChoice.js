@@ -130,3 +130,54 @@ export function pickTorboxAudioIndex(
   }
   return -1;
 }
+
+// Decides whether the converted TorBox stream can start on its own or the
+// viewer should choose the audio first (B34).
+// - confident: a track's language or title says it is the preferred one.
+// - otherwise, with several tracks, or when every track names another
+//   language, the viewer is asked; "suggested" is preselected.
+export function decideTorboxAudio(
+  audios = [],
+  targets = [],
+  { preferSecondaryForDual = false } = {}
+) {
+  const list = Array.isArray(audios) ? audios : [];
+  const confidentIndex = pickTorboxAudioIndex(list, targets, { preferSecondaryForDual: false });
+  if (confidentIndex >= 0) {
+    return { index: confidentIndex, ask: false, reason: "match" };
+  }
+  const guessed = pickTorboxAudioIndex(list, targets, { preferSecondaryForDual });
+  const suggested = guessed >= 0 ? guessed : 0;
+  if (!targets.length || list.length === 0) {
+    return { index: suggested, ask: false, reason: "no-preference" };
+  }
+  const described = list.map(describeAudio);
+  const allNamed = described.length > 0 && described.every((info) => info.base);
+  if (list.length > 1) {
+    return { index: suggested, ask: true, reason: allNamed ? "no-preferred-language" : "unsure" };
+  }
+  // A single track: only worth asking when it clearly is another language.
+  if (allNamed) {
+    return { index: 0, ask: true, reason: "no-preferred-language" };
+  }
+  return { index: 0, ask: false, reason: "single-unknown" };
+}
+
+// Human label for a TorBox audio track: "PT-BR 5.1 (Portuguese, EAC3)".
+export function describeTorboxAudioTrack(audio = {}, position = 0) {
+  const title = String(audio.title || "").trim();
+  const language = String(audio.language_full || audio.language || "").trim();
+  const channels = Number(audio.channels || 0);
+  const layout =
+    channels >= 6 ? "5.1" : channels === 2 ? "2.0" : channels ? `${channels} canais` : "";
+  const codec = String(audio.codec || "").toUpperCase();
+  const main = title || language || `Faixa ${position + 1}`;
+  const extra = [
+    title && language && !plain(title).includes(plain(language)) ? language : "",
+    layout && !main.includes(layout) ? layout : "",
+    codec
+  ]
+    .filter(Boolean)
+    .join(", ");
+  return extra ? `${main} (${extra})` : main;
+}

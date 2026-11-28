@@ -9,7 +9,12 @@ import {
 import { resolveAlternativeHashMatches, torboxCachedEntries } from "./torboxCacheAliases.js";
 import { Environment } from "../../platform/environment.js";
 import { PlayerSettingsStore } from "../../data/local/playerSettingsStore.js";
-import { pickTorboxAudioIndex, preferredAudioTargets } from "./torboxAudioChoice.js";
+import {
+  decideTorboxAudio,
+  describeTorboxAudioTrack,
+  preferredAudioTargets
+} from "./torboxAudioChoice.js";
+import { askTorboxAudio } from "./torboxAudioPrompt.js";
 import { isStreamPtBrAvailable } from "../streams/streamOrdering.js";
 
 const HLS_MIME_TYPE = "application/vnd.apple.mpegurl";
@@ -26,7 +31,12 @@ export async function requestTorboxWebStream(
   apiKey,
   torrentId,
   fileId,
-  { enabled = Environment.isBrowser(), audioTargets = null, preferSecondaryForDual = false } = {}
+  {
+    enabled = Environment.isBrowser(),
+    audioTargets = null,
+    preferSecondaryForDual = false,
+    fileName = ""
+  } = {}
 ) {
   const useDualFallback = Boolean(preferSecondaryForDual || pendingPreferSecondaryForDual);
   pendingPreferSecondaryForDual = false;
@@ -45,10 +55,26 @@ export async function requestTorboxWebStream(
   const audios = Array.isArray(data?.metadata?.audios) ? data.metadata.audios : [];
   // The first answer lists the audio tracks. Browsers only play the first one,
   // so when the preferred language is another track, ask for that one (B26).
+  // When the site cannot tell which track is the preferred language, or the
+  // file has none, the viewer chooses before the movie starts (B34).
   const targets = audioTargets || preferredAudioTargets(PlayerSettingsStore.get(), browserLocale());
-  const audioIndex = pickTorboxAudioIndex(audios, targets, {
-    preferSecondaryForDual: useDualFallback
-  });
+  const decision = decideTorboxAudio(audios, targets, { preferSecondaryForDual: useDualFallback });
+  let audioIndex = decision.index;
+  if (decision.ask) {
+    const answer = await askTorboxAudio({
+      fileName,
+      reason: decision.reason,
+      suggested: decision.index,
+      tracks: audios.map((audio, position) => ({
+        index: position,
+        label: describeTorboxAudioTrack(audio, position)
+      }))
+    });
+    if (answer.cancelled) {
+      return { cancelled: true };
+    }
+    audioIndex = answer.index;
+  }
   let selectedAudioIndex = 0;
   let resolvedHlsUrl = typeof data.hls_url === "string" ? data.hls_url.trim() : "";
   if (audioIndex > 0) {
@@ -343,7 +369,13 @@ async function resolveTorbox(
   }
   if (!preferDirectDownload) {
     pendingPreferSecondaryForDual = Boolean(preferSecondaryForDual);
-    const webStreamUrl = await requestTorboxWebStream(apiKey, torrentId, file.id).catch(() => null);
+    const webStreamUrl = await requestTorboxWebStream(apiKey, torrentId, file.id, {
+      fileName: getDebridFileDisplayName(file)
+    }).catch(() => null);
+    // "Choose another source" in the audio window (B34).
+    if (webStreamUrl?.cancelled) {
+      return failure("cancelled");
+    }
     const torboxStreamMeta = torboxStreamMetaCache.get(`${torrentId}:${file.id}`) || null;
     if (webStreamUrl) {
       return {

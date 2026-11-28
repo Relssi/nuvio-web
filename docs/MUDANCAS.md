@@ -8,6 +8,14 @@ Detalhes de bugs (causa e correção) ficam em [`BUGS.md`](BUGS.md).
 
 ---
 
+## 29/11/2026 — Escolher o áudio antes do filme quando não há certeza
+
+- **O que mudou:** no navegador, quando o site não tem certeza de qual faixa é a dublada (ou o arquivo não tem português), aparece uma janela "Escolha o áudio" antes do filme começar, com as faixas do arquivo e a sugerida marcada. Dá para tocar, clicar ou usar as setas. "← Escolher outra fonte" volta para a lista. Quando o site tem certeza, o filme começa direto, como antes.
+- **Também chegou do Kiid:** menu de idioma do áudio no player que troca a faixa pelo TorBox, volume e mudo, filtro 🇧🇷 PT-BR e ordenação das fontes por tamanho, barra lateral e destaque do computador, botão de download e "manter o perfil ao atualizar a página".
+- **Como:** o site lê a lista de faixas que o TorBox devolve e só pergunta quando precisa. Detalhes em BUGS.md (B34).
+- **Precisa fazer:** nada. Recarregue a página.
+- **Não testado:** escolher a faixa na janela num filme real.
+
 ## 28/11/2026 — Arrastar fileiras como carrossel, telas de filme/série e Descobrir
 
 - **O que mudou:** dá para arrastar as fileiras de filmes para o lado com o dedo (celular) ou segurando o mouse (computador), e elas continuam deslizando ao soltar, como um carrossel. Arrastar não abre o filme sem querer. No celular, a parte de baixo das telas de filme e série (temporadas, episódios, elenco, avaliações, trailer) ficou no tamanho certo, e o Descobrir mostra 3 pôsteres por linha.

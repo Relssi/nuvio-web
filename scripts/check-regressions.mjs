@@ -467,7 +467,7 @@ async function main() {
     "browser asks TorBox for its converted stream and plays it as HLS",
     async () => {
       const code = await source("js/core/debrid/directDebridResolver.js");
-      if (!code.includes("requestTorboxWebStream(apiKey, torrentId, file.id)"))
+      if (!code.includes("requestTorboxWebStream(apiKey, torrentId, file.id"))
         return "TorBox resolve no longer asks for the converted stream";
       if (!code.includes("mimeType: result.mimeType"))
         return "converted stream is no longer marked as HLS";
@@ -477,7 +477,7 @@ async function main() {
 
   await check("B26", "TorBox conversion asks for the preferred audio language", async () => {
     const code = await source("js/core/debrid/directDebridResolver.js");
-    if (!code.includes("pickTorboxAudioIndex(")) return "preferred audio track is no longer chosen";
+    if (!code.includes("decideTorboxAudio(")) return "preferred audio track is no longer chosen";
     return true;
   });
 
@@ -552,6 +552,21 @@ async function main() {
   await check("B33", "Discover / See all show three posters per row on phones", async () => {
     const css = await source("css/mobile.css");
     if (!/\.seeall-grid \{[^}]*repeat\(3/.test(css)) return "phone grid is not three columns";
+    return true;
+  });
+
+  await check("B34", "browser asks for the audio before a TorBox movie when unsure", async () => {
+    const resolver = await source("js/core/debrid/directDebridResolver.js");
+    if (!resolver.includes("decideTorboxAudio(")) return "resolver no longer decides when to ask";
+    if (!resolver.includes("askTorboxAudio(")) return "resolver no longer asks the viewer";
+    const app = await source("js/app.js");
+    if (!app.includes("installTorboxAudioChoice()"))
+      return "audio window not installed in the browser";
+    const player = await source(
+      "js/ui/screens/player/playerScreenMethods-35-play-stream-candidate.js"
+    );
+    if (!player.includes('result.status === "cancelled"'))
+      return "choosing another source does not go back";
     return true;
   });
 
