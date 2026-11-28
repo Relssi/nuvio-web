@@ -117,6 +117,22 @@ export function createPlayerScreenMethods70() {
         return true;
       }
 
+      const subtitleOffNode = target.closest?.("[data-subtitle-dialog-action='off']");
+      if (subtitleOffNode && this.subtitleDialogVisible) {
+        const offEntry = this.getSubtitleEntries().find((entry) => entry.off) || { id: "off", off: true };
+        this.subtitleFocusedRail = "language";
+        this.subtitleLanguageRailIndex = 0;
+        this.subtitleFocusedLanguageKey = "__off__";
+        this.applySubtitleEntry(offEntry);
+        this.rememberSubtitleTrackSelection({
+          sourceType: "off",
+          languageKey: "__off__",
+          entry: offEntry
+        });
+        this.closeSubtitleDialog();
+        return true;
+      }
+
       const subtitleCloseNode = target.closest?.("[data-subtitle-dialog-action='close']");
       if (subtitleCloseNode && this.subtitleDialogVisible) {
         this.closeSubtitleDialog();
@@ -131,6 +147,16 @@ export function createPlayerScreenMethods70() {
 
       const subtitleNode = target.closest?.("[data-subtitle-rail]");
       if (subtitleNode && this.subtitleDialogVisible) {
+        this.subtitleFocusedRail = subtitleNode.dataset.subtitleRail || "language";
+        const index = Number(subtitleNode.dataset.subtitleIndex || 0);
+        if (this.subtitleFocusedRail === "language") {
+          this.subtitleLanguageRailIndex = index;
+          this.subtitleFocusedLanguageKey = subtitleNode.dataset.subtitleKey || "__off__";
+        } else if (this.subtitleFocusedRail === "options") {
+          this.subtitleOptionRailIndex = index;
+        } else {
+          this.subtitleStyleRailIndex = index;
+        }
         return this.handleSubtitleDialogKey({ keyCode: 13 });
       }
 

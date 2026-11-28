@@ -10,12 +10,14 @@ import { resolveAlternativeHashMatches, torboxCachedEntries } from "./torboxCach
 import { Environment } from "../../platform/environment.js";
 import { PlayerSettingsStore } from "../../data/local/playerSettingsStore.js";
 import { pickTorboxAudioIndex, preferredAudioTargets } from "./torboxAudioChoice.js";
+import { isStreamPtBrAvailable } from "../streams/streamOrdering.js";
 
 const HLS_MIME_TYPE = "application/vnd.apple.mpegurl";
 // Set once TorBox says this account cannot use web streaming (not Pro), so
 // later titles skip the extra request until the page is reloaded.
 let torboxWebStreamUnavailable = false;
 const torboxStreamMetaCache = new Map();
+let pendingPreferSecondaryForDual = false;
 
 // Browser only (TV apps decode Dolby/DTS themselves): ask TorBox for its
 // converted HLS stream, which plays everywhere, iPhone included (B25).
@@ -24,8 +26,10 @@ export async function requestTorboxWebStream(
   apiKey,
   torrentId,
   fileId,
-  { enabled = Environment.isBrowser(), audioTargets = null } = {}
+  { enabled = Environment.isBrowser(), audioTargets = null, preferSecondaryForDual = false } = {}
 ) {
+  const useDualFallback = Boolean(preferSecondaryForDual || pendingPreferSecondaryForDual);
+  pendingPreferSecondaryForDual = false;
   if (!enabled || torboxWebStreamUnavailable || torrentId == null || fileId == null) {
     return null;
   }
@@ -42,7 +46,9 @@ export async function requestTorboxWebStream(
   // The first answer lists the audio tracks. Browsers only play the first one,
   // so when the preferred language is another track, ask for that one (B26).
   const targets = audioTargets || preferredAudioTargets(PlayerSettingsStore.get(), browserLocale());
-  const audioIndex = pickTorboxAudioIndex(audios, targets);
+  const audioIndex = pickTorboxAudioIndex(audios, targets, {
+    preferSecondaryForDual: useDualFallback
+  });
   let selectedAudioIndex = 0;
   let resolvedHlsUrl = typeof data.hls_url === "string" ? data.hls_url.trim() : "";
   if (audioIndex > 0) {
@@ -305,7 +311,7 @@ async function resolveTorbox(
   apiKey,
   season,
   episode,
-  { preferDirectDownload = false } = {}
+  { preferDirectDownload = false, preferSecondaryForDual = false } = {}
 ) {
   const magnet = buildMagnetUri(resolve);
   if (!magnet) {
@@ -336,6 +342,7 @@ async function resolveTorbox(
     return failure("stale");
   }
   if (!preferDirectDownload) {
+    pendingPreferSecondaryForDual = Boolean(preferSecondaryForDual);
     const webStreamUrl = await requestTorboxWebStream(apiKey, torrentId, file.id).catch(() => null);
     const torboxStreamMeta = torboxStreamMetaCache.get(`${torrentId}:${file.id}`) || null;
     if (webStreamUrl) {
@@ -631,7 +638,10 @@ export const DirectDebridResolver = {
     const task = (async () => {
       switch (provider.id) {
         case DEBRID_PROVIDER_IDS.TORBOX:
-          return resolveTorbox(resolve, apiKey, season, episode, { preferDirectDownload });
+          return resolveTorbox(resolve, apiKey, season, episode, {
+            preferDirectDownload,
+            preferSecondaryForDual: isStreamPtBrAvailable(stream)
+          });
         case DEBRID_PROVIDER_IDS.PREMIUMIZE:
           return resolvePremiumize(resolve, apiKey, season, episode, stream);
         case DEBRID_PROVIDER_IDS.REAL_DEBRID:

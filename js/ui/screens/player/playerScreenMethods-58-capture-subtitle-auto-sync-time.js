@@ -290,7 +290,10 @@ export function createPlayerScreenMethods58() {
       const nextMarkup = `
           <div class="player-subtitle-modal-header">
             <div class="player-dialog-title">${escapeHtml(t("subtitle_dialog_title", {}, "Subtitles"))}</div>
-            <button type="button" class="player-dialog-close-btn" data-subtitle-dialog-action="close" aria-label="Fechar">&#10005;</button>
+            <div class="player-subtitle-header-actions">
+              <button type="button" class="player-dialog-off-btn" data-subtitle-dialog-action="off">Desligar legendas</button>
+              <button type="button" class="player-dialog-close-btn" data-subtitle-dialog-action="close" aria-label="Fechar">&#10005;</button>
+            </div>
           </div>
           ${supportNotice ? `<div class="player-dialog-support-message" role="status">${escapeHtml(supportNotice)}</div>` : ""}
           <div class="player-subtitle-overlay-grid${showOptionsRail ? "" : " is-off-only"}">

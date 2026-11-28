@@ -87,19 +87,24 @@ function describeAudio(audio = {}) {
   const fields = [audio.language, audio.language_full, audio.title].map(plain);
   const base = fields.map(baseLanguage).find(Boolean) || "";
   const text = fields.join(" ");
+  const hasBrazilToken =
+    /\b(br|bra|brazil|brasil|brazilian|brasileiro|pob|pt-br|dublado|nacional)\b/.test(text) ||
+    plain(audio.language) === "pob";
   return {
-    base,
-    brazil:
-      base === "pt" &&
-      (/\b(br|bra|brazil|brasil|brazilian|brasileiro|pob|pt-br)\b/.test(text) ||
-        plain(audio.language) === "pob"),
+    base: base || (hasBrazilToken ? "pt" : ""),
+    brazil: (base === "pt" || !base) && hasBrazilToken,
     portugal: base === "pt" && /\b(pt-pt|portugal|european|europeu)\b/.test(text),
-    commentary: /comment|comentario/.test(text)
+    commentary: /comment|comentario/.test(text),
+    untagged: !base && (!plain(audio.language) || plain(audio.language) === "und")
   };
 }
 
 // Relative index (0 = first audio) of the best track for the targets, or -1.
-export function pickTorboxAudioIndex(audios = [], targets = []) {
+export function pickTorboxAudioIndex(
+  audios = [],
+  targets = [],
+  { preferSecondaryForDual = false } = {}
+) {
   const list = Array.isArray(audios) ? audios.map(describeAudio) : [];
   for (const target of targets) {
     const base = target === "pt-br" ? "pt" : target;
@@ -114,6 +119,14 @@ export function pickTorboxAudioIndex(audios = [], targets = []) {
       return (notPortugal || candidates[0]).index;
     }
     return candidates[0].index;
+  }
+  if (preferSecondaryForDual && list.length > 1 && list[0]?.base === "en") {
+    const untaggedSecondary = list.findIndex(
+      (info, index) => index > 0 && info.untagged && !info.commentary
+    );
+    if (untaggedSecondary > 0) {
+      return untaggedSecondary;
+    }
   }
   return -1;
 }
