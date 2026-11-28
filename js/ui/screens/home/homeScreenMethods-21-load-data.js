@@ -1,6 +1,7 @@
 import * as internals from "./homeScreenContext.js";
 import { startHomeContinueWatchingLoad } from "./homeContinueWatchingLoad.js";
 import { HomeCatalogSnapshotStore, buildHomeCatalogSnapshotKey } from "../../../data/local/homeCatalogSnapshotStore.js";
+import { rtListsAddons } from "../../../core/rt/rtLists.js";
 
 const SNAPSHOT_READ_TIMEOUT_MS = 500;
 const SNAPSHOT_WRITE_INTERVAL_MS = 60 * 1000;
@@ -143,7 +144,7 @@ export function createHomeScreenMethods21() {
             staleWhileRevalidate: true,
             timeoutMs: HOME_ADDON_MANIFEST_TIMEOUT_MS
           })
-        : await addonRepository.getInstalledAddons({ cacheOnly: true });
+        : [...(await addonRepository.getInstalledAddons({ cacheOnly: true })), ...rtListsAddons()];
       this.collections = CollectionsStore.get();
       const catalogDescriptors = [];
 

@@ -1,4 +1,5 @@
 import { MediaServerRepository } from "../mediaserver/mediaServerRepository.js";
+import { loadRtLists, rtListsAddons } from "../../core/rt/rtLists.js";
 import { isPrimaryProfileActive, sharedProfileId } from "../../core/profile/sharedProfileData.js";
 import { safeApiCall } from "../../core/network/safeApiCall.js";
 import { LocalStore } from "../../core/storage/localStore.js";
@@ -685,8 +686,13 @@ class AddonRepository {
 
   async getInstalledAddons(options = {}) {
     if (options.includeMediaServers) {
-      const addons = await this.getInstalledAddons({ ...options, includeMediaServers: false });
-      return [...addons, ...MediaServerRepository.addons()];
+      const [addons] = await Promise.all([
+        this.getInstalledAddons({ ...options, includeMediaServers: false }),
+        loadRtLists().catch(() => null)
+      ]);
+      // Built-in Rotten Tomatoes lists (CineRotten) ride along with media
+      // servers: catalog-only, never saved to the account (B48).
+      return [...addons, ...MediaServerRepository.addons(), ...rtListsAddons()];
     }
     const includeDisabled = Boolean(options?.includeDisabled);
     const allUrls = this.getInstalledAddonUrls();

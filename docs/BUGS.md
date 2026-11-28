@@ -337,6 +337,15 @@ O script cobre automaticamente os itens marcados com **[auto]**. Os itens **[man
 - **Correção:** o painel tem `data-native-click` e o FocusEngine deixa esses cliques passarem; o "Auto" só fica invisível (não muda o lugar dos outros) e o texto de estado tem largura fixa; cada toque mantém o painel por 8 s e reinicia o tempo dos controles; o painel fica abaixo da linha de cima do player.
 - **Verificar:** checagem B47; no player com TorBox simulado, 4 toques em "+0,5s" levaram o atraso a +2,0 s e a dublagem acompanhou (diferença medida 1,98 s).
 
+## B48 — Listas do Rotten Tomatoes como fileiras da Home [auto + manual]
+
+- **Pedido:** "na aba home onde ficam os catálogos dos filmes coloque listas recomendadas do rotten tomatoes por gênero ou recomendação da semana".
+- **Como funciona:**
+  - `scripts/buildRtLists.mjs` lê do CineRotten `rt_lists.json` (16 listas de filmes do RT), `rt_lists_serie.json` (12 de séries) e `hype.json` (populares nos cinemas) e grava `assets/data/rt-lists.json`. Só entram listas que o CineRotten realmente tem e títulos com IMDb.
+  - `js/core/rt/rtLists.js` transforma as listas num addon interno só de catálogo (`baseUrl nuvio-rt://lists`). O `addonRepository` o acrescenta junto com os servidores de mídia (`includeMediaServers`), e a Home também no caminho de cache. O `catalogRepository` responde a esses catálogos localmente, sem rede.
+  - 10 listas têm `showInHome`; as outras ficam só no Discover. Não é salvo na conta (não aparece em Addons).
+- **Verificar:** checagem B48; testes `js/core/rt/rtLists.test.mjs`. Manual: no iPhone, a Home mostra "RT · Certified Fresh · os mais populares" e as outras 9 fileiras com selos 🍿; abrir um título abre os detalhes normais.
+
 ## Teste que já falhava
 
 - `js/ui/screens/home/homeHeroBackdropBitmap.test.mjs` (2 testes de troca suave da imagem do destaque) falha também na versão do GitHub antes destas mudanças. Não investigado.

@@ -8,6 +8,13 @@ Detalhes de bugs (causa e correção) ficam em [`BUGS.md`](BUGS.md).
 
 ---
 
+## 28/11/2026 — Listas do Rotten Tomatoes na Home
+
+- **O que mudou:** a Home ganhou 10 fileiras com listas reais do Rotten Tomatoes, depois dos catálogos de sempre: **Populares nos cinemas**, **Populares no Rotten Tomatoes** (filmes e séries), **Certified Fresh · os mais populares** e listas por gênero (filmes: Ação, Comédia, Terror, Animação; séries: Drama, Crime). As outras 18 listas que o CineRotten tem (Drama, Suspense, Ficção, Romance, Guerra, Documentários, Reality…) ficam no **Discover** (Type → Catalog). Abrir um título dessas fileiras funciona como em qualquer catálogo.
+- **Como:** as listas vêm do CineRotten (`rt_lists.json`, `rt_lists_serie.json` e `hype.json`) e são copiadas para `assets/data/rt-lists.json` (173 KB) por `scripts/buildRtLists.mjs`. O app as mostra como um addon interno "Rotten Tomatoes" (como os servidores de mídia), que não é salvo na conta. Detalhes em BUGS.md (B48).
+- **Precisa fazer:** nada para ver. Para listas novas (o CineRotten atualiza aos domingos), rode `node scripts/buildRtLists.mjs` e `node scripts/buildRtScores.mjs` e envie para o GitHub.
+- **Não testado:** no Safari de um iPhone de verdade (testado no tamanho do iPhone no navegador). As listas são de 24 e 25/11/2026.
+
 ## 28/11/2026 — Notas do Rotten Tomatoes (CineRotten) nos pôsteres, nos detalhes e no Discover
 
 - **O que mudou:**

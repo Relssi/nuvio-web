@@ -378,6 +378,27 @@ async function main() {
     }
   );
 
+  await check("B48", "Rotten Tomatoes lists reach Home as a built-in catalog addon", async () => {
+    const raw = await source("assets/data/rt-lists.json");
+    if (raw.length > 400 * 1024) return `rt-lists.json is ${Math.round(raw.length / 1024)} KB`;
+    const lists = JSON.parse(raw)?.lists || [];
+    if (lists.length < 5) return `rt-lists.json has only ${lists.length} lists`;
+    if (
+      !lists.some((l) => l.home && l.type === "movie") ||
+      !lists.some((l) => l.home && l.type === "series")
+    ) {
+      return "rt-lists.json needs Home lists for movies and series";
+    }
+    const repo = await source("js/data/repository/addonRepository.js");
+    if (!repo.includes("...rtListsAddons()"))
+      return "addonRepository no longer adds the RT lists addon";
+    const catalogs = await source("js/data/repository/catalogRepository.js");
+    if (!catalogs.includes("isRtListsBase(addonBaseUrl)"))
+      return "catalogRepository no longer answers RT lists locally";
+    const home = await source("js/ui/screens/home/homeScreenMethods-21-load-data.js");
+    if (!home.includes("rtListsAddons()")) return "Home's cached addon path lost the RT lists";
+  });
+
   await check("B18", "addon pull falls back to the RPC when the table read is denied", async () => {
     const text = await source("js/core/profile/librarySyncService.js");
     if (!/isTableAccessDeniedError\(addonsTableError\)[\s\S]{0,400}"sync_pull_addons"/.test(text)) {

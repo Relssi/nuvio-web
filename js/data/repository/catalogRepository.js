@@ -1,4 +1,5 @@
 import { MediaServerRepository, isMediaServerBase } from "../mediaserver/mediaServerRepository.js";
+import { isRtListsBase, loadRtLists, rtListMetas } from "../../core/rt/rtLists.js";
 import { safeApiCall } from "../../core/network/safeApiCall.js";
 import { selectCatalogEntries } from "../../core/util/catalogEntryMapper.js";
 import { CatalogApi } from "../remote/api/catalogApi.js";
@@ -58,6 +59,34 @@ class CatalogRepository {
         extraArgs,
         signal
       });
+    if (isRtListsBase(addonBaseUrl)) {
+      await loadRtLists().catch(() => null);
+      const items = rtListMetas(catalogId, { skip }).map((meta) => ({
+        ...this.mapMeta(meta),
+        addonBaseUrl,
+        addonId,
+        addonName,
+        catalogType: type
+      }));
+      return {
+        status: "success",
+        data: {
+          addonId,
+          addonName,
+          addonBaseUrl,
+          catalogId,
+          catalogName,
+          apiType: type,
+          items,
+          isLoading: false,
+          hasMore: false,
+          currentPage: 0,
+          supportsSkip: false,
+          skipStep: this.normalizeSkipStep(skipStep),
+          nextSkip: skip
+        }
+      };
+    }
     const normalizedSkipStep = this.normalizeSkipStep(skipStep);
     const cacheKey = this.buildCacheKey({
       addonBaseUrl,
