@@ -131,7 +131,8 @@ function showPanel(screen, sourceLabel) {
     listening: "sincronizando…",
     synced: "auto ✓",
     manual: "manual",
-    "manual-only": "ajuste manual"
+    "manual-only": "ajuste manual",
+    tap: "toque na tela para continuar"
   };
   panel.__update = (state, value) => {
     status.textContent = STATUS_TEXT[state] || "";

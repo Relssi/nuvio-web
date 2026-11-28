@@ -268,6 +268,13 @@ O script cobre automaticamente os itens marcados com **[auto]**. Os itens **[man
 - **Teste:** filme de teste HLS 23,976 + dublagem 25 fps com 1,2 s de atraso e som diferente (outra "língua"); começou com palpite errado (0,969, 0 s), em ~25 s achou 0,959 e 1,20 s; erro real 0,035 s estável, sem pular o som. `dubOffsetEstimator.test.mjs`, `dubAudioSync.test.mjs`.
 - **Limites:** nos primeiros ~20–25 s ainda pode estar fora até achar o atraso; filmes com trechos muito silenciosos demoram mais; não testado com filme real do TorBox.
 
+## B40 — Dub β: filme congelado ao ligar a dublagem [auto + manual]
+
+- **Sintoma:** ao ligar a dublagem, o filme parava e não voltava nem apertando play.
+- **Causa (reproduzida):** para achar o atraso sozinho (B39), o som do filme passa pelo motor de áudio do navegador (`createMediaElementSource`). Se esse motor fica suspenso (navegador sem toque recente, ligação no celular...), o filme congela — a imagem segue o relógio do áudio — e o play não adianta. A ligação é permanente, então continuava travado mesmo depois de desligar a dublagem. No teste: com o motor suspenso o filme avançou 0 s em 3 s; play não destravou; reativar o motor destravou.
+- **Correção (`dubAudioSync.js`):** (1) só liga o som do filme ao motor se ele estiver realmente rodando (`ensureRunning`); senão usa ajuste manual; no iPhone/iPad sempre manual. (2) Qualquer toque, clique ou tecla reativa o motor (`installContextKeeper`). (3) Vigia no `tick`: motor suspenso → tenta reativar e o painel mostra "toque na tela para continuar".
+- **Verificar:** checagem B40; no player, suspender o motor com a dublagem ligada: o filme seguiu (2 s em 2,5 s); depois de desligar, suspender + um toque: voltou a andar.
+
 ## Teste que já falhava
 
 - `js/ui/screens/home/homeHeroBackdropBitmap.test.mjs` (2 testes de troca suave da imagem do destaque) falha também na versão do GitHub antes destas mudanças. Não investigado.

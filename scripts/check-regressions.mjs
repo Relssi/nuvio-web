@@ -605,6 +605,15 @@ async function main() {
     return true;
   });
 
+  await check("B40", "dub: a suspended audio engine cannot freeze the movie", async () => {
+    const sync = await source("js/ui/screens/player/dubAudioSync.js");
+    if (!sync.includes("installContextKeeper(")) return "taps no longer wake the audio engine";
+    if (!sync.includes("await ensureRunning(context)"))
+      return "movie attached to a suspended audio engine";
+    if (!sync.includes('this.setStatus("tap")')) return "watchdog for a suspended engine missing";
+    return true;
+  });
+
   // ---- Unit tests --------------------------------------------------------
   const tests = await run(process.execPath, [
     "--test",

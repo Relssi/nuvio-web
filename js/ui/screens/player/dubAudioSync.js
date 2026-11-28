@@ -101,8 +101,48 @@ export function getDubAudioContext() {
   if (!sharedContext) {
     const AudioContextClass = globalThis.AudioContext || globalThis.webkitAudioContext;
     sharedContext = AudioContextClass ? new AudioContextClass() : null;
+    if (sharedContext) installContextKeeper(sharedContext);
   }
   return sharedContext;
+}
+
+// A movie whose sound goes through the audio engine FREEZES while the engine
+// is suspended (the picture follows the audio clock), and pressing play does
+// not help (B40). The browser may suspend it (no tap yet, phone call, ...),
+// so any tap, click or key wakes it up again.
+function installContextKeeper(context) {
+  const wake = () => {
+    if (context.state !== "running" && context.state !== "closed") {
+      void Promise.resolve(context.resume?.()).catch(() => {});
+    }
+  };
+  for (const type of ["pointerdown", "touchend", "keydown", "click"]) {
+    document.addEventListener(type, wake, { capture: true, passive: true });
+  }
+}
+
+async function ensureRunning(context, timeoutMs = 1200) {
+  if (!context) return false;
+  if (context.state === "running") return true;
+  try {
+    await Promise.race([
+      Promise.resolve(context.resume?.()),
+      new Promise((resolve) => setTimeout(resolve, timeoutMs))
+    ]);
+  } catch (_) {
+    // Not allowed without a tap.
+  }
+  return context.state === "running";
+}
+
+// iPhone / iPad Safari: the engine does not work reliably with video, so
+// the dub stays in manual mode there.
+function isAppleMobile() {
+  const agent = String(globalThis.navigator?.userAgent || "");
+  return (
+    /iPhone|iPad|iPod/i.test(agent) ||
+    (/Macintosh/i.test(agent) && Number(globalThis.navigator?.maxTouchPoints || 0) > 1)
+  );
 }
 
 function sourceFor(context, media) {
@@ -207,7 +247,7 @@ export class DubAudioSync {
     }
 
     this.mainWasMuted = main.muted;
-    this.setupGraph();
+    await this.setupGraph();
     dub.muted = false;
     dub.volume = Math.max(0, Math.min(1, Number(main.volume ?? 1)));
     this.active = true;
@@ -248,16 +288,17 @@ export class DubAudioSync {
 
   // Sound routing: the dub goes to the speakers; the picture's own sound
   // goes only to a "listener" (for the automatic offset), not to the speakers.
-  setupGraph() {
+  // Only when the engine is really running: attaching the movie to a
+  // suspended engine would freeze it (B40). Otherwise: manual offset mode.
+  async setupGraph() {
     const main = this.main;
     const dub = this.dub;
     const context = getDubAudioContext();
-    if (!context || !canAnalyse(main)) {
+    if (!context || !canAnalyse(main) || isAppleMobile() || !(await ensureRunning(context))) {
       main.muted = true;
       return;
     }
     try {
-      context.resume?.();
       const mainSource = sourceFor(context, main);
       const dubSource = sourceFor(context, dub);
       const mainAnalyser = context.createAnalyser();
@@ -421,6 +462,15 @@ export class DubAudioSync {
     const dub = this.dub;
     if (!this.active || !main || !dub) return;
     if (!this.graph && !main.muted) main.muted = true;
+    // Watchdog (B40): a suspended engine freezes the movie; try to wake it
+    // (a tap always does, see installContextKeeper).
+    const context = this.graph?.context;
+    if (context && context.state !== "running" && context.state !== "closed") {
+      void Promise.resolve(context.resume?.()).catch(() => {});
+      if (this.autoStatus !== "tap") this.setStatus("tap");
+      return;
+    }
+    if (this.autoStatus === "tap") this.setStatus(this.autoOffset ? "listening" : "manual");
     const target = Number(main.currentTime || 0) * this.ratio + this.offset;
     const now = Date.now();
     if (main.paused || main.seeking || main.readyState < 3 || target < 0) {
