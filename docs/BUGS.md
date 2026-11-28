@@ -250,6 +250,14 @@ O script cobre automaticamente os itens marcados com **[auto]**. Os itens **[man
 - **Teste:** filme de teste 23,976 fps + dublagem HLS 25 fps: razão 0,959 detectada, diferença caiu de 0,17 s para ~0,005 s em 8 s; pausa/volta, atraso +1 s e desligar funcionaram. `dubAudioSync.test.mjs`.
 - **Limites (beta):** só funciona bem quando as duas versões têm o mesmo corte (ex.: WEB-DL do mesmo serviço); versões com cenas diferentes saem de sincronia. Gasta a internet de duas transmissões (a dublada em 144p). Pode não funcionar no iPhone (dois áudios ao mesmo tempo). O botão de mudo age sobre a dublagem enquanto ela está ligada. Não testado com TorBox de verdade (qualidade do áudio em 144p ainda a medir).
 
+## B38 — Dub β: áudio dublado cortando [auto + manual]
+
+- **Sintoma:** com a dublagem ligada, o som picotava.
+- **Causa:** a sincronia de B37 mudava a velocidade do áudio a cada 250 ms (~80 mudanças em 20 s) e pulava o áudio sempre que a diferença passava de 0,35 s — inclusive enquanto a dublagem (convertida na hora pelo TorBox) ainda carregava.
+- **Correção (`dubAudioSync.js`, `planDubCorrection`):** diferença medida com média; velocidade só muda acima de 0,12 s, no máximo 1×/s e até 3%, e volta ao normal abaixo de 0,04 s; pulo só acima de 1 s, seguido de 2 s sem medir; nada é corrigido enquanto a dublagem carrega; buffer de 90 s.
+- **Teste:** 20 s de reprodução (23,976 × 25 fps): 4 mudanças de velocidade, 2 pulos só no início, diferença máxima 0,118 s, dublagem nunca parou. `dubAudioSync.test.mjs`.
+- **Não testado:** com TorBox real (onde a conversão em tempo real pode travar a dublagem).
+
 ## Teste que já falhava
 
 - `js/ui/screens/home/homeHeroBackdropBitmap.test.mjs` (2 testes de troca suave da imagem do destaque) falha também na versão do GitHub antes destas mudanças. Não investigado.

@@ -9,14 +9,45 @@
 //   dub against a 23.976 fps movie): it is the ratio of the two durations
 //   when they differ by 0.4%-6%, otherwise 1.
 // - offset is set by the viewer with the -0.5 s / +0.5 s buttons.
-// Small drifts are corrected by nudging the playback speed, big ones (a
-// seek, a stall) by jumping.
+// Corrections are gentle so the sound does not stutter (B38): the drift is
+// averaged over several readings; the speed changes only above 0.12 s of
+// drift, at most once per second and by at most 3%, and goes back to normal
+// below 0.04 s; the dub only jumps beyond 1 s (a seek) and then waits 2 s
+// before measuring again; nothing is corrected while the dub is still loading.
 
 import { loadStreamingLibs } from "../../../runtime/loadStreamingLibs.js";
 
 const TICK_MS = 250;
-const JUMP_THRESHOLD_S = 0.35;
-const MAX_NUDGE = 0.05;
+const JUMP_THRESHOLD_S = 1;
+const START_NUDGE_S = 0.12;
+const STOP_NUDGE_S = 0.04;
+const MAX_NUDGE = 0.03;
+const RATE_CHANGE_GAP_MS = 1000;
+const SETTLE_AFTER_JUMP_MS = 2000;
+const DRIFT_SMOOTHING = 0.3;
+
+// What to do about the (averaged) drift: "jump", change the "rate", or "none".
+export function planDubCorrection({
+  drift = 0,
+  baseRate = 1,
+  currentRate = baseRate,
+  msSinceRateChange = Infinity,
+  nudging = false
+} = {}) {
+  const size = Math.abs(drift);
+  if (size > JUMP_THRESHOLD_S) return { action: "jump" };
+  if (msSinceRateChange < RATE_CHANGE_GAP_MS) return { action: "none" };
+  if (size < STOP_NUDGE_S || (!nudging && size < START_NUDGE_S)) {
+    return Math.abs(currentRate - baseRate) > 0.0005
+      ? { action: "rate", rate: baseRate, nudging: false }
+      : { action: "none" };
+  }
+  const nudge = Math.max(-MAX_NUDGE, Math.min(MAX_NUDGE, -drift * 0.25));
+  const rate = baseRate * (1 + nudge);
+  return Math.abs(currentRate - rate) > 0.004
+    ? { action: "rate", rate, nudging: true }
+    : { action: "none" };
+}
 
 export function durationRatio(mainDuration, dubDuration) {
   const main = Number(mainDuration);
@@ -26,14 +57,6 @@ export function durationRatio(mainDuration, dubDuration) {
   if (Math.abs(ratio - 1) < 0.004) return 1;
   if (ratio > 0.94 && ratio < 1.06) return ratio;
   return 1;
-}
-
-// Speed for the dub element: follows the main speed and pulls the dub back
-// toward the target time; null means "too far, jump instead".
-export function syncPlaybackRate({ mainRate = 1, ratio = 1, drift = 0 } = {}) {
-  if (Math.abs(drift) > JUMP_THRESHOLD_S) return null;
-  const nudge = Math.max(-MAX_NUDGE, Math.min(MAX_NUDGE, -drift * 0.5));
-  return Number(mainRate || 1) * ratio * (1 + nudge);
 }
 
 function waitFor(target, eventName, timeoutMs) {
@@ -62,6 +85,12 @@ export class DubAudioSync {
     this.active = false;
     this.mainWasMuted = false;
     this.listeners = [];
+    this.smoothDrift = null;
+    this.settleUntil = 0;
+    this.lastRateChangeAt = 0;
+    this.nudging = false;
+    this.rateChanges = 0;
+    this.jumps = 0;
   }
 
   async start(url) {
@@ -81,7 +110,7 @@ export class DubAudioSync {
     await loadStreamingLibs({ hls: true, dash: false }).catch(() => {});
     const Hls = globalThis.Hls;
     if (Hls && typeof Hls.isSupported === "function" && Hls.isSupported()) {
-      this.hls = new Hls({ maxBufferLength: 60, backBufferLength: 30 });
+      this.hls = new Hls({ maxBufferLength: 90, maxMaxBufferLength: 120, backBufferLength: 30 });
       this.hls.loadSource(url);
       this.hls.attachMedia(dub);
     } else if (nativeHls) {
@@ -122,22 +151,55 @@ export class DubAudioSync {
     if (!this.active || !main || !dub) return;
     if (!main.muted) main.muted = true;
     const target = Number(main.currentTime || 0) * this.ratio + this.offset;
+    const baseRate = Number(main.playbackRate || 1) * this.ratio;
+    const now = Date.now();
     if (main.paused || main.seeking || main.readyState < 3 || target < 0) {
       if (!dub.paused) dub.pause();
-      if (force && target >= 0) dub.currentTime = target;
+      if (force && target >= 0) this.jumpTo(target, baseRate, now);
+      return;
+    }
+    if (force) {
+      this.jumpTo(target, baseRate, now);
+      if (dub.paused) dub.play().catch(() => {});
+      return;
+    }
+    if (dub.paused) dub.play().catch(() => {});
+    // Still loading (after a jump, or TorBox converting): wait, do not chase.
+    if (now < this.settleUntil || dub.seeking || dub.readyState < 3) {
+      this.smoothDrift = null;
       return;
     }
     const drift = Number(dub.currentTime || 0) - target;
-    const rate = force
-      ? null
-      : syncPlaybackRate({ mainRate: main.playbackRate, ratio: this.ratio, drift });
-    if (rate === null) {
-      dub.currentTime = target;
-      dub.playbackRate = Number(main.playbackRate || 1) * this.ratio;
-    } else {
-      dub.playbackRate = rate;
+    this.smoothDrift =
+      this.smoothDrift == null
+        ? drift
+        : this.smoothDrift * (1 - DRIFT_SMOOTHING) + drift * DRIFT_SMOOTHING;
+    const plan = planDubCorrection({
+      drift: this.smoothDrift,
+      baseRate,
+      currentRate: dub.playbackRate,
+      msSinceRateChange: now - this.lastRateChangeAt,
+      nudging: this.nudging
+    });
+    if (plan.action === "jump") {
+      this.jumpTo(target, baseRate, now);
+    } else if (plan.action === "rate") {
+      dub.playbackRate = plan.rate;
+      this.nudging = plan.nudging;
+      this.lastRateChangeAt = now;
+      this.rateChanges += 1;
     }
-    if (dub.paused) dub.play().catch(() => {});
+  }
+
+  jumpTo(target, baseRate, now = Date.now()) {
+    if (!this.dub) return;
+    this.dub.currentTime = target;
+    this.dub.playbackRate = baseRate;
+    this.nudging = false;
+    this.smoothDrift = null;
+    this.settleUntil = now + SETTLE_AFTER_JUMP_MS;
+    this.lastRateChangeAt = now;
+    this.jumps += 1;
   }
 
   toggleMute() {

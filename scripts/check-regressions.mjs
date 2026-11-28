@@ -594,6 +594,14 @@ async function main() {
     return true;
   });
 
+  await check("B38", "dub sync corrects gently (no stuttering)", async () => {
+    const sync = await source("js/ui/screens/player/dubAudioSync.js");
+    if (!sync.includes("export function planDubCorrection"))
+      return "gentle correction plan missing";
+    if (!/const JUMP_THRESHOLD_S = 1;/.test(sync)) return "dub jumps on small drifts again";
+    return true;
+  });
+
   // ---- Unit tests --------------------------------------------------------
   const tests = await run(process.execPath, [
     "--test",
