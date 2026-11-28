@@ -15,6 +15,7 @@ const HLS_MIME_TYPE = "application/vnd.apple.mpegurl";
 // Set once TorBox says this account cannot use web streaming (not Pro), so
 // later titles skip the extra request until the page is reloaded.
 let torboxWebStreamUnavailable = false;
+const torboxStreamMetaCache = new Map();
 
 // Browser only (TV apps decode Dolby/DTS themselves): ask TorBox for its
 // converted HLS stream, which plays everywhere, iPhone included (B25).
@@ -37,10 +38,13 @@ export async function requestTorboxWebStream(
     }
     return null;
   }
+  const audios = Array.isArray(data?.metadata?.audios) ? data.metadata.audios : [];
   // The first answer lists the audio tracks. Browsers only play the first one,
   // so when the preferred language is another track, ask for that one (B26).
   const targets = audioTargets || preferredAudioTargets(PlayerSettingsStore.get(), browserLocale());
-  const audioIndex = pickTorboxAudioIndex(data?.metadata?.audios, targets);
+  const audioIndex = pickTorboxAudioIndex(audios, targets);
+  let selectedAudioIndex = 0;
+  let resolvedHlsUrl = typeof data.hls_url === "string" ? data.hls_url.trim() : "";
   if (audioIndex > 0) {
     const chosen = await DebridApi.torboxCreateStream(apiKey, {
       id: torrentId,
@@ -50,15 +54,28 @@ export async function requestTorboxWebStream(
     const chosenUrl =
       typeof chosen?.data?.data?.hls_url === "string" ? chosen.data.data.hls_url.trim() : "";
     if (chosen?.ok && chosenUrl) {
+      selectedAudioIndex = audioIndex;
+      resolvedHlsUrl = chosenUrl;
+      torboxStreamMetaCache.set(`${torrentId}:${fileId}`, {
+        torrentId,
+        fileId,
+        audios,
+        selectedAudioIndex
+      });
       return chosenUrl;
     }
   }
-  const hlsUrl = typeof data.hls_url === "string" ? data.hls_url.trim() : "";
+  torboxStreamMetaCache.set(`${torrentId}:${fileId}`, {
+    torrentId,
+    fileId,
+    audios,
+    selectedAudioIndex
+  });
   // TorBox says the original file already plays in browsers: keep it direct.
-  if (!hlsUrl || data.needs_transcoding === false) {
+  if (!resolvedHlsUrl || data.needs_transcoding === false) {
     return null;
   }
-  return hlsUrl;
+  return resolvedHlsUrl;
 }
 
 function browserLocale() {
@@ -320,14 +337,31 @@ async function resolveTorbox(
   }
   if (!preferDirectDownload) {
     const webStreamUrl = await requestTorboxWebStream(apiKey, torrentId, file.id).catch(() => null);
+    const torboxStreamMeta = torboxStreamMetaCache.get(`${torrentId}:${file.id}`) || null;
     if (webStreamUrl) {
-      return success(
-        webStreamUrl,
-        hlsFilename(getDebridFileDisplayName(file)),
-        getDebridFileSize(file),
-        HLS_MIME_TYPE
-      );
+      return {
+        ...success(
+          webStreamUrl,
+          hlsFilename(getDebridFileDisplayName(file)),
+          getDebridFileSize(file),
+          HLS_MIME_TYPE
+        ),
+        ...(torboxStreamMeta ? { torboxStreamMeta } : {})
+      };
     }
+    const link = await DebridApi.torboxRequestDownloadLink(apiKey, torrentId, file.id);
+    const url = typeof link.data?.data === "string" ? link.data.data : "";
+    if (!link.ok || !url) {
+      const degraded = serviceDegradedFailure(link, "Torbox");
+      if (degraded) {
+        return degraded;
+      }
+      return failure("stale");
+    }
+    return {
+      ...success(url, getDebridFileDisplayName(file), getDebridFileSize(file)),
+      ...(torboxStreamMeta ? { torboxStreamMeta } : {})
+    };
   }
   const link = await DebridApi.torboxRequestDownloadLink(apiKey, torrentId, file.id);
   const url = typeof link.data?.data === "string" ? link.data.data : "";
@@ -467,6 +501,7 @@ function withResolvedUrl(stream = {}, result) {
   return {
     ...stream,
     ...typeHints,
+    ...(result.torboxStreamMeta ? { torboxStreamMeta: result.torboxStreamMeta } : {}),
     url: result.url,
     externalUrl: null,
     behaviorHints: {
@@ -477,6 +512,7 @@ function withResolvedUrl(stream = {}, result) {
     raw: {
       ...(stream.raw || stream),
       ...typeHints,
+      ...(result.torboxStreamMeta ? { torboxStreamMeta: result.torboxStreamMeta } : {}),
       url: result.url,
       externalUrl: null,
       behaviorHints: {
@@ -674,5 +710,33 @@ export const DirectDebridResolver = {
       return { status: "unsupported_hls" };
     }
     return failure("unavailable");
+  },
+
+  async switchTorboxAudioTrack(torboxStreamMeta = null, audioIndex = 0) {
+    const torrentId = torboxStreamMeta?.torrentId;
+    const fileId = torboxStreamMeta?.fileId;
+    if (torrentId == null || fileId == null) {
+      return failure("unavailable");
+    }
+    const settings = DebridSettingsStore.get();
+    const apiKey = DebridProviders.apiKeyFor(settings, DEBRID_PROVIDER_IDS.TORBOX);
+    if (!apiKey) {
+      return failure("missing_api_key");
+    }
+    const response = await DebridApi.torboxCreateStream(apiKey, {
+      id: torrentId,
+      fileId,
+      audioIndex: Math.max(0, Number(audioIndex) || 0)
+    });
+    const hlsUrl =
+      typeof response?.data?.data?.hls_url === "string" ? response.data.data.hls_url.trim() : "";
+    if (!response?.ok || !hlsUrl) {
+      return failure("error");
+    }
+    return {
+      status: "success",
+      url: hlsUrl,
+      mimeType: HLS_MIME_TYPE
+    };
   }
 };

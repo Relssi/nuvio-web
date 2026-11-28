@@ -2,7 +2,7 @@
 import * as internals from "./playerScreenContext.js";
 
 export function createPlayerScreenMethods15() {
-  const { PlayerController, PlayerSettingsStore, renderLoadingIndicator, t, escapeHtml, escapeAttribute } = internals;
+  const { PlayerController, PlayerSettingsStore, Environment, renderLoadingIndicator, t, escapeHtml, escapeAttribute } = internals;
 
   return {
     applyManifestTrackSelection({ audioTrackId, subtitleTrackId } = {}) {

@@ -110,11 +110,6 @@ export function createPlayerScreenMethods28() {
           svg: '<svg class="player-control-svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M5 20h14v-2H5v2zm7-18v10.17l3.59-3.58L17 10l-5 5-5-5 1.41-1.41L11 12.17V2h1z"/></svg>',
           title: t("player_download", {}, "Download")
         });
-        base.push({
-          action: "fullscreen",
-          svg: '<svg class="player-control-svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>',
-          title: t("player_fullscreen", {}, "Tela cheia")
-        });
       }
 
       base.push({
@@ -124,6 +119,15 @@ export function createPlayerScreenMethods28() {
           : '<svg class="player-control-svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm12 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>',
         title: t("player_more_actions_title", {}, "More Actions")
       });
+
+      if (Environment.isBrowser() && !this.moreActionsVisible) {
+        base.push({
+          action: "fullscreen",
+          className: "player-fullscreen-btn",
+          svg: '<svg class="player-control-svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>',
+          title: t("player_fullscreen", {}, "Tela cheia")
+        });
+      }
 
       if (!this.moreActionsVisible) {
         return base;

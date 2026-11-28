@@ -145,8 +145,40 @@ export function createPlayerScreenMethods60() {
                 };
               });
             } else {
-              const implicitEntry = this.getImplicitAudioEntry();
-              entries = implicitEntry ? [implicitEntry] : [];
+              const candidate = this.getCurrentStreamCandidate?.() || {};
+              const torboxMeta = candidate?.torboxStreamMeta || candidate?.raw?.torboxStreamMeta || null;
+              const torboxAudios = Array.isArray(torboxMeta?.audios) ? torboxMeta.audios : [];
+              if (torboxAudios.length > 1) {
+                const selectedIndex = Number(torboxMeta.selectedAudioIndex ?? 0);
+                entries = torboxAudios.map((audio, index) => {
+                  const mappedTrack = {
+                    language: audio?.language || audio?.language_full || "",
+                    title: audio?.title || audio?.language_full || "",
+                    codec: audio?.codec || "",
+                    channelCount: audio?.channels || 0
+                  };
+                  const display = formatAudioTrackDisplay(mappedTrack, index);
+                  return {
+                    id: `audio-torbox-${index}`,
+                    label: display.label,
+                    secondary: display.secondary,
+                    languageText: display.languageText,
+                    metadata: display.metadata,
+                    selected: index === selectedIndex,
+                    supported: true,
+                    canTryAudioConversion: false,
+                    unsupportedReason: "",
+                    torboxAudioIndex: index,
+                    track: {
+                      ...mappedTrack,
+                      supported: true
+                    }
+                  };
+                });
+              } else {
+                const implicitEntry = this.getImplicitAudioEntry();
+                entries = implicitEntry ? [implicitEntry] : [];
+              }
             }
           }
         }

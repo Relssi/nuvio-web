@@ -4,6 +4,7 @@ import * as internals from "./playerScreenContext.js";
 export function createPlayerScreenMethods61() {
   const {
     PlayerController,
+    DirectDebridResolver,
     Environment,
     renderLoadingIndicator,
     AUDIO_AMPLIFICATION_MIN_DB,
@@ -37,6 +38,35 @@ export function createPlayerScreenMethods61() {
       ) {
         this.invalidateTrackDialogCaches();
         this.renderAudioDialog();
+        return;
+      }
+
+      if (Number.isFinite(selectedEntry.torboxAudioIndex)) {
+        const candidate = this.getCurrentStreamCandidate?.() || null;
+        const torboxMeta = candidate?.torboxStreamMeta || candidate?.raw?.torboxStreamMeta || null;
+        if (!candidate || !torboxMeta) {
+          return;
+        }
+        this.showAspectToast?.("Trocando faixa de áudio...", 2200);
+        void DirectDebridResolver.switchTorboxAudioTrack(torboxMeta, selectedEntry.torboxAudioIndex)
+          .then((result) => {
+            if (result?.status !== "success" || !result.url) {
+              this.showAspectToast?.("Não foi possível trocar a faixa de áudio", 2400);
+              return;
+            }
+            torboxMeta.selectedAudioIndex = selectedEntry.torboxAudioIndex;
+            candidate.url = result.url;
+            candidate.mimeType = result.mimeType;
+            this.closeAudioDialog?.();
+            this.invalidateTrackDialogCaches();
+            void this.playStreamByUrl?.(result.url, {
+              preservePlaybackState: true,
+              sourceCandidate: candidate
+            });
+          })
+          .catch(() => {
+            this.showAspectToast?.("Erro ao trocar faixa de áudio", 2400);
+          });
         return;
       }
 

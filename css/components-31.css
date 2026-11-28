@@ -203,6 +203,13 @@
   gap: clamp(24px, 1.8vw, 36px);
 }
 
+.player-controls-right {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  flex-shrink: 0;
+}
+
 .player-control-buttons {
   display: flex;
   align-items: center;
@@ -232,7 +239,12 @@
 }
 
 .desktop-web .player-control-buttons {
+  flex: 1;
   gap: 8px;
+}
+
+.desktop-web .player-fullscreen-btn {
+  margin-left: auto;
 }
 
 .desktop-web .player-control-btn {
