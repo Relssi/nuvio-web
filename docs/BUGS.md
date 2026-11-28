@@ -237,6 +237,12 @@ O script cobre automaticamente os itens marcados com **[auto]**. Os itens **[man
 - **Efeito colateral:** as fontes verificadas aparecem na lista de torrents da conta TorBox (como quando se assiste).
 - **Verificar:** checagem B35, `dubbedStreamOrdering.test.mjs`, `torboxAudioChoice.test.mjs`.
 
+## B36 — Dentro do idioma, a maior resolução primeiro [auto]
+
+- **Pedido:** ordenar primeiro pelo idioma e depois pela resolução mais alta, para o topo ser a fonte em português de melhor qualidade.
+- **Correção:** `preferDubbedStreams` (`streamOrdering.js`) ordena por grupo de idioma (B35), depois por `streamResolutionScore` (2160/4K/UHD, 1440/QHD, 1080/FHD, 720/HD, 576, 480/SD; sem resolução = 0, por último), depois pela ordem anterior (tamanho).
+- **Verificar:** checagem B36 e `dubbedStreamOrdering.test.mjs` (dublado 4K → 1080p → 720p → sem resolução → inglês).
+
 ## Teste que já falhava
 
 - `js/ui/screens/home/homeHeroBackdropBitmap.test.mjs` (2 testes de troca suave da imagem do destaque) falha também na versão do GitHub antes destas mudanças. Não investigado.

@@ -45,3 +45,20 @@ test("order is unchanged when the preferred audio is not Portuguese", () => {
     ["a", "b"]
   );
 });
+
+test("inside each language group the highest resolution comes first", async () => {
+  const { streamResolutionScore } = await import("./streamOrdering.js");
+  resetDubProbeStoreForTests();
+  const pt720 = make("pt720", "Filme 720p Dublado");
+  const pt4k = make("pt4k", "Filme 2160p 4K Dublado");
+  const pt1080 = make("pt1080", "Filme 1080p WEB-DL Dublado");
+  const ptUnknown = make("ptx", "Filme Dublado");
+  const en4k = make("en4k", "Movie 2160p");
+  const ids = preferDubbedStreams([pt720, en4k, ptUnknown, pt1080, pt4k], { enabled: true }).map(
+    (s) => s.id
+  );
+  assert.deepEqual(ids, ["pt4k", "pt1080", "pt720", "ptx", "en4k"]);
+  assert.equal(streamResolutionScore({ title: "Movie UHD HDR" }), 2160);
+  assert.equal(streamResolutionScore({ name: "FHD TB Instant" }), 1080);
+  assert.equal(streamResolutionScore({ title: "Movie WEB-DL" }), 0);
+});

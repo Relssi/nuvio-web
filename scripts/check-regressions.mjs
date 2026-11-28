@@ -572,6 +572,13 @@ async function main() {
     return true;
   });
 
+  await check("B36", "inside each language group the highest resolution comes first", async () => {
+    const ordering = await source("js/core/streams/streamOrdering.js");
+    if (!ordering.includes("right.resolution - left.resolution"))
+      return "sources are no longer sorted by resolution inside the language groups";
+    return true;
+  });
+
   // ---- Unit tests --------------------------------------------------------
   const tests = await run(process.execPath, [
     "--test",

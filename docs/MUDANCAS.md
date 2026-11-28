@@ -8,6 +8,13 @@ Detalhes de bugs (causa e correção) ficam em [`BUGS.md`](BUGS.md).
 
 ---
 
+## 29/11/2026 — Fontes: português primeiro, depois a maior resolução
+
+- **O que mudou:** nas listas de fontes, primeiro vêm as dubladas e, dentro delas, a maior resolução primeiro (4K, depois 1080p, 720p...). O topo da lista é a fonte em português de melhor qualidade.
+- **Como:** a ordenação por idioma ganhou um segundo critério, a resolução. Detalhes em BUGS.md (B36).
+- **Precisa fazer:** nada. Recarregue a página.
+- **Não testado:** com a lista real depois do deploy (testado com fontes de teste).
+
 ## 29/11/2026 — Fontes dubladas sempre primeiro, sem janela de áudio
 
 - **O que mudou:** as fontes com dublagem brasileira aparecem primeiro em todas as listas. Enquanto você olha a lista, o site pergunta ao TorBox quais fontes têm mesmo áudio em português: as confirmadas sobem para o topo, as que não têm português vão para o fim (o resultado fica guardado, então na próxima vez é instantâneo). A janela "Escolha o áudio" saiu: o site escolhe a faixa PT-BR sozinho, e o menu de áudio do player continua lá para trocar.

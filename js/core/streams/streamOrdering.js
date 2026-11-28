@@ -406,13 +406,43 @@ export function prefersPortugueseAudio(settings = null) {
   }
 }
 
+// Video height from the source's name / resolution field: 2160 for 4K/UHD,
+// 1440, 1080, 720, 576, 480; 0 when the source does not say (B36).
+export function streamResolutionScore(stream = {}) {
+  const fields = [
+    stream.streamPresentation?.resolution,
+    stream.raw?.streamPresentation?.resolution,
+    stream.quality,
+    streamSearchText(stream)
+  ]
+    .map((value) => String(value || "").toLowerCase())
+    .join(" ");
+  if (/\b(2160p?|4k|uhd)\b/.test(fields)) return 2160;
+  if (/\b(1440p?|2k|qhd)\b/.test(fields)) return 1440;
+  if (/\b(1080p?|fhd|full\s?hd)\b/.test(fields)) return 1080;
+  if (/\b(720p?|hd)\b/.test(fields)) return 720;
+  if (/\b576p?\b/.test(fields)) return 576;
+  if (/\b(480p?|sd)\b/.test(fields)) return 480;
+  return 0;
+}
+
+// Language first (dubRank), then the highest resolution, then the existing
+// order (B35, B36): the top of the list is the best-quality Portuguese source.
 export function preferDubbedStreams(streams = [], { enabled = prefersPortugueseAudio() } = {}) {
   const list = (Array.isArray(streams) ? streams : []).filter(Boolean);
   if (!enabled || list.length <= 1) {
     return list;
   }
   return list
-    .map((stream, index) => ({ stream, index, rank: dubRank(stream) }))
-    .sort((left, right) => left.rank - right.rank || left.index - right.index)
+    .map((stream, index) => ({
+      stream,
+      index,
+      rank: dubRank(stream),
+      resolution: streamResolutionScore(stream)
+    }))
+    .sort(
+      (left, right) =>
+        left.rank - right.rank || right.resolution - left.resolution || left.index - right.index
+    )
     .map((entry) => entry.stream);
 }
