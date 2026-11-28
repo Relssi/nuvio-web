@@ -180,6 +180,7 @@ export function createPlayerScreenMethods62() {
       this.speedDialogIndex = clamp(this.speedDialogIndex, 0, speedOptions.length - 1);
       dialog.innerHTML = `
           <div class="player-dialog-title">${escapeHtml(t("player_playback_speed", {}, "Playback speed"))}</div>
+          <button type="button" class="player-dialog-close-btn player-dialog-close-corner" data-player-dialog-close="speed" aria-label="Fechar">&#10005;</button>
           <div class="player-dialog-list">
             ${speedOptions
               .map(

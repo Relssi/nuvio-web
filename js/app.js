@@ -148,7 +148,13 @@ const UPDATE_ROUTE_WAIT_TIMEOUT_MS = 60_000;
 function preloadMaterialIconFont() {
   const root = document.documentElement;
   if (Platform.isBrowser()) {
-    root.classList.add("desktop-web");
+    // Desktop-only styles (hover hero, compact sidebar...). Phones use
+    // css/mobile.css instead: browser-viewport-scale.js keeps "desktop-web"
+    // off while the phone layout is on (B44).
+    root.setAttribute("data-desktop-web", "1");
+    if (root.getAttribute("data-layout") !== "mobile") {
+      root.classList.add("desktop-web");
+    }
   }
   const markReady = () => root.classList.add("material-icons-ready");
   const timer = setTimeout(markReady, 3000);

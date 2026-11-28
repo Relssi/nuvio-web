@@ -650,6 +650,37 @@ async function main() {
     return true;
   });
 
+  await check(
+    "B44",
+    "iPhone layout: desktop styles stay off phones, menus and dialogs sized for phones",
+    async () => {
+      const runtime = await source("assets/runtime/browser-viewport-scale.js");
+      if (!runtime.includes('html.classList.toggle("desktop-web", layout !== "mobile")'))
+        return "desktop-only styles reach phones again (hero hidden)";
+      if (!runtime.includes("nuvio-phone-back-btn"))
+        return "phone back button missing on screens without the tab bar";
+      const css = await source("css/mobile.css");
+      if (!css.includes(".nuvio-dialog-panel {")) return "dialogs no longer sized for phones";
+      if (!css.includes("#account .qr-layout"))
+        return "sign-in screen no longer one column on phones";
+      if (!css.includes("--player-overlay-label-font: 28px"))
+        return "player menus back to 5-7px text on phones";
+      if (!css.includes(".player-volume-slider"))
+        return "player buttons overlap the volume slider again";
+      if (!/home-modern-hero-card \{\s*min-height: 0;/.test(css))
+        return "phone hero text pushed below the card again";
+      const screen = await source("js/ui/navigation/screen.js");
+      if (!screen.includes('getAttribute?.("data-layout") === "mobile"'))
+        return "first focus scrolls the phone Home past the hero again";
+      const pointer = await source(
+        "js/ui/screens/player/playerScreenMethods-70-on-pointer-activate.js"
+      );
+      if (!pointer.includes("data-player-dialog-close"))
+        return "audio / speed menus cannot be closed on a phone";
+      return true;
+    }
+  );
+
   // ---- Unit tests --------------------------------------------------------
   const tests = await run(process.execPath, [
     "--test",

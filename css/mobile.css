@@ -899,3 +899,444 @@ html[data-layout="mobile"] .seeall-grid > .seeall-card img {
 html[data-layout="mobile"] .discover-filter-shell {
   flex-wrap: wrap;
 }
+
+/* Dialogs (B44): every NuvioDialog (update notes, confirmations, pickers)
+   is drawn for a TV. On a phone the panel is shown at half size, can scroll
+   when taller than the screen, and the backdrop keeps a 16px margin. */
+html[data-layout="mobile"] .nuvio-dialog-backdrop {
+  padding: max(16px, env(safe-area-inset-top, 0px)) 16px max(16px, env(safe-area-inset-bottom, 0px));
+}
+
+html[data-layout="mobile"] .nuvio-dialog-panel {
+  zoom: var(--mobile-ui-zoom);
+  --nuvio-vw: calc(1vw / var(--mobile-ui-zoom));
+  --nuvio-vh: calc(1vh / var(--mobile-ui-zoom));
+  /* % sizes are halved by the zoom: double them back. */
+  width: calc(100% / var(--mobile-ui-zoom)) !important;
+  max-width: calc(100% / var(--mobile-ui-zoom)) !important;
+  max-height: calc(200dvh - 64px);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Sign-in screen (B44): logo and text on top, the QR / e-mail card below,
+   the whole page scrolls (sizes at half size). */
+html[data-layout="mobile"] #account .qr-layout {
+  grid-template-columns: minmax(0, 1fr);
+  grid-auto-rows: auto;
+  align-content: start;
+  gap: 32px;
+  height: auto;
+  min-height: calc(100 * var(--nuvio-vh));
+  padding: 64px 32px calc(48px + 2 * env(safe-area-inset-bottom, 0px));
+}
+
+html[data-layout="mobile"] #account {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+html[data-layout="mobile"] #account .qr-card {
+  width: 100%;
+  height: auto;
+  margin: 0 auto;
+}
+
+/* Floating "Voltar" on screens without the tab bar or their own back button
+   (B44, assets/runtime/browser-viewport-scale.js). */
+html[data-layout="mobile"] .nuvio-phone-back-btn {
+  position: fixed;
+  left: 12px;
+  bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+  z-index: 9000;
+  min-height: 44px;
+  padding: 0 18px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 22px;
+  background: rgba(16, 16, 20, 0.92);
+  color: #ffffff;
+  font:
+    600 15px/1 system-ui,
+    -apple-system,
+    sans-serif;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  cursor: pointer;
+}
+
+/* Room under the last item for the floating "Voltar" (88px on screen). */
+html[data-layout="mobile"] #plugin .addons-route-content {
+  padding-bottom: calc(176px + 2 * env(safe-area-inset-bottom, 0px));
+}
+
+/* Title details on a phone (B44). The lower sections are zoomed to half
+   size, so their 16px screen margin is 32px there. */
+html[data-layout="mobile"]
+  .series-detail-shell
+  .series-detail-content
+  > :not(:has(.detail-hero-section)) {
+  --detail-safe-x: 32px;
+  --tv-safe-gutter-wide: 32px;
+}
+
+/* Genres, date, rating, runtime, countries: compact wrapped lines without
+   the TV divider bars (they ended up alone at the start or end of a line). */
+html[data-layout="mobile"] .series-detail-shell .detail-meta-row {
+  flex-wrap: wrap;
+  align-items: center;
+  column-gap: 12px;
+  row-gap: 6px;
+  margin-top: 10px;
+}
+
+html[data-layout="mobile"] .series-detail-shell .detail-meta-row > * {
+  line-height: 1.4;
+}
+
+html[data-layout="mobile"] .series-detail-shell .detail-meta-row .detail-meta-dot {
+  display: none;
+}
+
+html[data-layout="mobile"] .series-detail-shell .detail-meta-row .series-imdb-badge,
+html[data-layout="mobile"] .series-detail-shell .detail-meta-row .series-imdb-badge * {
+  height: auto;
+  line-height: 1.4;
+}
+
+html[data-layout="mobile"] .series-detail-shell .detail-meta-row .series-imdb-badge img {
+  width: auto;
+  height: 22px;
+}
+
+/* The fixed "Voltar" on details stays small and out of the way. */
+html[data-layout="mobile"] .series-detail-shell .nuvio-web-back-btn,
+html[data-layout="mobile"] .nuvio-web-back-btn {
+  min-height: 40px;
+  padding: 0 16px;
+  font-size: 15px;
+  top: max(12px, env(safe-area-inset-top, 0px));
+  left: 12px;
+}
+
+/* Player controls on a phone (B44). Sizes are at half size (#playerUiRoot
+   is zoomed). Phones set the volume with their own buttons (iOS ignores the
+   page's volume), so the slider goes; the buttons wrap to a second line when
+   the phone stands up instead of running off the screen, and the time sits
+   on the right above them. */
+html[data-layout="mobile"] #playerUiRoot .player-volume-control {
+  flex: 0 0 auto;
+  width: auto;
+  padding-right: 0;
+}
+
+html[data-layout="mobile"] #playerUiRoot .player-volume-slider {
+  display: none;
+}
+
+html[data-layout="mobile"] #playerUiRoot .player-controls-row {
+  flex-wrap: wrap;
+  align-items: center;
+  row-gap: 8px;
+}
+
+html[data-layout="mobile"] #playerUiRoot .player-control-buttons {
+  flex: 1 1 100%;
+  min-width: 0;
+  flex-wrap: wrap;
+  row-gap: 16px;
+}
+
+html[data-layout="mobile"] #playerUiRoot .player-control-buttons > * {
+  flex: 0 0 auto;
+}
+
+html[data-layout="mobile"] #playerUiRoot .player-time-label {
+  order: -1;
+  flex: 1 1 100%;
+  position: static;
+  text-align: right;
+  font-size: 28px;
+  line-height: 1.2;
+  width: auto;
+}
+
+/* Age rating notes start under the "Voltar / Início" buttons. */
+html[data-layout="mobile"] #playerUiRoot .player-parental-guide {
+  top: calc(150px + 2 * env(safe-area-inset-top, 0px));
+  left: 56px;
+}
+
+@media (orientation: landscape) and (max-height: 560px) {
+  html[data-layout="mobile"] #playerUiRoot .player-control-buttons {
+    flex: 1 1 auto;
+    flex-wrap: nowrap;
+  }
+
+  html[data-layout="mobile"] #playerUiRoot .player-time-label {
+    order: 0;
+    flex: 0 0 auto;
+  }
+}
+
+/* Player text and icons on a standing phone (B44): the TV sizes follow the
+   screen width and end up 4-10px; icons drawn as SVG were half the size of
+   the others. Sizes at half size. */
+html[data-layout="mobile"] #playerUiRoot .player-control-btn svg {
+  width: 44px;
+  height: 44px;
+}
+
+html[data-layout="mobile"] #playerUiRoot .player-title {
+  font-size: 44px;
+  line-height: 1.15;
+}
+
+html[data-layout="mobile"] #playerUiRoot .player-meta,
+html[data-layout="mobile"] #playerUiRoot .player-meta-secondary,
+html[data-layout="mobile"] #playerUiRoot .player-meta-tertiary {
+  font-size: 26px;
+  line-height: 1.3;
+}
+
+html[data-layout="mobile"] #playerUiRoot .player-clock {
+  font-size: 32px;
+}
+
+html[data-layout="mobile"] #playerUiRoot .player-ends-at {
+  font-size: 22px;
+}
+
+/* Player menus (subtitles, audio, speed) on a phone (B44). Their sizes come
+   from screen-width variables that shrink to 5-7px on a standing phone; here
+   they get fixed sizes (at half size) and the menus fill the screen. */
+html[data-layout="mobile"] #playerUiRoot {
+  --player-panel-padding: 32px;
+  --player-overlay-title-font: 44px;
+  --player-overlay-body-font: 32px;
+  --player-overlay-label-font: 28px;
+  --player-overlay-small-font: 24px;
+  --player-overlay-step-width: 88px;
+  --player-overlay-step-height: 72px;
+  --player-overlay-step-font: 40px;
+}
+
+html[data-layout="mobile"] #playerUiRoot .player-subtitle-modal,
+html[data-layout="mobile"] #playerUiRoot .player-audio-modal {
+  left: calc(24px + 2 * env(safe-area-inset-left, 0px));
+  right: calc(24px + 2 * env(safe-area-inset-right, 0px));
+  top: calc(24px + 2 * env(safe-area-inset-top, 0px));
+  bottom: calc(24px + 2 * env(safe-area-inset-bottom, 0px));
+  width: auto;
+  height: auto;
+  max-height: none;
+  padding: 32px;
+  border-radius: 28px;
+  flex-direction: column;
+  box-sizing: border-box;
+  background: rgba(16, 16, 20, 0.96);
+}
+
+html[data-layout="mobile"] #playerUiRoot .player-subtitle-modal:not(.hidden),
+html[data-layout="mobile"] #playerUiRoot .player-audio-modal:not(.hidden) {
+  display: flex;
+}
+
+html[data-layout="mobile"] #playerUiRoot .player-subtitle-modal-header {
+  flex: 0 0 auto;
+  min-height: 72px;
+  margin-bottom: 16px;
+}
+
+html[data-layout="mobile"] #playerUiRoot .player-subtitle-rail-heading {
+  font-size: 26px;
+}
+
+html[data-layout="mobile"] #playerUiRoot .player-subtitle-overlay-grid,
+html[data-layout="mobile"] #playerUiRoot .player-audio-overlay-grid {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  height: auto;
+  max-height: none;
+  column-gap: 24px;
+  row-gap: 12px;
+}
+
+html[data-layout="mobile"] #playerUiRoot .player-subtitle-overlay-grid {
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.1fr) minmax(0, 1.1fr);
+}
+
+html[data-layout="mobile"] #playerUiRoot .player-subtitle-overlay-grid.is-off-only {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+html[data-layout="mobile"] #playerUiRoot .player-audio-overlay-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+}
+
+html[data-layout="mobile"] #playerUiRoot .player-audio-track-list,
+html[data-layout="mobile"] #playerUiRoot .player-audio-controls-list,
+html[data-layout="mobile"] #playerUiRoot .player-subtitle-rail {
+  width: auto;
+  min-width: 0;
+  height: auto;
+  max-height: none;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+html[data-layout="mobile"] #playerUiRoot .player-dialog-item {
+  padding: 20px 24px;
+  border-radius: 20px;
+  font-size: 30px;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+html[data-layout="mobile"] #playerUiRoot .player-audio-track-list .player-dialog-item-main {
+  font-size: 30px;
+  line-height: 1.2;
+}
+
+html[data-layout="mobile"] #playerUiRoot .player-audio-track-list .player-dialog-item-sub {
+  font-size: 24px;
+}
+
+/* The highlighted audio track had dark text on a dark card. */
+html[data-layout="mobile"] #playerUiRoot .player-audio-track-list .player-dialog-item.focused,
+html[data-layout="mobile"] #playerUiRoot .player-audio-track-list .player-dialog-item.selected {
+  background: #f2f2f2;
+  color: #111111;
+}
+
+html[data-layout="mobile"] #playerUiRoot .player-audio-control-card {
+  padding: 20px 24px;
+  border-radius: 20px;
+}
+
+@media (orientation: portrait) {
+  /* Standing phone: languages and subtitles side by side, style below;
+     audio tracks above the volume boost. */
+  html[data-layout="mobile"] #playerUiRoot .player-subtitle-overlay-grid {
+    grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+    grid-template-rows: auto minmax(0, 1.3fr) auto minmax(0, 1fr);
+  }
+
+  html[data-layout="mobile"] #playerUiRoot .player-subtitle-style-heading,
+  html[data-layout="mobile"] #playerUiRoot .player-subtitle-rail-heading:nth-child(3) {
+    grid-column: 1 / -1;
+    grid-row: 3;
+  }
+
+  html[data-layout="mobile"] #playerUiRoot .player-subtitle-style-rail {
+    grid-column: 1 / -1;
+    grid-row: 4;
+  }
+
+  html[data-layout="mobile"] #playerUiRoot .player-audio-overlay-grid {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto auto;
+    overflow-y: auto;
+  }
+}
+
+html[data-layout="mobile"] #playerUiRoot .player-dialog-close-btn {
+  width: 72px;
+  height: 72px;
+  font-size: 32px;
+}
+
+html[data-layout="mobile"] #playerUiRoot .player-modal .player-dialog-close-corner {
+  top: 28px;
+  right: 28px;
+}
+
+html[data-layout="mobile"] #playerUiRoot .player-audio-overlay-grid {
+  align-content: start;
+}
+
+/* Home hero on a phone held sideways (B44): the text column was as wide as
+   the card and taller than it, so the description and button fell off. */
+@media (orientation: landscape) and (max-height: 560px) {
+  html[data-layout="mobile"]:root .home-screen-shell.home-layout-modern .home-modern-hero-copy {
+    top: auto;
+    bottom: 16px;
+    left: 20px;
+    right: auto;
+    width: 56%;
+    max-width: 56%;
+    height: auto;
+    max-height: calc(100% - 32px);
+    overflow: hidden;
+  }
+
+  html[data-layout="mobile"]:root .home-screen-shell.home-layout-modern {
+    --modern-hero-logo-max-height: 56px;
+  }
+}
+
+@media (orientation: landscape) and (max-height: 560px) {
+  html[data-layout="mobile"]:root
+    .home-screen-shell.home-layout-modern
+    .home-modern-hero-copy
+    .home-hero-description {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    /* !important: homeScreenMethods-14 writes its own clamp inline and
+       does not count the "Ver detalhes" button drawn by CSS. */
+    -webkit-line-clamp: 2 !important;
+    overflow: hidden;
+    max-height: 38px !important;
+    font-size: 13px;
+    line-height: 19px;
+  }
+
+  html[data-layout="mobile"]:root
+    .home-screen-shell.home-layout-modern
+    .home-modern-hero-copy::before {
+    display: none;
+  }
+}
+
+/* The hero card kept a 400px TV minimum height inside a shorter phone hero,
+   pushing the text and button below the visible card (B44). */
+html[data-layout="mobile"]:root .home-screen-shell.home-layout-modern .home-modern-hero-card {
+  min-height: 0;
+}
+
+/* Title details text on a phone (B44): the name drawn as text (no logo) was
+   TV-sized, three lines of 64px; "Read more" was larger than the synopsis. */
+html[data-layout="mobile"] .series-detail-shell .series-detail-title {
+  font-size: 32px;
+  line-height: 1.1;
+  max-width: 100%;
+  margin-bottom: 16px;
+}
+
+html[data-layout="mobile"] .series-detail-shell .detail-synopsis-more {
+  font-size: 15px;
+  line-height: 22px;
+  font-weight: 600;
+  margin-top: 4px;
+}
+
+/* "Press back to return to details" is for a TV remote (B44). */
+html[data-layout="mobile"] .detail-trailer-hint {
+  display: none;
+}
+
+/* Episodes start on the same 16px line as the season chips (B44). */
+html[data-layout="mobile"] .series-detail-shell .series-episode-track {
+  padding-left: 32px;
+  padding-right: 32px;
+  scroll-padding-left: 32px;
+}
+
+/* Discover / "See all" with the phone held sideways: five posters a row. */
+@media (orientation: landscape) and (max-height: 560px) {
+  html[data-layout="mobile"]:root .seeall-grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}

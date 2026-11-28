@@ -297,6 +297,21 @@ O script cobre automaticamente os itens marcados com **[auto]**. Os itens **[man
 - **Teste:** `dubAudioSync.test.mjs` (6350 × 5765 recusado; créditos +2 min e PAL aceitos), `playerDubAudio.test.mjs` (lista e fontes recusadas).
 - **Limite:** a duração só é conhecida depois de pedir a fonte ao TorBox (alguns segundos por fonte). A lista de fontes ainda mostra "A Ladra Solitária" no topo como dublada.
 
+## B44 — Interface quebrada no iPhone (todas as telas e o player) [auto + manual]
+
+- **Pedido:** "conserte toda a UI no iPhone, toda a interface sem exceção, até o player". Revisão tela por tela com a skill design-critique, com fotos em tamanho de iPhone (390×664 em pé e 844×390 deitado).
+- **Achados e correções:**
+  - **Destaque da home invisível no celular:** a regra de computador do Kiid (destaque só aparece ao passar o mouse, `.desktop-web`) também valia no celular, onde não há mouse. Agora `desktop-web` só fica ligado fora do layout de celular (`app.js` marca `data-desktop-web`; `browser-viewport-scale.js` liga/desliga junto com o layout).
+  - **Primeira visita:** a janela "App Update" e a tela de login apareciam no tamanho de TV (uma palavra por linha). Janelas (`NuvioDialog`) agora em meio tamanho, com a largura certa e rolagem; login em uma coluna.
+  - **Telas sem barra de baixo** (Addons, Discover, páginas de ajuste): no celular não há botão Voltar do controle, a pessoa ficava presa. Botão flutuante "← Voltar" nessas telas.
+  - **Detalhes:** separadores "|" soltos e linhas com 40px de altura nas informações; elenco/episódios fora da margem; título em texto (sem logo) com 64px; "Read more" maior que a sinopse; aviso "Press back…" de TV.
+  - **Home deitado:** a página abria rolada (o `focus()` do primeiro cartaz rola a página; agora `focusWithoutScroll` no celular), o cartão do destaque tinha altura mínima de 400px (texto e botão caíam fora) e a descrição tinha 4 linhas fixadas por script.
+  - **Player:** barra de volume por cima do botão de legenda, "…" por cima do tempo e tela cheia fora da tela em pé; ícones SVG com metade do tamanho; título, relógio e textos com 4–10px; aviso de classificação por cima de "Voltar/Início". Agora: sem barra de volume (o iPhone usa os botões do aparelho), botões quebram em 2 linhas em pé, tempo acima dos botões, tamanhos fixos.
+  - **Menus do player:** legendas/áudio com texto de 5–7px e 3ª coluna cortada; faixa de áudio escolhida com texto escuro em fundo escuro; menus de áudio e velocidade sem como fechar no celular. Agora ocupam a tela, legendas em 3 colunas deitado e 2 + estilo embaixo em pé, e áudio/velocidade ganharam "✕".
+  - Discover deitado com 5 pôsteres por linha.
+- **Verificar:** checagem B44; fotos de todas as telas em pé e deitado no Edge com perfil de iPhone (Playwright).
+- **Limite:** testado com o motor do Chrome/Edge no tamanho do iPhone, não no Safari de um iPhone de verdade.
+
 ## Teste que já falhava
 
 - `js/ui/screens/home/homeHeroBackdropBitmap.test.mjs` (2 testes de troca suave da imagem do destaque) falha também na versão do GitHub antes destas mudanças. Não investigado.

@@ -330,6 +330,7 @@ export function createPlayerScreenMethods61() {
         const emptyMessage = loading ? "Loading audio tracks..." : this.getUnavailableTrackMessage("audio");
         dialog.innerHTML = `
             <div class="player-dialog-title">${escapeHtml(t("audio_dialog_title", {}, "Audio"))}</div>
+            <button type="button" class="player-dialog-close-btn player-dialog-close-corner" data-player-dialog-close="audio" aria-label="Fechar">&#10005;</button>
             ${supportNotice ? `<div class="player-dialog-support-message" role="status">${escapeHtml(supportNotice)}</div>` : ""}
             <div class="player-dialog-empty${loading ? " player-dialog-loading" : ""}">
               ${loading ? renderLoadingIndicator() : ""}
@@ -345,6 +346,7 @@ export function createPlayerScreenMethods61() {
       this.audioDialogIndex = clamp(this.audioDialogIndex, 0, entries.length - 1);
       dialog.innerHTML = `
           <div class="player-dialog-title">${escapeHtml(t("audio_dialog_title", {}, "Audio"))}</div>
+            <button type="button" class="player-dialog-close-btn player-dialog-close-corner" data-player-dialog-close="audio" aria-label="Fechar">&#10005;</button>
           ${supportNotice ? `<div class="player-dialog-support-message" role="status">${escapeHtml(supportNotice)}</div>` : ""}
           ${hasSupportedEntries ? "" : `<div class="player-audio-support-message" role="status">${escapeHtml(t("player.audio.noSupportedTracks", {}, "No supported audio tracks available"))}</div>`}
           <div class="player-audio-overlay-grid">

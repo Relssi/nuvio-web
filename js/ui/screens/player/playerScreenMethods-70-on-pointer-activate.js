@@ -133,6 +133,15 @@ export function createPlayerScreenMethods70() {
         return true;
       }
 
+      // "X" on the audio and speed menus (B44): phones have no Back key.
+      const dialogCloseNode = target.closest?.("[data-player-dialog-close]");
+      if (dialogCloseNode) {
+        const kind = dialogCloseNode.getAttribute("data-player-dialog-close");
+        if (kind === "audio" && this.audioDialogVisible) this.closeAudioDialog();
+        if (kind === "speed" && this.speedDialogVisible) this.closeSpeedDialog();
+        return true;
+      }
+
       const subtitleCloseNode = target.closest?.("[data-subtitle-dialog-action='close']");
       if (subtitleCloseNode && this.subtitleDialogVisible) {
         this.closeSubtitleDialog();

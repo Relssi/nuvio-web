@@ -78,6 +78,12 @@ export const ScreenUtils = {
       return;
     }
     first.classList.add("focused");
+    // Phone layout (B44): a plain focus() scrolls the page to the first card,
+    // which on a phone held sideways hid the Home hero on arrival.
+    if (globalThis?.document?.documentElement?.getAttribute?.("data-layout") === "mobile") {
+      focusWithoutScroll(first);
+      return;
+    }
     first.focus();
   },
 

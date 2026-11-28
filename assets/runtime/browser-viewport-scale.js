@@ -51,6 +51,11 @@
     if (html.getAttribute("data-layout") !== layout) {
       html.setAttribute("data-layout", layout);
     }
+    // Desktop-only styles must not reach the phone layout (B44): the hover
+    // hero, for one, kept the phone hero invisible.
+    if (html.getAttribute("data-desktop-web") === "1" && html.classList) {
+      html.classList.toggle("desktop-web", layout !== "mobile");
+    }
   }
 
   function apply() {
@@ -309,4 +314,62 @@
     },
     true
   );
+
+  // Phone back button (B44): some screens (Addons, Discover, settings
+  // pages...) have neither the bottom tab bar nor their own "Voltar" button,
+  // and a phone has no remote with a Back key. Show a floating "Voltar" there;
+  // it goes back through the browser history, which the app's router follows.
+  var NO_BACK_SCREENS = { home: 1, player: 1, account: 1, authQrSignIn: 1, profileSelection: 1 };
+  var backButton = null;
+
+  function isShown(element) {
+    if (!element) {
+      return false;
+    }
+    var rect = element.getBoundingClientRect();
+    return rect.width > 0 && rect.height > 0 && root.getComputedStyle(element).visibility !== "hidden";
+  }
+
+  function activeScreen() {
+    var screens = document.querySelectorAll(".screen");
+    for (var i = screens.length - 1; i >= 0; i -= 1) {
+      if (isShown(screens[i])) {
+        return screens[i];
+      }
+    }
+    return null;
+  }
+
+  function updatePhoneBackButton() {
+    var screen = html.getAttribute("data-layout") === "mobile" ? activeScreen() : null;
+    var needed = Boolean(
+      screen &&
+        !NO_BACK_SCREENS[screen.id] &&
+        !isShown(screen.querySelector(".home-sidebar")) &&
+        !isShown(screen.querySelector(".nuvio-web-back-btn")) &&
+        !document.querySelector(".nuvio-dialog-backdrop.nuvio-dialog-backdrop-enter")
+    );
+    if (!needed) {
+      if (backButton) {
+        backButton.style.display = "none";
+      }
+      return;
+    }
+    if (!backButton) {
+      backButton = document.createElement("button");
+      backButton.type = "button";
+      backButton.className = "nuvio-phone-back-btn";
+      backButton.setAttribute("aria-label", "Voltar");
+      backButton.textContent = "← Voltar";
+      backButton.addEventListener("click", function goBack(event) {
+        event.preventDefault();
+        event.stopPropagation();
+        root.history.back();
+      });
+      document.body.appendChild(backButton);
+    }
+    backButton.style.display = "";
+  }
+
+  root.setInterval(updatePhoneBackButton, 400);
 })();

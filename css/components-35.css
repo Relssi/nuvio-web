@@ -725,3 +725,13 @@
   background: rgba(239, 68, 68, 0.78);
   border-color: rgba(239, 68, 68, 0.9);
 }
+
+/* "X" in the corner of the audio and speed menus (B44; all layouts). */
+.player-modal .player-dialog-close-corner {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  z-index: 2;
+  pointer-events: auto;
+  cursor: pointer;
+}

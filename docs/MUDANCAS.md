@@ -8,6 +8,19 @@ Detalhes de bugs (causa e correção) ficam em [`BUGS.md`](BUGS.md).
 
 ---
 
+## 29/11/2026 — Interface do iPhone revisada (todas as telas e o player)
+
+- **O que mudou:** revisei todas as telas no tamanho do iPhone, em pé e deitado:
+  - **Destaque da home:** aparece de novo. Estava invisível no celular por causa do efeito de "passar o mouse" do computador, e agora também fica certo com o celular deitado.
+  - **Primeira visita:** janela de atualização e tela de login legíveis.
+  - **Botão "← Voltar":** aparece onde a pessoa ficava presa (Addons, Discover…).
+  - **Detalhes:** informações e elenco alinhados, título e textos em tamanho de celular.
+  - **Player:** botões não se sobrepõem mais, o tempo fica acima dos botões e o título e o relógio estão maiores.
+  - **Menus do player (legenda e áudio):** legíveis, ocupam a tela e têm botão ✕ para fechar.
+- **Como:** ajustes no layout de celular e o fim das regras de computador valendo no celular. Detalhes em BUGS.md (B44).
+- **Precisa fazer:** nada. Recarregue a página no iPhone.
+- **Não testado:** no Safari de um iPhone de verdade (testado com o tamanho e o toque do iPhone no navegador).
+
 ## 29/11/2026 — Dub β confere a duração da dublagem
 
 - **O que mudou:** no Wicker, a "dublagem" vinha de um arquivo chamado "A Ladra Solitária", que é **outro filme** (96 min contra 106 min). Por isso não sincronizava de jeito nenhum. Agora o Dub β compara a duração: se a dublagem não bate com o filme, ele descarta a fonte e tenta a próxima. Se nenhuma bater, avisa que as dublagens da lista são de outra versão.
