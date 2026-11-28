@@ -418,7 +418,7 @@ export function createHomeScreenMethods19() {
         if (target.isConnected && target.matches?.(":hover, .focused") && !this.sidebarExpanded && !this.isSidebarFocusActive?.()) {
           this.setHoverHeroActive(true);
         }
-      }, 1500);
+      }, 700);
     },
     // Swiping the hero on a phone shows the next / previous title of the
     // focused row: the hero always follows the focused card (B29).
